@@ -10,7 +10,7 @@ class FreeGroupAutomorphism(WordMorphism):
     """
     Free group automorphism. 
 
-    EXAMPLES
+    EXAMPLES::
 
     sage: F=FreeGroup(3)
     sage: FreeGroupAutomorphism("a->ab,b->ac,c->a",F)
@@ -58,13 +58,13 @@ class FreeGroupAutomorphism(WordMorphism):
         """
         Apply the automorphism to the word w.
 
-        WARNING::
+        WARNING:
 
         if w is a letter of the alphabet which is iterable it will be considered as a word.
         """    
         F=self.codomain()
-        result=F()
         while order>0:
+            result=F()
             order=order-1
             for a in w:
                 result=result*self.image(a)
@@ -118,8 +118,7 @@ class FreeGroupAutomorphism(WordMorphism):
 
     def size(self):
         """
-        Returns the size of the automorphism which is half the maximum
-        length of the image of a two letter word.
+        Size of the automorphism: half the maximum length of the image of a two letter word.
         """
         result=0
         A=self._domain._alphabet
@@ -133,7 +132,7 @@ class FreeGroupAutomorphism(WordMorphism):
  
     def is_permutation(self):
         """
-        Returns True if self is a permutation of the alphabet.
+        True if self is a permutation of the alphabet.
         """
         return not any(len(self.image(a))!=1 for a in self._domain._alphabet.positive_letters()) 
       
@@ -254,7 +253,7 @@ class FreeGroupAutomorphism(WordMorphism):
     
     def rose_representative(self):
         """
-        Returns the topological representative on the rose on the alphabet.
+        Topological representative on the rose on the alphabet.
         """
         rose_source=GraphWithInverses.rose_graph(self._domain._alphabet)
         rose_target=GraphWithInverses.rose_graph(self._domain._alphabet)
@@ -262,11 +261,28 @@ class FreeGroupAutomorphism(WordMorphism):
 
     def train_track(self,stable=True,relative=True,verbose=False):
         """
-        Computes a train-track representative of self. According to
-        the options computes a relative (or ends when finding a
-        reduction) and/or stable (with at most one INP crossing each
-        exponential stratum). Returns a topological representative of
-        self.
+        Computes a train-track representative of self. 
+
+        According to the options computes a relative (or ends when
+        finding a reduction) and/or stable (with at most one INP
+        crossing each exponential stratum). verbose can be either True
+        or a positive number giving details on the computations.
+        
+        OUTPUT: 
+
+        A topological representative of self. 
+
+        - If relative=False, this topological representative is either
+        an absolute train-track or fixes a subgraph (with a non
+        contractible connected component).
+        
+        - If relative=True, the output is a relative train-track
+
+        - If stable=True, the output is either a stable absolute
+          train-track or stable relative train-track or (if
+          relative=False) fixes a subgraph (with a non contractible
+          connected component).
+
         """
         f=self.rose_representative()
         f.train_track(verbose)
