@@ -451,3 +451,14 @@ class FreeGroupAutomorphism(WordMorphism):
 
         """
         return FreeGroupAutomorphism("a->cabaa,b->baa,c->caba",FreeGroup(3))
+
+    @staticmethod
+    def Turner_Stallings():
+        """ 
+        Automorphism of F_4 given in [Turner].
+
+        This automorphism comes from an idea of Stallings and although
+        it is very short, it has a very long fixed word.
+
+        """
+        return FreeGroupAutomorphism("a->dac,b->CADac,c->CABac,d->CAbc",FreeGroup(4))
