@@ -51,9 +51,9 @@ class TopologicalRepresentative(GraphMap):
 
     def matrix(self):
         """
-        Returns the incidence matrix of the topological
-        representative. The indices of the matrix are determined by
-        the order in the alphabet.
+        The incidence matrix of the topological representative. 
+
+        The indices of the matrix are determined by the order in the alphabet.
         """
         A=self._domain._alphabet
         m=len(A.positive_letters())
@@ -65,7 +65,13 @@ class TopologicalRepresentative(GraphMap):
      
     def expansion_factor(self,stratum=None):
         """
-        Returns the dominant Perron Frobenius eigenvalue of the matrix of self.
+        The dominant Perron-Frobenius eigenvalue of the matrix of self.
+
+        INPUT: 
+
+        - ``stratum`` -- (default:None) if not None an integer
+           that is the index of a stratum of self.
+
         """
 
         if stratum==None:
@@ -80,7 +86,7 @@ class TopologicalRepresentative(GraphMap):
 
     def automorphism(self,verbose=False):
         """
-        Returns the automorphism represented by self.
+        The automorphism represented by self.
         """
 
         A=self._marking._domain._alphabet
@@ -110,9 +116,16 @@ class TopologicalRepresentative(GraphMap):
 
     def find_folding(self):
         """
-        Returns a list [[edge,position],t1,t2,...,tn] where tn is an
-        illegal turn that is in the iterated image of edge (self(ti)=ti+1). The turn
-        is chosen such as n is as small as possible.
+        Finds a folding in self.
+
+        Output:
+
+        A list ``[[edge,position],t1,t2,...,tn]`` where ``tn`` is an illegal
+        turn that is in the iterated image of ``edge``
+        (``self(ti)=ti+1``). The turn is chosen such as ``n`` is as small as
+        possible. ``position`` is an integer such that ``t1`` is the turn
+        occuring at ``position`` in the word ``self(edge)``
+
         """
         A=self._domain._alphabet
         turns=[]
@@ -156,21 +169,26 @@ class TopologicalRepresentative(GraphMap):
 
     def subdivide(self,edge_list,verbose=False):
         """
-        Subdivides edges into two edges. If an edge appears in the
-        list then 
+        Subdivides edges into two edges. 
+
+        If an edge appears in the list then
 
         - either len(self(edge))>1 and the first part of edge is sent
-        to the first edge of the image.
+          to the first edge of the image.
 
         - or self(edge) is an edge in edge_list and the first part of
           edge is sent to the first part of its image.
 
         It is assumed that no edge and its reverse appear in the list.
 
-        Returns a WordMorphism that maps an old edge to its image in
+        OUTPUT: 
+
+        a WordMorphism that maps an old edge to its image in
         the subdivided graph.
 
-        Beware this has no effect on the possible strata of self.
+        WARNING:
+
+        this has no effect on the possible strata of self.
         """
 
         if verbose: print "Subdivide edges: ",edge_list
@@ -206,12 +224,16 @@ class TopologicalRepresentative(GraphMap):
 
     def subdivide_edge(self,edge,position,verbose):
         """
-        Subdivides the edge in two edges a and b. The image of a is
-        the prefix of length position of the image of edge.
+        Subdivides ``edge`` in two edges a and b. The image of a is
+        the prefix of length ``position`` of the image of ``edge``.
 
-        Returns the WordMorphism for the old edges to the new images.
+        OUTPUT:
 
-        Beware this has no effect on the possible strata of self.
+        The WordMorphism for the old edges to the new images.
+
+        WARNING:
+
+        This has no effect on the possible strata of self.
         """
         
         if verbose:
