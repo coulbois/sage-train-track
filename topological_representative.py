@@ -1130,10 +1130,18 @@ class TopologicalRepresentative(GraphMap):
 
     def indivisible_nielsen_paths(self,verbose=False):
         """
-        Given a topological representative which is an irreducible
-        train-track, returns the list of its indivisible Nielsen
-        paths.  Each INP is returned as a pair of lists of edges, the fixed
-        points lie inside the extremal edges of the lists.
+        The list of its indivisible Nielsen paths.
+
+        WARNING:
+        
+        ``self`` is assumed to be an irreducible train-track
+        representative (else use
+        ``relative_indivisible_nielsen_paths()``)
+
+        OUPUT:
+        
+        A list of INPs. Each INP is returned as a pair of word-paths, the fixed
+        points lie inside the extremal edges of the words.
         """
         
         G=self._domain
@@ -1213,7 +1221,9 @@ class TopologicalRepresentative(GraphMap):
     
     def periodic_nielsen_paths(self,verbose=False):
         """
-        The list of periodic Nielsen paths.
+        The list of periodic Nielsen paths. 
+
+        ``self`` is assumed to be an irreducible train-track representative.
 
         OUTPUT:
         
