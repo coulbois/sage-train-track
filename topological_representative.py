@@ -1030,8 +1030,10 @@ class TopologicalRepresentative(GraphMap):
 
     def legal_turns(self):
         """
-        Returns the list of legal turns of self. A turn is legal if
-        all its iterated images are non-degenerate turns.
+        The list of legal turns of self. 
+
+        A turn is legal if all its iterated images are non-degenerate
+        turns.
         """
 
         turns=self._domain.turns()
@@ -1048,27 +1050,84 @@ class TopologicalRepresentative(GraphMap):
                     i=i+1
         return turns
 
-    def illegal_turns(self,stratum=None):
+    def fold_turns(self,stratum=None):
         """
-        Returns the list of illegal turns of self. A turn is illegal
-        if one of its image is a degenerate turn. If stratum is not
-        None only consider illegal turns in the stratum.
+        The list of turns that are fold by self. 
+
+        A turn is fold if the images of its two edges have a common
+        prefix. If ``stratum`` is not ``None`` only consider illegal turns
+        in the stratum. 
+
+
         """
 
         A=self._domain._alphabet
         
         turns=self._domain.turns()
 
-        illegal_turns=[]
+        fold_turns=[]
 
         for t in turns:
             if (stratum==None or (A.to_positive_letter(t[0]) in self._strata[stratum] \
                                  and A.to_positive_letter(t[1]) in self._strata[stratum]))\
                                  and self.image(t[0])[0]==self.image(t[1])[0]:
-                illegal_turns.append(t)
+                fold_turns.append(t)
+
+        return fold_turns
+        
+    def illegal_turns(self,stratum=None,iteration=False):
+        """
+        The list of illegal turns of self.
+
+        If ``iteration=True`` add the number of iterations of self
+        required to fold each illegal turn.
+        """
+        
+        A=self._domain._alphabet
+        
+        turns=self._domain.turns()
+        if stratum!=None:
+            i=0
+            while i<len(turns):
+                t=turns[i]
+                if (A.to_positive_letter(t[0]) not in self._strata[stratum] \
+                                 or A.to_positive_letter(t[1]) not in self._strata[stratum]):
+                    turns.pop(i)
+                else:
+                    i+=1
+
+        illegal_turns=[self.fold_turns(stratum)]
+
+        done=False
+        while not done:
+            done=True
+            i=0
+            new=[]
+            while i<len(turns):
+                t=turns[i]
+                if t in illegal_turns[-1]:
+                    turns.pop(i)
+                else:
+                    tt=self.image_turn(t)
+                    if tt in illegal_turns[-1]:
+                        new.append(tt)
+                        done=False
+                        turns.pop(i)
+                    else:
+                        i+=1
+            if len(new)>0:
+                illegal_turns.append(new)
+
+        if iteration:
+            illegal_turns=[(t,i+1) for i in xrange(len(illegal_turns)) for t in illegal_turns[i]]
+        else:
+            illegal_turns=[t for new in illegal_turns for t in new]
 
         return illegal_turns
         
+
+
+
     def indivisible_nielsen_paths(self,verbose=False):
         """
         Given a topological representative which is an irreducible
@@ -1091,8 +1150,8 @@ class TopologicalRepresentative(GraphMap):
             extension[A.inverse_letter(t[0])].append(t[1]) 
             extension[A.inverse_letter(t[1])].append(t[0])
                   
-        illegal_turns=self.illegal_turns()
-        for t in illegal_turns:
+        fold_turns=self.fold_turns()
+        for t in fold_turns:
             result.append((Word(),Word()))
             image.append((Word(),Word())) #tigthen image of result
             next.append((t[0],t[1])) #letters to add to result
@@ -1152,6 +1211,142 @@ class TopologicalRepresentative(GraphMap):
 
         return result
     
+    def periodic_nielsen_paths(self,verbose=False):
+        """
+        The list of periodic Nielsen paths.
+
+        OUTPUT:
+        
+        A list of tuples ``(word1,word2,period)``. The fixed points lie in the last edge
+        of the two words.
+        """
+
+        G=self._domain
+        A=G._alphabet
+
+        result=[]
+        image=[]
+        next=[]
+        iteration=[]
+
+        extension=dict((a,[]) for a in A)
+
+        edge_turns=self.edge_turns()
+        for t in edge_turns:
+            extension[A.inverse_letter(t[0])].append(t[1]) 
+            extension[A.inverse_letter(t[1])].append(t[0])
+          
+        
+        for t in self.illegal_turns(iteration=True):
+            result.append((Word(),Word()))
+            image.append((Word(),Word())) #tigthen image of result
+            next.append(t[0]) #letters to add to result
+            iteration.append(t[1])
+
+        illegal_turns=next[:]
+        illegal_iter=iteration[:]
+
+        u=[None,None]
+        uu=[None,None]
+                     
+        i=0
+        while i<len(result):
+            ot=result.pop(i)
+            iter=iteration.pop(i)
+            ott=image.pop(0)
+            ext=next.pop(0)
+
+            for j in xrange(2):
+                if ext[j]!=None:
+                    u[j]=ot[j]*Word([ext[j]])
+                    uu[j]=ott[j]*self.image(ext[j],iter)
+                else:
+                    u[j]=ot[j]
+                    uu[j]=ott[j]
+
+            t=(u[0],u[1])
+            p=G.common_prefix_length(uu[0],uu[1])                
+            tt=(uu[0][p:],uu[1][p:])
+            
+            if verbose: print t[0],",",t[1],"iteration:",iter,"image:", tt[0],",",tt[1]
+
+            if len(tt[0])==0:
+                for a in extension[t[0][-1]]:
+                    result.insert(i,t)
+                    image.insert(0,tt)
+                    next.insert(0,(a,None))
+                    iteration.insert(i,iter)
+                    
+            elif len(tt[1])==0:
+                for a in extension[t[1][-1]]:
+                    result.insert(i,t)
+                    image.insert(0,tt)
+                    next.insert(0,(None,a))
+                    iteration.insert(i,iter)
+
+                                        
+            elif (G.is_prefix(t[0],tt[0]) and G.is_prefix(t[1],tt[1])): 
+                    result.insert(i,t)
+                    iteration.insert(i,iter)
+
+                    if verbose: print "inp"
+                    i+=1
+                
+            elif G.is_prefix(tt[0],t[0]) and (G.is_prefix(t[1],tt[1]) or G.is_prefix(tt[1],t[1])):
+                for a in extension[t[0][-1]]:
+                    result.insert(i,t)
+                    image.insert(0,tt)
+                    next.insert(0,(a,None)) 
+                    iteration.insert(i,iter)
+
+            elif G.is_prefix(tt[1],t[1]) and G.is_prefix(t[0],tt[0]):
+                for a in extension[t[1][-1]]:
+                    result.insert(i,t)
+                    image.insert(0,tt)
+                    next.insert(0,(None,a)) 
+                    iteration.insert(i,iter)
+
+            else:
+                ttt=(tt[0][0],tt[1][0])
+                if A.less_letter(ttt[1],ttt[0]):
+                    ttt=(ttt[1],ttt[0])
+                    tt=(tt[0],tt[1])
+                j=0
+                found=False
+                while not found and j<len(illegal_turns):
+                    if ttt!=illegal_turns[j]:
+                        j+=1
+                    else: found=True
+                if found:
+                    l=0
+                    found=False
+                    while not found and l<i:
+                        if G.is_prefix(result[l][0],tt[0]) and G.is_prefix(result[l][1],tt[1]):
+                            found=True
+                        else:
+                            l+=1
+                    if not found:
+                        result.append(ot)
+                        k=illegal_iter[j]
+                        if len(ott[0])>0:
+                            u[0]=self._edge_map(ott[0],k)
+                        else: u[0]=Word()
+                        if len(ott[1])>0:
+                            u[1]=self._edge_map(ott[1],k)
+                        else: u[1]=Word()
+                        p=G.common_prefix_length(u[0],u[1])
+                        image.append((u[0][p:],u[1][p:]))
+                        next.append(ext)
+                        iteration.append(iter+illegal_iter[j])
+
+
+        return [(t,iter) for t,iter in zip(result,iteration)]
+
+
+        
+        
+        
+
     def relative_indivisible_nielsen_paths(self,stratum=None,verbose=False):
         """
         Returns the list of indivisible Nielsen paths in that
@@ -1182,8 +1377,8 @@ class TopologicalRepresentative(GraphMap):
             extension[A.inverse_letter(t[0])].append(t[1]) 
             extension[A.inverse_letter(t[1])].append(t[0])
                   
-        illegal_turns=self.illegal_turns(stratum)
-        for t in illegal_turns:
+        fold_turns=self.fold_turns(stratum)
+        for t in fold_turns:
             result.append((Word(),Word()))
             image.append((Word(),Word())) #tigthen image of result
             next.append((t[0],t[1])) #letters to add to result
