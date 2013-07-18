@@ -112,12 +112,17 @@ class GraphMap():
     def edge_map(self):
         return self._edge_map
 
-    def image(self,letter):
+    def image(self,letter,iter=1):
         """
-        Returns the image of a letter.
-        """
-        return self._edge_map.image(letter)
+        The image of a letter.
 
+        if ``iter>1`` then returns ``self^iter(letter)``
+        """
+
+        if iter==1:
+            return self._edge_map.image(letter)
+        else:
+            return self._codomain.reduce_path(self._edge_map(self._edge_map(letter),iter-1))
 
     @staticmethod
     def rose_map(automorphism):
