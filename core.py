@@ -18,7 +18,7 @@ class Core():
     """
 
     def __init__(self,domain,codomain,edge_map,inv_edge_map,vertex_map=None,\
-                 inv_vertex_map=None):
+                 inv_vertex_map=None,consolidate=False):
         
         self._graph_map=GraphMap(domain,codomain,edge_map,vertex_map)
         self._inv_graph_map=GraphMap(codomain,domain,inv_edge_map,inv_vertex_map)
@@ -28,10 +28,8 @@ class Core():
         self._core_slice={} # dictionary: keys = edge labels of domain
                             # core_slice[x] = slice of the core above x as a GraphWithInverses
 
-        self._build_endmap()
+        self._build_endmap(consolidate)
         self._build_core()
-
-        self._i=sum(len(self._core_slice[x].edges()) for x in self._core_slice.keys()) # intersection number
 
     def __str__(self):
         """
@@ -171,11 +169,16 @@ class Core():
         else:
             return self._core_slice[e]
 
-    def volume(self):
+    def volume(self,e=None):
         """
-        Returns the volume of the core, i.e., the intersection number.
+        Returns the volume the slice of core above e if
+        specified. Else returns the volume of the core, i.e., the
+        intersection number.
         """
-        return self._i
+        if e==None or e not in self._core_slice.keys():
+            return sum(len(self._core_slice[x].edges()) for x in self._core_slice.keys()) # intersection number
+        else:
+            return len(self._core_slice[e].edges())
 
     @staticmethod
     def rose_map(automorphism):
