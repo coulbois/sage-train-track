@@ -69,18 +69,23 @@ class AlphabetWithInverses():
 
         """
         if isinstance(alphabet,(int,Integer)):
-            if type=='abc' and alphabet<27:
-                self._positive=["%c" % (i+97) for i in xrange(alphabet)]
-                self._negative=["%c" % (i+65) for i in xrange(alphabet)]   
-            elif type=='x0':
-                self._positive=["x%s" % i for i in xrange(alphabet)]
-                self._negative=["X%s" % i for i in xrange(alphabet)]
+            if type=='abc':
+                if alphabet<27:
+                    self._positive=["%c" % (i+97) for i in xrange(alphabet)]
+                    self._negative=["%c" % (i+65) for i in xrange(alphabet)]
+                else:
+                    self._positive=["%c" % (i+97) for i in xrange(26)]+["x%s" % i for i in xrange(alphabet-26)]
+                    self._negative=["%c" % (i+65) for i in xrange(26)]+["X%s" % i for i in xrange(alphabet-26)]
+                    
             elif type=='a0':
                 self._positive=["a%s" % i for i in xrange(alphabet)]
                 self._negative=["A%s" % i for i in xrange(alphabet)]
             elif type=='num' and alphabet<10:
                 self._positive=["%s" % i for i in xrange(alphabet)]
                 self._negative=["%s" % i for i in xrange(alphabet)]
+            else: #type is assumed to be 'x0'
+                self._positive=["x%s" % i for i in xrange(alphabet)]
+                self._negative=["X%s" % i for i in xrange(alphabet)]
                 
 
         else: 
