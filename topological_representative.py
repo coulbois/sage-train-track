@@ -93,7 +93,16 @@ class TopologicalRepresentative(GraphMap):
 
         EXAMPLES::
 
-        sage: TopologicalRrepresentative.from_edge_map("a->ab,b->baC,c->cde,d->e,e->f",AlphabetWithInverses(5))
+        sage: A=AlphabetWithInverses(5)
+        sage: print TopologicalRepresentative.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae",A)
+        Graph with inverses: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
+        Marking: a->a, b->dbD, c->ecE
+        Edge map: a->a, b->b, c->c, d->eCEAd, e->dbDae
+
+        sage: print TopologicalRepresentative.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae",A,"ab")
+        Graph with inverses: a: 0->0, b: 0->0, c: 1->1, d: 0->0, e: 0->1
+        Marking: a->a, b->b, c->ecE, d->d
+        Edge map: a->a, b->b, c->c, d->eCEAd, e->dbDae
 
 
         """
