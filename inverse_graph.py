@@ -11,6 +11,24 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
      reversed edge. This is intended to be consistent with Serre's
      definition of graph in Trees.
 
+     ``GraphWithInverses`` can be created from:
+
+     - a dictionnary that maps letters of the alphabet to lists
+     ``(initial_vertex,terminal_vertex)``
+
+     or alternatively 
+
+     - from a list of edges: ``[initial_vertex,terminal_vertex,letter]``.
+
+     EXAMPLES::
+     
+     sage: A=AlphabetWithInverses(3)
+     sage: print GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)},A)
+     Graph with inverses: a: 0->0, b: 0->1, c: 1->0
+
+     sage: print GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
+     Graph with inverses: a: 0->0, b: 0->1, c: 1->0
+
      AUTHORS: 
  
      - Thierry Coulbois (2013-05-16): beta.0 version 
@@ -22,6 +40,30 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
           self._initial={}
           self._terminal={}
 
+          if isinstance(data,dict):
+               new_data=dict()
+               for a in data:
+                    if data[a][0] in new_data:
+                         if data[a][1] in new_data[data[a][0]]:
+                              new_data[data[a][0]][data[a][1]].append(a)
+                         else:
+                              new_data[data[a][0]][data[a][1]]=[a]
+                    else:
+                         new_data[data[a][0]]={data[a][1]:[a]}
+               data=new_data
+
+          elif isinstance(data,list):
+               new_data=dict()
+               for e in data:
+                    if e[0] in new_data:
+                         if e[1] in new_data[e[0]]:
+                              new_data[e[0]][e[1]].append(e[2])
+                         else:
+                              new_data[e[0]][e[1]]=[e[2]]
+                    else:
+                         new_data[e[0]]={e[1]:[e[2]]}
+               data=new_data
+
           DiGraph.__init__(self,data=data,loops=loops,multiedges=True,pos=pos,format=format,boundary=boundary,\
                                 weighted=weighted,implementation=implementation,sparse=sparse,\
                                 vertex_labels=vertex_labels,**kwds)
@@ -29,7 +71,16 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
           for e in self.edges():
                self._initial[e[2]]=e[0]
                self._terminal[e[2]]=e[1]
+               self._initial[alphabet.inverse_letter(e[2])]=e[1]
+               self._terminal[alphabet.inverse_letter(e[2])]=e[0]
          
+
+     def copy(self):
+          """
+          A copy of self.
+          """
+          
+          return self.__class__(self,alphabet=self._alphabet, name=self.name(), pos=copy(self._pos), boundary=copy(self._boundary), implementation='c_graph', sparse=True)
 
      def __str__(self):
           """
@@ -40,6 +91,12 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
                result=result+a+": {0}->{1}, ".format(self.initial_vertex(a),self.terminal_vertex(a))
           result=result[:-2]
           return result
+
+     def alphabet(self):
+          """
+          The ``AlphabetWithInverses`` that labels the edges of ``self``
+          """
+          return self._alphabet
 
      def initial_vertex(self,edge_label):
           """
@@ -557,12 +614,19 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def maximal_tree(self):
           """
-          Returns a maximal tree for self. tree is a list of edges.
+          A maximal tree for self. 
+
+          OUTPUT:
+
+          - A list of positive letters.
           
-          Beware: if self is not connected, returns a maximal tree of
-          the connected component of the first edge labeled by the
-          first letter of the alphabet.
+          WARNING: 
+
+          If self is not connected, returns a maximal tree of the
+          connected component of the first edge labeled by the first
+          letter of the alphabet.
           """
+
           tree=[]
           A=self._alphabet
           tree_vertices=[self.initial_vertex(A[0])]
@@ -579,6 +643,42 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
                          tree_vertices.append(self.initial_vertex(a))
                          done=False
           return tree
+
+     def spanning_tree(self):
+          """
+          A spanning tree.
+
+          OUPUT:
+          
+          a dictionnary that maps each vertex to an edge-path from the origin vertex.
+
+          SEE ALSO:
+          
+          ``maximal_tree()`` that returns a list of edges of a spanning tree.
+
+          WARNING:
+
+          ``self`` must be connected.
+          """
+
+          A=self._alphabet
+          tree={self.initial_vertex(A[0]):Word()}
+
+          done=False
+          while not done:
+               done=True
+               for a in A.positive_letters():
+                    vi=self.initial_vertex(a)
+                    vt=self.terminal_vertex(a)
+                    if vi in tree and vt not in tree:
+                         tree[vt]=self.reduce_path(tree[vi]*Word([a]))
+                         done=False
+                    elif vt in tree and vi not in tree:
+                         tree[vi]=self.reduce_path(tree[vt]*Word([A.inversel_letter(a)]))
+                         done=False
+          return tree
+
+          
 
      def plot(self,edge_labels=True,graph_border=True,**kwds):
           return sage.graphs.graph.DiGraph.plot(self,edge_labels=edge_labels,graph_border=graph_border,**kwds)

@@ -14,6 +14,25 @@ class TopologicalRepresentative(GraphMap):
     Here a TopologicalRepresentative is a GraphMap, with the Graph
     a MarkedGraph.
 
+    Topological representative for an automorphism of free group can
+    be created from the rose on the alphabet. They can also be created
+    using the ``from_edge_map()`` method.
+
+    EXAMPLES::
+
+    sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a",FreeGroup(3))
+    sage: print phi.rose_representative()
+    Graph with inverses: a: 0->0, b: 0->0, c: 0->0
+    Marking: a->a, b->b, c->c
+    Edge map: a->ab, b->ac, c->a
+
+    sage: A=AlphabetWithInverses(5)
+    sage: f=TopologicalRepresentative.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae",A)
+    sage: print f
+    Graph with inverses: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
+    Marking: a->a, b->dbD, c->ecE
+    Edge map: a->a, b->b, c->c, d->eCEAd, e->eCEAdbDaecEae
+
     AUTHORS: 
  
     - Thierry Coulbois (2013-05-16): beta.0 version 
@@ -48,6 +67,109 @@ class TopologicalRepresentative(GraphMap):
             else:
                 result+="\nStrata: "+self._strata.__str__()
         return result
+
+    @staticmethod
+    def from_edge_map(edge_map,alphabet,word=None):
+        """
+        Builds a topological representative from an edge map. 
+
+        The graph is computed to be the biggest possible graph for
+        which the edge_map is continuous. Additionnal information can
+        be given in ``word``, the graph must admit ``word`` as an
+        edge-path.
+
+        The marking is chosen by picking a maximal forest in the graph
+        and identifying the other edges, with generators of a free
+        group.
+
+        INPUT: 
+
+        - ``edge_map`` a ``WordMorphism``, the letters must be from an
+        ``AlphabetWithInverses``. Its is only required that images of
+        positive letters are defined.
+
+        - ``word`` (default None) an admissible edge-path is the base
+          graph of the ``TopologicalRepresentatice``.
+
+        EXAMPLES::
+
+        sage: TopologicalRrepresentative.from_edge_map("a->ab,b->baC,c->cde,d->e,e->f",AlphabetWithInverses(5))
+
+
+        """
+
+        edge_morph=WordMorphism(edge_map)
+        equiv=dict((a,i) for i,a in enumerate(alphabet))
+
+        # images of edges must be edge paths
+        for a in edge_morph.domain().alphabet():
+            w=edge_morph.image(a)
+            for i in xrange(len(w)-1):
+                x=alphabet.inverse_letter(w[i])                
+                if equiv[x]!=equiv[w[i+1]]:
+                    tmp=equiv[w[i+1]]
+                    equiv[w[i+1]]=equiv[x]
+                    for y in equiv:
+                        if equiv[y]==tmp:
+                            equiv[y]=equiv[x]
+                
+        # word must be an edge-path
+        if word is not None:
+            w=word
+            for i in xrange(len(w)-1):
+                x=alphabet.inverse_letter(w[i])                
+                if equiv[x]!=equiv[w[i+1]]:
+                    tmp=equiv[w[i+1]]
+                    equiv[w[i+1]]=equiv[x]
+                    for y in equiv:
+                        if equiv[y]==tmp:
+                            equiv[y]=equiv[x]
+              
+        # the map must be continuous at vertices
+        done=False
+        while not done:
+            done=True
+            for i in xrange(len(alphabet)*2-1):
+                for j in xrange(i+1,len(alphabet)*2):
+                    a=alphabet[i]
+                    b=alphabet[j]
+                    if equiv[a]==equiv[b]:
+                        if i<len(alphabet):
+                            x=edge_morph.image(a)[0]
+                        else:
+                            x=alphabet.inverse_letter(edge_morph.image(alphabet.inverse_letter(a))[-1])
+                        if j<len(alphabet):
+                            y=edge_morph.image(b)[0]
+                        else:
+                            y=alphabet.inverse_letter(edge_morph.image(alphabet.inverse_letter(b))[-1])
+                        if equiv[x]!=equiv[y]:
+                            done=False
+                            tmp=equiv[x]
+                            equiv[x]=equiv[y]
+                            for z in equiv:
+                                if equiv[z]==tmp:
+                                    equiv[z]=equiv[y]
+
+        #Renumber vertices starting form 0
+        vertex=0
+        result=dict()
+        for x in equiv:
+            if equiv[x] not in result:
+                result[equiv[x]]=vertex
+                vertex+=1
+
+        for x in equiv:
+            equiv[x]=result[equiv[x]]
+
+        result=dict((a,(equiv[a],equiv[alphabet.inverse_letter(a)])) for a in alphabet.positive_letters())
+
+        G=GraphWithInverses(result,alphabet=alphabet)
+
+        marked_G=MarkedGraph(G)
+                
+        
+        return TopologicalRepresentative(marked_G._marking,edge_map)
+
 
     def matrix(self):
         """
