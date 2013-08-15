@@ -53,12 +53,12 @@ class GraphMap():
         """
         String represetation of self.
         """
-        result="Graph map:\n"+self._domain.__str__()
-        result+=self._codomain.__str__()
+        result="Graph map:\n"+self._domain.__str__()+"\n"
+        result+=self._codomain.__str__()+"\n"
         result=result+"edge map: "
         for a in self._domain._alphabet.positive_letters(): result+=a+"->"+self.image(a).__str__()+", "
         result=result[:-2]+"\n"
-        if vertex_map!=None:
+        if self._vertex_map!=None:
             result=result+"vertex map: "+self._vertex_map.__str__()+"\n"
         return result
            
@@ -78,9 +78,9 @@ class GraphMap():
         """
         Sets the edge map of self. 
 
-        edge_map is anything that is accepted by
-        Wordmorphism(edge_map), the image of the inverse letters will
-        be calculated: they need not be explicit in edge_map.
+        ``edge_map`` is anything that is accepted by
+        ``Wordmorphism(edge_map)``, the image of the inverse letters will
+        be calculated: they need not be explicit in ``edge_map``.
 
         """
         A=self._domain._alphabet
@@ -123,6 +123,73 @@ class GraphMap():
             return self._edge_map.image(letter)
         else:
             return self._codomain.reduce_path(self._edge_map(self._edge_map(letter),iter-1))
+
+    def inverse(self):
+        """
+        A homotopy inverse. 
+
+        ``self`` is assumed to be a homotopy equivalence.
+        """
+
+
+        G1=self.domain()
+        A1=G1.alphabet()
+        t1=G1.spanning_tree()
+
+        G2=self.codomain()
+        A2=G2.alphabet()
+        t2=G2.spanning_tree()
+
+        A=AlphabetWithInverses(len(A1)-len(G1.vertices())+1)
+        F=FreeGroup(A)
+
+        map=dict()
+        translate=dict()
+
+        i=0
+        for a in A1.positive_letters():
+            l=len(t1[G1.initial_vertex(a)])-len(t1[G1.terminal_vertex(a)])
+            if (l!=1 or t1[G1.initial_vertex(a)][-1]!=A1.inverse_letter(a)) and\
+                    (l!=-1 or t1[G1.terminal_vertex(a)][-1]!=a): # a is not in the spanning tree
+                map[A[i]]=self(t1[G1.initial_vertex(a)]*Word([a])*G1.reverse_path(t1[G1.terminal_vertex(a)]))
+                translate[A[i]]=a
+                translate[A.inverse_letter(A[i])]=A1.inverse_letter(a)
+                i+=1
+
+        rename=dict()
+        edge_map=dict()
+
+        i=0
+        for a in A2.positive_letters():
+            l=len(t2[G2.initial_vertex(a)])-len(t2[G2.terminal_vertex(a)])
+            if (l!=1 or t2[G2.initial_vertex(a)][-1]!=A2.inverse_letter(a)) and\
+                    (l!=-1 or t2[G2.terminal_vertex(a)][-1]!=a): # a is not in the spanning tree
+                rename[a]=A[i]
+                rename[A2.inverse_letter(a)]=A.inverse_letter(A[i])
+                i+=1
+            else:
+                edge_map[a]=Word()
+
+        for a in map:
+            map[a]=F([rename[b] for b in map[a] if b in rename])
+                
+        phi=FreeGroupAutomorphism(map,F)
+        psi=phi.inverse()
+
+        i=0
+        for a in A2.positive_letters():
+            if a not in edge_map:
+                result=Word()
+                for b in psi.image(A[i]):
+                    c=translate[b]
+                    result=result*t1[G1.initial_vertex(c)]*Word([c])*G1.reverse_path(t1[G1.terminal_vertex(c)])
+                edge_map[a]=G1.reduce_path(result)
+                i+=1
+
+        #TODO: tighten the edge_map
+
+        return GraphMap(G2,G1,edge_map)
+          
 
     @staticmethod
     def rose_map(automorphism):

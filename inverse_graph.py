@@ -674,7 +674,7 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
                          tree[vt]=self.reduce_path(tree[vi]*Word([a]))
                          done=False
                     elif vt in tree and vi not in tree:
-                         tree[vi]=self.reduce_path(tree[vt]*Word([A.inversel_letter(a)]))
+                         tree[vi]=self.reduce_path(tree[vt]*Word([A.inverse_letter(a)]))
                          done=False
           return tree
 
@@ -682,6 +682,27 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def plot(self,edge_labels=True,graph_border=True,**kwds):
           return sage.graphs.graph.DiGraph.plot(self,edge_labels=edge_labels,graph_border=graph_border,**kwds)
+
+     @staticmethod
+     def valence_3(rank):
+          """
+          A strongly connected graph with all vertices of valence 3 and of given rank.
+
+          ``rank`` is assumed to be greater or equal than 2.
+          """
+          
+          graph=dict()
+          A=AlphabetWithInverses(3*rank-3)
+          for i in xrange(rank-2):
+               graph[A[2*i]]=(2*i+1,2*i+3)
+               graph[A[2*i+1]]=(2*i+1,2*i+2)
+               graph[A[i+2*rank-4]]=(2*i,2*i+2)
+          graph[A[3*rank-6]]=(2*rank-4,2*rank-3)
+          graph[A[3*rank-5]]=(0,2*rank-3)
+          graph[A[3*rank-4]]=(0,1)
+          
+          return GraphWithInverses(graph,A)
+
 
      @staticmethod
      def rose_graph(alphabet):
@@ -694,3 +715,6 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
           for a in alphabet.positive_letters():
                graph.add_edge(0,0,[a,alphabet.inverse_letter(a)]) 
           return graph
+
+
+
