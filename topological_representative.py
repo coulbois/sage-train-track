@@ -40,20 +40,13 @@ class TopologicalRepresentative(GraphMap):
     """
 
 
-    def __init__(self,marking,edge_map,vertex_map=None):
-        GraphMap.__init__(self,marking._codomain,marking._codomain,edge_map,vertex_map)
-        self._marking=marking
+    def __init__(self,graph,edge_map,vertex_map=None):
+        GraphMap.__init__(self,graph,graph,edge_map,vertex_map)
         self._strata=False
 
     def __str__(self):
-        result=self._domain.__str__()+"\n"
-        result+="Marking: "
-        for a in self._marking._domain._alphabet.positive_letters(): 
-            result+=a+"->"
-            for b in self._marking.image(a):
-                result+=b
-            result+=", "
-        result=result[:-2]+"\n"
+        result="Topological representative:\n"
+        result+=self._domain.__str__()+"\n"
         result+="Edge map: "        
         for a in self._domain._alphabet.positive_letters(): 
             result+=a+"->"
@@ -177,7 +170,7 @@ class TopologicalRepresentative(GraphMap):
         marked_G=MarkedGraph(G)
                 
         
-        return TopologicalRepresentative(marked_G._marking,edge_map)
+        return TopologicalRepresentative(G,edge_map)
 
 
     def matrix(self):
@@ -220,8 +213,12 @@ class TopologicalRepresentative(GraphMap):
         The automorphism represented by self.
         """
 
-        A=self._marking._domain._alphabet
-        B=self._domain._alphabet
+        if isinstance(self._domain,MarkedGraph):
+            G=self._domain
+        else:
+            G=Marked_Graph(self._domain)
+        A=G.marking().domain().alphabet()
+        B=self._domain.alphabet()
 
         tree=self._domain.maximal_tree()
         if verbose: print "Spanning tree: ",tree
@@ -240,9 +237,9 @@ class TopologicalRepresentative(GraphMap):
         if verbose: print "Rename morphism: ",rename
 
         FA=FreeGroup(A)
-        h=FreeGroupAutomorphism(rename*self._marking._edge_map,group=FA).inverse()
+        h=FreeGroupAutomorphism(rename*G.marking().edge_map(),group=FA).inverse()
 
-        return FreeGroupAutomorphism(h*rename*self._edge_map*self._marking._edge_map, group=FA)
+        return FreeGroupAutomorphism(h*rename*self._edge_map*G.marking().edge_map(), group=FA)
 
 
     def find_folding(self):
@@ -326,7 +323,6 @@ class TopologicalRepresentative(GraphMap):
 
         subdivide_dict=self._domain.subdivide(edge_list)
         subdivide_morph=WordMorphism(subdivide_dict)
-        self._marking.set_edge_map(subdivide_morph*self._marking._edge_map)
 
         result={}
         for e in self._edge_map.domain().alphabet():
@@ -374,8 +370,6 @@ class TopologicalRepresentative(GraphMap):
 
         subdivide_dict=self._domain.subdivide([edge])
         subdivide_morph=WordMorphism(subdivide_dict)
-
-        self._marking.set_edge_map(subdivide_morph*self._marking._edge_map)
 
         result={}
         for e in self._edge_map.domain().alphabet():
@@ -653,8 +647,6 @@ class TopologicalRepresentative(GraphMap):
         fold_map=self._domain.fold(full_edges,partial_edges)
         fold_morph=WordMorphism(fold_map)
 
-        self._marking.set_edge_map(fold_morph*self._marking._edge_map)
-        
         edge_map={}
         if len(full_edges)==0:
             edge_map[fold_morph.image(partial_edges[0])[0]]=fold_morph(common_prefix)
@@ -677,16 +669,21 @@ class TopologicalRepresentative(GraphMap):
 
     def fusion_lines(self,lines,target_edge_index=None,verbose=False):
         """
-        Fusion each line of lines into a single edge. If
-        target_edge_index is None, the isotopy is chosen such that the
-        expansion factor does not grow, this requires that self is
+        Fusion each line of lines into a single edge. 
+
+        If ``target_edge_index`` is ``None``, the isotopy is chosen such that
+        the expansion factor does not grow, this requires that self is
         irreducible. Else, the isotopy is to the edge of index
-        target_edge_index[i] for each lines[i].
+        ``target_edge_index[i]`` for each ``lines[i]``.
 
-        Returns the WordMorphim that maps the old edges to their
-        images in the new graph.
+        OUTPUT:
 
-        Beware this has no effect on the possible strata of self.
+        The ``WordMorphism`` that maps the old edges to their images in the
+        new graph.
+
+        WARNING:
+
+        This has no effect on the possible strata of self.
         """
 
 
@@ -721,8 +718,6 @@ class TopologicalRepresentative(GraphMap):
 
         fusion_map=self._domain.contract_edges(edge_list)
         fusion_morph=WordMorphism(fusion_map)
-
-        self._marking.set_edge_map(fusion_morph*self._marking._edge_map)
 
         result_map={}
 
@@ -799,8 +794,6 @@ class TopologicalRepresentative(GraphMap):
         contract_map=self._domain.contract_forest(forest)
         contract_morph=WordMorphism(contract_map)
         
-        self._marking.set_edge_map(contract_morph*self._marking._edge_map)
-
         result_map=dict((contract_map[a][0],contract_morph(self.image(a))) for a in self._edge_map.domain().alphabet() if len(contract_map[a])==1)
 
         self.set_edge_map(result_map)
@@ -860,8 +853,6 @@ class TopologicalRepresentative(GraphMap):
         contract_map=self._domain.contract_forest(tails)
         contract_morph=WordMorphism(contract_map)
 
-        self._marking.set_edge_map(contract_morph*self._marking._edge_map)
-        
         result_map=dict((contract_map[a][0],contract_morph(self.image(a))) for a in self._edge_map.domain().alphabet() if len(contract_map[a])==1)
 
         self.set_edge_map(result_map)
@@ -1854,7 +1845,6 @@ class TopologicalRepresentative(GraphMap):
 
                 folding_map=self._domain.fold(full_edges,partial_edges)
                 folding_morph=WordMorphism(folding_map)
-                self._marking.set_edge_map(folding_morph*self._marking._edge_map)
                 
                 if result_morph:
                     result_morph=folding_morph*result_morph
@@ -2109,7 +2099,6 @@ class TopologicalRepresentative(GraphMap):
             if verbose: print "Core subdivision of stratum",s,": subdivide edges: ",subdivide
             subdivide_map=self._domain.subdivide(subdivide)
             subdivide_morph=WordMorphism(subdivide_map)
-            self._marking.set_edge_map(subdivide_morph*self._marking._edge_map)
 
             edge_map={}
 

@@ -418,14 +418,18 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def fold(self,edges_full,edges_partial):
           """ 
-          Folds the list of edges. Some edges are fully folded and
-          some are only partially folded. All edges are assumed to
-          start form the same vertex.  Edges are given by their label.
+          Folds the list of edges. 
 
-          The first element of edges_full is allowed to be tuple (path,'path') and
+          Some edges are fully folded and some are only partially
+          folded. All edges are assumed to start form the same vertex.
+          Edges are given by their label.
+
+          The first element of ``edges_full`` is allowed to be a tuple ``(path,'path')`` and
           not an edge_label.
 
-          Returns a dictionnay that maps an old edge to the Word in
+          OUTPUT:
+
+          A dictionnay that maps an old edge to the Word in
           the new graph.
           """
           
@@ -470,29 +474,19 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
           return edge_map
 
-     def contract_edge(self,e):
-          """
-          Contract the edge to its first vertex. Returns a dictionary
-          that maps an old edge to the Word in the new graph.
-          """
-          vi=self.initial_vertex(e)
-          vt=self.terminal_vertex(e)  
-          edge_map=dict((e,Word([e])) for e in self._alphabet)
-          ee=self._alphabet.inverse_letter(e)
-          self.remove_edge(e)
-          edge_map[e]=Word([])
-          edge_map[ee]=Word([])
-          for e in self._alphabet:
-               if self.initial_vertex(e)==vt:
-                    self.set_initial_vertex(e,vi)
-          self.remove_vertex(vt)
-          
+         
 
      def contract_edges(self,edge_list):
           """
-          Contract a list of edges. Each connected component is
-          contracted to one of its vertices.  Return a dictionnary
-          that maps an old edge to its image in the new graph.
+          Contract a list of edges. 
+
+          Each connected component is contracted to one of its
+          vertices.  
+
+          OUTPUT:
+
+          A dictionnary that maps an old edge to its image in the new
+          graph.
           """
           components=self.connected_components(edge_list)
           return self.contract_forest(components)
@@ -500,10 +494,20 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def contract_forest(self,forest):
           """
-          Contract the forest. A forest is a list of disjoint subtrees
-          each given as lists of edges. Each tree is contracted to the
-          initial vertex of its first edge. Returns a dictionnary that
-          maps an old edge to its image in the new graph.
+          Contract the forest. 
+
+          Each tree of the forest is contracted to the initial vertex of its first
+          edge.
+
+          INPUT:
+          
+          ``forest`` is a list of disjoint subtrees
+          each given as lists of edges. 
+
+          OUTPUT:
+          
+          A dictionnary that maps an old edge to its image in the new
+          graph.
           """
           A=self._alphabet
 
@@ -681,7 +685,7 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
           
 
      def plot(self,edge_labels=True,graph_border=True,**kwds):
-          return sage.graphs.graph.DiGraph.plot(self,edge_labels=edge_labels,graph_border=graph_border,**kwds)
+          return sage.graphs.graph.DiGraph.plot(sage.graphs.graph.DiGraph(self),edge_labels=edge_labels,graph_border=graph_border,**kwds)
 
      @staticmethod
      def valence_3(rank):

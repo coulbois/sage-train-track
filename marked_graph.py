@@ -107,6 +107,55 @@ class MarkedGraph(GraphWithInverses):
           return other.marking()*self.marking().inverse()
 
 
+     def subdivide(self,edge_list):
+          """
+          Subdivides edges in the edge_list into two edges.
+          """
+
+          subdivide_map=GraphWithInverses.subdivide(self,edge_list)
+          subdivide_morph=WordMorphism(subdivide_map)
+          self._marking.set_edge_map(subdivide_morph*self._marking._edge_map)
+          return subdivide_map
+
+     def fold(self,edges_full,edges_partial):
+          """
+          Folds the edges.
+
+          OUTPUT:
+
+          A dictionnary that maps old edges to new graph paths.
+          """
+          
+          fold_map=GraphWithInverses.fold(self,edges_full,edges_partial)
+          fold_morph=WordMorphism(fold_map)
+          self._marking.set_edge_map(fold_morph*self._marking._edge_map)
+          return fold_map
+
+     def contract_forest(self,forest):
+          """
+          Contract the forest.
+
+          OUTPUT:
+
+          A dictionnary that maps old edges to new edges.
+          """
+          
+          contract_map=GraphWithInverses.contract_forest(self,forest)
+          contract_morph=WordMorphism(contract_map)
+          self._marking.set_edge_map(contract_morph*self._marking._edge_map)
+          return contract_map
+
+     @staticmethod
+     def rose_marked_graph(alphabet):
+          """
+          The rose on ``alphabet`` marked with the identity.
+          """
+
+          marking=dict((a,a) for a in alphabet.positive_letters())
+          return MarkedGraph(graph=GraphWithInverses.rose_graph(alphabet),marking=marking,marking_alphabet=alphabet)
+
+          
+
              
 class MarkedMetricGraph(MarkedGraph):
      """

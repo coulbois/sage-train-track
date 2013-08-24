@@ -255,9 +255,8 @@ class FreeGroupAutomorphism(WordMorphism):
         """
         Topological representative on the rose on the alphabet.
         """
-        rose_source=GraphWithInverses.rose_graph(self._domain._alphabet)
-        rose_target=GraphWithInverses.rose_graph(self._domain._alphabet)
-        return TopologicalRepresentative(GraphMap(rose_source,rose_target,self._domain.identity_automorphism()),self)
+
+        return TopologicalRepresentative(MarkedGraph.rose_marked_graph(self._domain.alphabet()),self)
 
     def train_track(self,stable=True,relative=True,verbose=False):
         """
