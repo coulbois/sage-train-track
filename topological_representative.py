@@ -62,13 +62,13 @@ class TopologicalRepresentative(GraphMap):
         return result
 
     @staticmethod
-    def from_edge_map(edge_map,alphabet,word=None):
+    def from_edge_map(edge_map,alphabet=None,path=None):
         """
         Builds a topological representative from an edge map. 
 
         The graph is computed to be the biggest possible graph for
         which the edge_map is continuous. Additionnal information can
-        be given in ``word``, the graph must admit ``word`` as an
+        be given in ``path``, the graph must admit ``path`` as an
         edge-path.
 
         The marking is chosen by picking a maximal forest in the graph
@@ -81,18 +81,19 @@ class TopologicalRepresentative(GraphMap):
         ``AlphabetWithInverses``. Its is only required that images of
         positive letters are defined.
 
-        - ``word`` (default None) an admissible edge-path is the base
+        - ``path`` (default None) an admissible edge-path in the base
           graph of the ``TopologicalRepresentatice``.
 
         EXAMPLES::
 
-        sage: A=AlphabetWithInverses(5)
-        sage: print TopologicalRepresentative.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae",A)
+        sage: print TopologicalRepresentative.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae")
+        Topological representative:
         Graph with inverses: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
         Marking: a->a, b->dbD, c->ecE
         Edge map: a->a, b->b, c->c, d->eCEAd, e->dbDae
 
-        sage: print TopologicalRepresentative.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae",A,"ab")
+        sage: print TopologicalRepresentative.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae",path="ab")
+        Topological representative:
         Graph with inverses: a: 0->0, b: 0->0, c: 1->1, d: 0->0, e: 0->1
         Marking: a->a, b->b, c->ecE, d->d
         Edge map: a->a, b->b, c->c, d->eCEAd, e->dbDae
@@ -101,6 +102,8 @@ class TopologicalRepresentative(GraphMap):
         """
 
         edge_morph=WordMorphism(edge_map)
+        if alphabet is None:
+            alphabet=AlphabetWithInverses(edge_morph.domain().alphabet())
         equiv=dict((a,i) for i,a in enumerate(alphabet))
 
         # images of edges must be edge paths
@@ -115,14 +118,13 @@ class TopologicalRepresentative(GraphMap):
                         if equiv[y]==tmp:
                             equiv[y]=equiv[x]
                 
-        # word must be an edge-path
-        if word is not None:
-            w=word
-            for i in xrange(len(w)-1):
-                x=alphabet.inverse_letter(w[i])                
-                if equiv[x]!=equiv[w[i+1]]:
-                    tmp=equiv[w[i+1]]
-                    equiv[w[i+1]]=equiv[x]
+        # path must be an edge-path
+        if path is not None:
+            for i in xrange(len(path)-1):
+                x=alphabet.inverse_letter(path[i])                
+                if equiv[x]!=equiv[path[i+1]]:
+                    tmp=equiv[path[i+1]]
+                    equiv[path[i+1]]=equiv[x]
                     for y in equiv:
                         if equiv[y]==tmp:
                             equiv[y]=equiv[x]

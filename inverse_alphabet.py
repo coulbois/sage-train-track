@@ -9,10 +9,10 @@ class AlphabetWithInverses():
     """
     Class for alphabet with inverse letters.
     
-    Intended to be used by FreeGroup.
-    Builds a finite ordered alphabet with an inverse for each letter. There must be 
-    no duplicate. Inverse letters are either given or computed by adding a "-1" to 
-    initial letters
+    Intended to be used by FreeGroup.  Builds a finite ordered
+    alphabet with an inverse for each letter. There must be no
+    duplicate. Inverse letters are either given or assumed to be
+    capitalized letters.
 
     EXAMPLES::
     

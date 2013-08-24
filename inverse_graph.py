@@ -22,8 +22,7 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      EXAMPLES::
      
-     sage: A=AlphabetWithInverses(3)
-     sage: print GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)},A)
+     sage: print GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
      Graph with inverses: a: 0->0, b: 0->1, c: 1->0
 
      sage: print GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
@@ -34,11 +33,11 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
      - Thierry Coulbois (2013-05-16): beta.0 version 
 	 
      """
-     def __init__(self,data=None,alphabet=None, pos=None, loops=True, format=None, boundary=[],\
-                       weighted=None, implementation='c_graph', sparse=True, vertex_labels=True, **kwds):
-          self._alphabet=alphabet
+     def __init__(self,data=None,alphabet=None):
+
           self._initial={}
           self._terminal={}
+
 
           if isinstance(data,dict):
                new_data=dict()
@@ -64,15 +63,21 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
                          new_data[e[0]]={e[1]:[e[2]]}
                data=new_data
 
-          DiGraph.__init__(self,data=data,loops=loops,multiedges=True,pos=pos,format=format,boundary=boundary,\
-                                weighted=weighted,implementation=implementation,sparse=sparse,\
-                                vertex_labels=vertex_labels,**kwds)
-                   
+          DiGraph.__init__(self,data=data,loops=True,multiedges=True,vertex_labels=True,pos=None,format=None,\
+                                boundary=[],weighted=None,implementation='c_graph',sparse=True)
+
           for e in self.edges():
                self._initial[e[2]]=e[0]
                self._terminal[e[2]]=e[1]
-               self._initial[alphabet.inverse_letter(e[2])]=e[1]
-               self._terminal[alphabet.inverse_letter(e[2])]=e[0]
+
+          if alphabet is None:
+               alphabet=AlphabetWithInverses(self._initial.keys())
+
+          self._alphabet=alphabet
+
+          for e in self.edges():
+               self._initial[alphabet.inverse_letter(e[2])]=self._terminal[e[2]]
+               self._terminal[alphabet.inverse_letter(e[2])]=self._initial[e[2]]
          
 
      def copy(self):
@@ -157,25 +162,38 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
           """
           return Word([self._alphabet.inverse_letter(e) for e in reversed(path)])
 
-     def add_edge(self,initial_vertex,terminal_vertex=None,label=None):
+     def add_edge(self,u,v=None,label=None):
           """
-          Add a new edge. The label is assumed to be a list of the
-          form ['a','A']. The initial and terminal vertices of 'a' and
-          'A' are set consistantly.
+          Add a new edge. 
 
-          Returns the label of the new edge.
+          INPUT: The following forms are all accepted
+          
+          - G.add_edge(1,2,'a')
+          - G.add_edge((1,2,'a'))
+          - G.add_edge(1,2,['a','A'])
+          - G.add_edge((1,2,['a','A']))
+
+          OUTPUT:
+
+          the label of the new edge.
           """          
+
+          if label is None:
+               v=u[1]
+               label=u[2]
+               u=u[0]
+
           if isinstance(label,list):
-               DiGraph.add_edge(self,initial_vertex,terminal_vertex,label[0])
-               self._initial[label[0]]=initial_vertex
-               self._initial[label[1]]=terminal_vertex
-               self._terminal[label[1]]=initial_vertex
-               self._terminal[label[0]]=terminal_vertex
+               DiGraph.add_edge(self,u,v,label[0])
+               self._initial[label[0]]=u
+               self._initial[label[1]]=v
+               self._terminal[label[1]]=u
+               self._terminal[label[0]]=v
                
           else:
-               DiGraph.add_edge(self,initial_vertex,terminal_vertex,label)
-               self._initial[label]=initial_vertex
-               self._terminal[label]=terminal_vertex
+               DiGraph.add_edge(self,u,v,label)
+               self._initial[label]=u
+               self._terminal[label]=v
                 
           return label
 

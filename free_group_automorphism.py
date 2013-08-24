@@ -251,6 +251,18 @@ class FreeGroupAutomorphism(WordMorphism):
                                         
         return FreeGroupAutomorphism(result,F)
     
+    def rose_conjugacy_representative(self):
+        """
+        Topological representative of the conjugacy class of ``self``.
+
+        This is the same as ``self.rose_representative()`` but the
+        base graph of the ``TopologicalRepresentative`` is a
+        ``GraphWithInverses`` instead of a ``MarkedGraph``.
+        """
+
+        return TopologicalRepresentative(GraphWithInverses.rose_graph(self._domain.alphabet()),self)
+
+
     def rose_representative(self):
         """
         Topological representative on the rose on the alphabet.

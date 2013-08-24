@@ -12,10 +12,9 @@ class MarkedGraph(GraphWithInverses):
      A ``MarkedGraph`` can be created from a ``GraphWithInverses`` by
      computing (randomly) a rose equivalent to the graph.
 
-     EXAMPLES:
+     EXAMPLES::
 
-     sage: A=AlphabetWithInverses(3)
-     sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)},A)
+     sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
      sage: print MarkedGraph(G)
      Marked graph:
      a: 0->0, b: 0->1, c: 1->0
@@ -71,20 +70,20 @@ class MarkedGraph(GraphWithInverses):
               self._marking=marking
 
      def __str__(self):
-          result="Marked graph:\n"
+          result="Marked graph: "
           for a in self._alphabet.positive_letters(): 
                result=result+a+": {0}->{1}, ".format(self.initial_vertex(a),self.terminal_vertex(a))
           result=result[:-2]+"\n"
           result+="Marking: "
           for a in self._marking._domain._alphabet.positive_letters(): 
                result+=a+"->"+self._marking.image(a).__str__()+", "
-          result=result[:-2]+"\n"
+          result=result[:-2]
 
           return result
 
      def marking(self):
           """
-          A ``GraphMap``from the rose to ``self``.
+          A ``GraphMap`` from the rose to ``self``.
           """
           return self._marking
 
@@ -159,8 +158,7 @@ class MarkedGraph(GraphWithInverses):
              
 class MarkedMetricGraph(MarkedGraph):
      """
-     A graph with inverses together with a marking and a length
-     function on edges.
+     A ``MarkedGraph`` together with a length function on edges.
      """
 
      def __init__(self,graph=None,marking=None,length=None,alphabet=None,marking_alphabet=None):
@@ -179,7 +177,7 @@ class MarkedMetricGraph(MarkedGraph):
           """
           String representation for self.
           """
-          result=MarkedGraph.__str__(self)
+          result=MarkedGraph.__str__(self)+"\n"
           result+="Length: "
           for a in self.alphabet().positive_letters():
                result+=a+":{0}".format(self.length(a))+", "
