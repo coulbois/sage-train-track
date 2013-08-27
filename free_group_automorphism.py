@@ -12,14 +12,14 @@ class FreeGroupAutomorphism(WordMorphism):
 
     EXAMPLES::
 
+    sage: FreeGroupAutomorphism("a->ab,b->ac,c->a")
+    Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+
     sage: F=FreeGroup(3)
     sage: FreeGroupAutomorphism("a->ab,b->ac,c->a",F)
     Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
-    sage:FreeGroupAutomorphism("a->ab,b->ac,c->a")
-    Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
-
-    sage: map={}
+    sage: map=dict()
     sage: map['a']='ab'
     sage: map['b']='ac'
     sage: map['c']='a'
@@ -139,7 +139,7 @@ class FreeGroupAutomorphism(WordMorphism):
        
     def _inverse_permutation(self):
         """
-        inverse self if it is a permutation
+        Inverse ``self`` if it is a permutation
         """
         F= self.domain()
         A=F.alphabet()
@@ -156,10 +156,12 @@ class FreeGroupAutomorphism(WordMorphism):
 
     def _inverse_rec(self,other,verbose):
         """
-        Use Dehn twists to successively put self as identity and other as the
-        inverse of self.
+        Use Dehn twists to successively put ``self`` as identity and ``other`` as the
+        inverse of ``self``.
 
-        NOT TO BE USED DIRECTLY
+        WARNING: 
+
+        Not to be used directly.
         """
         if verbose: print self, other
 
@@ -202,22 +204,29 @@ class FreeGroupAutomorphism(WordMorphism):
 
         EXAMPLES::
 
-        sage: F=FreeGroup(3)
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a",F)
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
         sage: phi.inverse()
         Automorphism of the Free group over ['a', 'b', 'c']: a->c,b->Ca,c->Cb
+
+        ALGORITHM:
+
+        Implements the Nielsen-Whitehead algorithm: search for a Dehn
+        twist that reduces the size of the automorphism.
 
         """
         return self._inverse_rec(self._domain.identity_automorphism(),verbose)
 
     def simple_outer_representative(self):
         """
-        Returns the shortest representative of the outer class of self.
+        Shortest representative of the outer class of self.
+
+        OUTPUT:
+
+        A ``FreeGroupAutomorphism`` in the same outer class than ``self``.
 
         EXAMPLES::
 
-        sage: F=FreeGroup(3)
-        sage: phi=FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac",F)
+        sage: phi=FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
         sage phi.simple_outer_representative()
         Automorphism of the Free group over ['a', 'b', 'c']: a->c,b->Ca,c->Cb
 
@@ -255,6 +264,8 @@ class FreeGroupAutomorphism(WordMorphism):
         """
         Topological representative of the conjugacy class of ``self``.
 
+        SEE ALSO:
+
         This is the same as ``self.rose_representative()`` but the
         base graph of the ``TopologicalRepresentative`` is a
         ``GraphWithInverses`` instead of a ``MarkedGraph``.
@@ -283,13 +294,13 @@ class FreeGroupAutomorphism(WordMorphism):
 
         A topological representative of self. 
 
-        - If relative=False, this topological representative is either
+        - If ``relative=False``, this topological representative is either
         an absolute train-track or fixes a subgraph (with a non
         contractible connected component).
         
-        - If relative=True, the output is a relative train-track
+        - If ``relative=True``, the output is a relative train-track
 
-        - If stable=True, the output is either a stable absolute
+        - If ``stable=True``, the output is either a stable absolute
           train-track or stable relative train-track or (if
           relative=False) fixes a subgraph (with a non contractible
           connected component).
@@ -316,11 +327,22 @@ class FreeGroupAutomorphism(WordMorphism):
     @staticmethod
     def Handel_Mosher_inverse_with_same_lambda():
         """
-        Example given in the introduction of Handel, Mosher,
-        parageometric outer automorphisms of free groups, Transactions
-        of Amer. Math. Soc. 359, 3153-3183, 2007. phi is iwip has the
-        same expansion factor as its inverse: 3.199. phi is not
-        geometric and not parageometric.
+        Example given in the introduction of [HM-parageometric]. 
+
+        This is an iwip automorphisms that has the same expansion
+        factor as its inverse: 3.199. It is not geometric and not
+        parageometric.
+
+
+        OUTPUT:
+
+        A ``FreeGroupAutomorphism``.
+
+        REFERECENCES:
+
+        [HM-parageometric] M. Handel, L. Mosher, parageometric outer
+        automorphisms of free groups, Transactions of
+        Amer. Math. Soc. 359, 3153-3183, 2007.
         """
         F=FreeGroup(3)
         theta=pow(FreeGroupAutomorphism("a->b,b->c,c->Ba",F),4)
@@ -331,9 +353,12 @@ class FreeGroupAutomorphism(WordMorphism):
     @staticmethod
     def Bestvina_Handel_example_1_1():
         """ 
-        Automorphism given as Example 1.1 in Bestvina, Handel, Train
-        tracks and automorphisms of free groups, Annals of Math, 135,
-        1-51, 1992.
+        Automorphism given as Example 1.1 in [BH-train-track]
+
+        REFERENCES:
+
+        [BH-train-track] M. Bestvina, M.  Handel, Train tracks and
+        automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
         """
         return FreeGroupAutomorphism("a->b,b->c,c->d,d->ADBC",FreeGroup(4))
    
@@ -342,13 +367,16 @@ class FreeGroupAutomorphism(WordMorphism):
     @staticmethod
     def Bestvina_Handel_example_1_9():
         """ 
-        Automorphism given as Example 1.9 in Bestvina, Handel, Train
-        tracks and automorphisms of free groups, Annals of Math, 135,
-        1-51, 1992.
+        Automorphism given as Example 1.9 in [BH-train-track]
 
         This automorphism cannot be represented by an absolute
         train-track. But the representation on the rose is a relative
         train-track.
+
+        REFERENCES:
+
+        [BH-train-track] M. Bestvina, M.  Handel, Train tracks and
+        automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
         """
         return FreeGroupAutomorphism("a->ba,b->bba,c->cAbaB",FreeGroup(3))
     
@@ -361,6 +389,12 @@ class FreeGroupAutomorphism(WordMorphism):
 
         This automorphism is train-track on the rose and has an
         indivisble Nielsen path in A.b which is inessential.
+
+        REFERENCES:
+
+        [BH-train-track] M. Bestvina, M.  Handel, Train tracks and
+        automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
+
         """
         return FreeGroupAutomorphism("a->ba,b->bba",FreeGroup(2))
 
@@ -372,20 +406,31 @@ class FreeGroupAutomorphism(WordMorphism):
         1-51, 1992.
 
         This automorphism occurs as a pseudo-Anosov homeomorphism of
-        the four-times punctured phere.  
+        the four-times punctured phere. 
+
+        REFERENCES:
+
+        [BH-train-track] M. Bestvina, M.  Handel, Train tracks and
+        automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
+ 
         """
         return FreeGroupAutomorphism("a->a,b->CAbac,c->CAbacacACABac",FreeGroup(3))
 
     @staticmethod
     def Handel_Mosher_axes_3_4():
         """ 
-        Automorphism given in Section 3.4 of Handel, Mosher, axes
-        in Outer space, Mem. Amer. Math. Soc. 213, 2011.
+        Automorphism given in Section 3.4 of [HM-axes]
         
         This automorphism is iwip, not geometric and is train-track on
         the rose. It has expansion factor 4.0795. Its inverse is not
         train-track on the rose and has expansion factor 2.46557. It
         also appears in Section 5.5 of the paper.
+
+        REFERENCES:
+
+        [HM-axes] M. Handel, L. Mosher, axes
+        in Outer space, Mem. Amer. Math. Soc. 213, 2011.
+
         """
         A=AlphabetWithInverses(['a','g','f'],['A','G','F'])
         return FreeGroupAutomorphism("a->afgfgf,f->fgf,g->gfafg",FreeGroup(A))
@@ -393,22 +438,32 @@ class FreeGroupAutomorphism(WordMorphism):
     @staticmethod
     def Handel_Mosher_axes_5_5():
         """ 
-        Automorphism given in Section 5.5 of Handel, Mosher, axes
-        in Outer space, Mem. Amer. Math. Soc. 213, 2011.
+        Automorphism given in Section 5.5 of [HM-axes]
        
         This automorphism phi is iwip and not geometric. Both phi and
         phi.inverse() are train-track on the rose. phi has expansion
         factor 6.0329 while phi.inverse() has expansion factor
         4.49086.
+
+        REFERENCES:
+
+        [HM-axes] M. Handel, L. Mosher, axes
+        in Outer space, Mem. Amer. Math. Soc. 213, 2011.
+
         """
         return FreeGroupAutomorphism("a->bacaaca,b->baca,c->caaca",FreeGroup(3))
 
     @staticmethod
     def Hilion_parabolic(k=1):
         """ 
-        Automorphism given in Section 2 of Hilion.
+        Automorphism given in Section 2 of [Hilion].
        
         This automorphism has a parabolic orbit inside F_4.
+        
+        REFERENCES:
+
+        [Hilion] A. Hilion
+
         """
         F=FreeGroup(4)
         phi=FreeGroupAutomorphism("a->a,b->ba,c->caa,d->dc",F)
@@ -419,14 +474,19 @@ class FreeGroupAutomorphism(WordMorphism):
     @staticmethod
     def Handel_Mosher_parageometric_1():
         """ 
-        Automorphism given in the introduction of Handel, Mosher,
-        parageometric outer automorphisms of free groups, Transactions
-        of Amer. Math. Soc. 359, 3153-3183, 2007.
+        Automorphism given in the introduction of [HM-parageometric]
        
         This automorphism phi is iwip, not geometric and
         parageometric. Both phi and phi.inverse() are train-track on
         the rose. phi has expansion factor 1.46557 while phi.inverse()
         has expansion factor 1.3247.
+
+        REFERENCES:
+
+        [HM-parageometric] M. Handel, L. Mosher, parageometric outer
+        automorphisms of free groups, Transactions of
+        Amer. Math. Soc. 359, 3153-3183, 2007.
+
         """
         return FreeGroupAutomorphism("a->ac,b->a,c->b",FreeGroup(3))
 
@@ -434,9 +494,13 @@ class FreeGroupAutomorphism(WordMorphism):
     def Cohen_Lustig_1_6():
         """ 
 
-        Automorphism given as example 1.6 in Cohen, Lustig, on the
-        dynamics and the fixed subgroup of a free group automorphism,
-        Inventiones Math. 96, 613-638, 1989.
+        Automorphism given as example 1.6 in [CL-dynamics].
+
+        REFERENCES: 
+
+        [CL-dynamics] M. Cohen, M. Lustig, on the dynamics and the
+        fixed subgroup of a free group automorphism, Inventiones
+        Math. 96, 613-638, 1989.
 
         """
         return FreeGroupAutomorphism("a->cccaCCC,b->CaccAbC,c->accAbccaCCBaCCAccccACCC",FreeGroup(3))
@@ -445,9 +509,14 @@ class FreeGroupAutomorphism(WordMorphism):
     def Cohen_Lustig_7_2():
         """ 
 
-        Automorphism given as example 7.2 in Cohen, Lustig, on the
-        dynamics and the fixed subgroup of a free group automorphism,
-        Inventiones Math. 96, 613-638, 1989.
+        Automorphism given as example 7.2 in [CL-dynamics].
+
+        REFERENCES: 
+
+        [CL-dynamics] M. Cohen, M. Lustig, on the dynamics and the
+        fixed subgroup of a free group automorphism, Inventiones
+        Math. 96, 613-638, 1989.
+
 
         """
         return FreeGroupAutomorphism("a->aabc,b->abc,c->abcc",FreeGroup(3))
@@ -456,9 +525,13 @@ class FreeGroupAutomorphism(WordMorphism):
     def Cohen_Lustig_7_3():
         """ 
 
-        Automorphism given as example 7.3 in Cohen, Lustig, on the
-        dynamics and the fixed subgroup of a free group automorphism,
-        Inventiones Math. 96, 613-638, 1989.
+        Automorphism given as example 7.3 in [CL-dynamics].
+
+        REFERENCES: 
+
+        [CL-dynamics] M. Cohen, M. Lustig, on the dynamics and the
+        fixed subgroup of a free group automorphism, Inventiones
+        Math. 96, 613-638, 1989.
 
         """
         return FreeGroupAutomorphism("a->cabaa,b->baa,c->caba",FreeGroup(3))
@@ -470,6 +543,10 @@ class FreeGroupAutomorphism(WordMorphism):
 
         This automorphism comes from an idea of Stallings and although
         it is very short, it has a very long fixed word.
+
+        REFERENCES:
+
+        [Turner] ???
 
         """
         return FreeGroupAutomorphism("a->dac,b->CADac,c->CABac,d->CAbc",FreeGroup(4))
