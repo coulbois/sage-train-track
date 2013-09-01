@@ -252,17 +252,17 @@ class TopologicalRepresentative(GraphMap):
         """
         Finds a folding in ``self``.
 
-        A folding is a turn (a pair of edges with the same initial
-        vertex) that are (after iteration) mapped to paths with a
-        non-trivial common prefix.
-
         OUTPUT:
 
-        A list ``[[edge,position],t1,t2,...,tn]`` where ``tn`` is an illegal
-        turn that is in the iterated image of ``edge``
-        (``self(ti)=ti+1``). The turn is chosen such as ``n`` is as small as
-        possible. ``position`` is an integer such that ``t1`` is the turn
-        occuring at ``position`` in the word ``self(edge)``
+        A list ``[[edge,position],t1,t2,...,tn]`` where ``tn`` is a
+        fold turn turn (the images of its two edges have a non-trivial
+        common prefix) that is in the iterated image of ``edge``
+        (``self(ti)=ti+1``). The turn is chosen such as ``n`` is as
+        small as possible. ``position`` is an integer such that ``t1``
+        is the turn occuring at ``position`` in the word
+        ``self(edge)``
+
+        The empty list if ``self`` is train-track.
 
         """
         A=self._domain._alphabet
@@ -1161,7 +1161,56 @@ class TopologicalRepresentative(GraphMap):
         return result_morph
 
            
+    def is_train_track(self,verbose=False):
+        """
+        ``True`` if ``self`` is a train-track representative.
 
+        A topological representative is train-track if:
+
+        * the graph is connected and does not contain vertices of
+          valence 1 or 2.
+
+        * it maps edges to non-trivial reduced
+        edge-paths
+
+        * there are no foldings in iterated images of edges.
+
+        """
+
+        G=self.domain()
+        
+        
+        if len(G.connected_components(G.alphabet().positive_letters()))==1:
+            if verbose:
+                print "Connected graph"
+        else:
+            if verbose:
+                print "Not connected"
+            return False
+            
+        if len(G.find_tails())==0:
+            if verbose:
+                print "No vertices of valence 1"
+        else:
+            if verbose:
+                print "There are vertices of valence 1"
+            return False
+
+        if len(G.find_valence_2_vertices())==0:
+            if verbose:
+                print "No vertices of valence 2"
+        else:
+            if verbose:
+                print "There are vertices of valence 2"
+            return False
+        
+        if len(self.find_folding())==0:
+            print "No edge is fold under iterations\nTrain-track"
+            return True
+        else:
+            print "There is an edge which is fold under iterations"
+            return False
+        
 
     def image_turn(self,t):
         """
