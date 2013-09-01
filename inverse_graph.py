@@ -9,7 +9,7 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
      A GraphWithInverses is a simplicial oriented graph, with labeled
      edges. Labels form an AlphabetWithInverses.  Each edge has a
      reversed edge. This is intended to be consistent with Serre's
-     definition of graph in Trees.
+     definition of graph in [Trees].
 
      ``GraphWithInverses`` can be created from:
 
@@ -82,14 +82,19 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def copy(self):
           """
-          A copy of self.
+          A copy of ``self``.
+
+          WARNING: 
+
+          The alphabet is NOT copied.
           """
           
-          return self.__class__(self,alphabet=self._alphabet, name=self.name(), pos=copy(self._pos), boundary=copy(self._boundary), implementation='c_graph', sparse=True)
+          return self.__class__(self,alphabet=self._alphabet)
+
 
      def __str__(self):
           """
-          String representation.
+          String representation of ``self``.
           """
           result="Graph with inverses: "
           for a in self._alphabet.positive_letters(): 
@@ -99,21 +104,23 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def alphabet(self):
           """
-          The ``AlphabetWithInverses`` that labels the edges of ``self``
+          The ``AlphabetWithInverses`` that labels the edges of ``self``.
           """
           return self._alphabet
 
      def initial_vertex(self,edge_label):
           """
-          Returns the initial vertex of the edge labeled with edge_label.
+          Initial vertex of the edge labeled with ``edge_label`.
           """
           return self._initial[edge_label]
 
      def set_initial_vertex(self,e,v):
           """
-          Sets the initial vertex of the edge e to the vertex
-          v. Consistantly sets the terminal vertex of the edge label
-          by the inverse of e to the vertex v.
+          Sets the initial vertex of the edge ```e`` to the vertex
+          ``v``.
+
+          Consistantly sets the terminal vertex of the edge label by
+          the inverse of ``e`` to the vertex ``v``.
           """
 
           w=self.initial_vertex(e)
@@ -131,17 +138,18 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def terminal_vertex(self,edge_label):
           """
-          Returns the terminal vertex of the edge labeled by
-          edge_label.
+          Terminal vertex of the edge labeled by ``edge_label``.
           """
 
           return self._terminal[edge_label]
 
      def set_terminal_vertex(self,e,v):
           """
-          Sets the terminal vertex of the edge e to the vertex
-          v. Consistantly sets the initial vertex of the edge label
-          by the inverse of e to the vertex v.
+          Sets the terminal vertex of the edge ``e`` to the vertex
+          ``v``.
+
+          Consistantly sets the initial vertex of the edge label by
+          the inverse of ``e`` to the vertex ``v``.
           """
           w=self.initial_vertex(e)
           ww=self.terminal_vertex(e)
@@ -158,7 +166,7 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def reverse_path(self,path):
           """
-          Returns the reverse of path.
+          Reverse path of ``path``.
           """
           return Word([self._alphabet.inverse_letter(e) for e in reversed(path)])
 
@@ -176,6 +184,12 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
           OUTPUT:
 
           the label of the new edge.
+
+          WARNING:
+
+          Does not change the alphabet of ``self``. (the new label is
+          assumed to be already in the alphabet).
+          
           """          
 
           if label is None:
@@ -189,17 +203,21 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
                self._initial[label[1]]=v
                self._terminal[label[1]]=u
                self._terminal[label[0]]=v
+               label=label[0]
                
           else:
                DiGraph.add_edge(self,u,v,label)
                self._initial[label]=u
                self._terminal[label]=v
+               inv_label=self.alphabet().inverse_letter(label)
+               self._initial[inv_label]=v
+               self._terminal[inv_label]=u
                 
           return label
 
      def new_vertex(self):
           """
-          Returns the least integer that is not a vertex of self.
+          The least integer that is not a vertex of ``self``.
           """
           i=0
           done=False
@@ -211,8 +229,8 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def new_vertices(self,n):
           """
-          Returns a list of length n of integers that are not vertices
-          of self.
+          A list of length ``n`` of integers that are not vertices of
+          ``self``.
           """
           i=0
           result=[]
@@ -226,22 +244,21 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def add_vertex(self,i=None):
           """
-          Add a new vertex with label the least integer which is not already a vertex.
-          Return the new vertex.
+          Add a new vertex with label ``i`` or the least integer which
+          is not already a vertex.  
+
+          OUTPUT:
+
+          the new vertex.
           """
           if i==None:
-               i=0
-               done=False
-               while not done:
-                    if not i in self.vertices(): done=True
-                    i=i+1
-               i=i-1
+               i=self.new_vertex()
           DiGraph.add_vertex(self,i)
           return i
 
      def remove_edge(self,e):
           """
-          Removes the edge e (together with its inverse). Removes e
+          Removes the edge ``e`` (together with its inverse). Removes ``e``
           (and its inverse) from the alphabet.
           """
           pe=self._alphabet.to_positive_letter(e)
@@ -255,18 +272,18 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def remove_vertex(self,v):
           """
-          Removes the vertex v from self. 
+          Removes the vertex ``v`` from ``self``. 
 
-          WARNING::
+          WARNING:
 
-          v must be an isolated vertex.
+          ``v`` must be an isolated vertex.
 
           """
           DiGraph.delete_vertex(self,v)
 
      def reduce_path(self,path):
           """
-          Returns the reduced path.
+          Reduced path homotopic (relative to endpoints) to ``path``.
           """
           result = list(path)
           
@@ -286,9 +303,11 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def common_prefix_length(self,p,q):
         """
-        Returns the length of the common prefix of the paths p and q.
+        Length of the common prefix of the paths ``p`` and ``q``.
 
-        p and q are assumed to be reduced.
+        WARNING:
+
+        ``p`` and ``q`` are assumed to be reduced.
 
         EXAMPLES::
         
@@ -301,7 +320,12 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def is_prefix(self,p,q):
           """
-          Returns True if the path p is a prefix of q.
+          ``True`` if the path ``p`` is a prefix of ``q``.
+
+          WARNING:
+
+          ``p`` and ``q`` are assumed to be reduced.
+         
           """
 
           i=0
@@ -319,8 +343,8 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def connected_components(self,edge_list=None):
           """
-          Return the list of connected components (each as a list of
-          edges) of the graph spanned by edge_list.
+          The list of connected components (each as a list of
+          edges) of the subgraph of ``self`` spanned by ``edge_list``.
           """
           if edge_list==None: return DiGraph.connected_components(self)
           components=[]
@@ -351,8 +375,8 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def core_subgraph(self,edge_list):
           """
-          Returns the core subgraph (the edges that belong to at least
-          one loop) of the graph spanned by edge_list.
+          Core subgraph (the list of edges that belong to at least one
+          loop) of the subgraph of ``self`` spanned by edge_list.
           """
 
           A=self._alphabet
@@ -389,7 +413,10 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def turns(self):
         """
-        Returns the list of turns of the graph.
+        List of turns of the graph.
+
+        A turn is a tuple (a,b) of edges outgoing from the same
+        vertex. a is less than b in the ``self.alphabet()`` order.
         """
         A=self._alphabet
         return [(a,b) for a in A for b in A if a!=b and A.less_letter(a,b) and self.initial_vertex(a)==self.initial_vertex(b)]
@@ -397,7 +424,7 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def extensions(self,u,turns):
           """
-          Returns the list of edges a such that the turn between u and a is in turns.
+          List of edges a such that the turn between ``u`` and a is in ``turns``.
           """
           uu=self._alphabet.inverse_letter(u[-1])
           result=[]
@@ -410,9 +437,16 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def subdivide(self,edge_list):
           """
-          Subdvides the edges in edge_list into two edges.  Returns a
-          dictionnary that maps an old edge to a Word in the new
-          graph.  Edges in edge_list are assumed to be distinct.
+          Subdvides the edges in ``edge_list`` into two edges.  
+
+          WARNING:
+
+          Edges in ``edge_list`` are assumed to be distinct.
+
+          OUTPUT:
+
+          A dictionnary that maps an old edge to a path in the new
+          graph.  
           """
           A=self._alphabet
           result_map=dict((e,Word([e])) for e in A)
@@ -443,11 +477,11 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
           Edges are given by their label.
 
           The first element of ``edges_full`` is allowed to be a tuple ``(path,'path')`` and
-          not an edge_label.
+          not an ``edge_label``.
 
           OUTPUT:
 
-          A dictionnay that maps an old edge to the Word in
+          A dictionnay that maps an old edge to the path in
           the new graph.
           """
           
@@ -519,8 +553,8 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
           INPUT:
           
-          ``forest`` is a list of disjoint subtrees
-          each given as lists of edges. 
+          ``forest`` is a list of disjoint subtrees each given as
+          lists of edges.
 
           OUTPUT:
           
@@ -556,7 +590,10 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
      
      def find_tails(self):
           """
-          Returns the forest (as a list of list of edges) outside the core graph.
+          The forest (as a list of list of edges) outside the core graph.
+
+          (that is to say edges that do not belong to any loop in the
+          graph.)
           """
           outgoing={}
           outgoing.update((v,[]) for v in self.vertices())
@@ -590,7 +627,7 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def find_valence_2_vertices(self):
           """
-          Returns the list of paths with inner vertices of valence 2.
+          The list of paths with all inner vertices of valence 2.
           """
           outgoing={}
           outgoing.update((v,[]) for v in self.vertices())
@@ -636,7 +673,7 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
      def maximal_tree(self):
           """
-          A maximal tree for self. 
+          A maximal tree for ``self``. 
 
           OUTPUT:
 
@@ -644,9 +681,13 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
           
           WARNING: 
 
-          If self is not connected, returns a maximal tree of the
+          If ``self`` is not connected, returns a maximal tree of the
           connected component of the first edge labeled by the first
           letter of the alphabet.
+
+          SEE ALSO:
+
+          GraphWithInverses.spanning_tree()
           """
 
           tree=[]
@@ -729,7 +770,7 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
      @staticmethod
      def rose_graph(alphabet):
           """
-          Returns the rose graph labeled by the alphabet.
+          The rose graph labeled by the alphabet.
           """
           graph=GraphWithInverses()
           graph._alphabet=alphabet.copy()
