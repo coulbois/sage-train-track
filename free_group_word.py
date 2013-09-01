@@ -31,8 +31,11 @@ class FreeGroupWord(FiniteWord_list):
 
     def __mul__(self,other):
         """
-        Returns the reduced product of self and other assuming that self and other
-        are reduced.
+        Reduced product of ``self`` and ``other``.
+
+        WARNING:
+
+        ``self`` and ``other``are assumed to be reduced.
 
         EXAMPLES::
 
@@ -51,7 +54,7 @@ class FreeGroupWord(FiniteWord_list):
 
     def inverse(self):
         """
-        Returns the inverse of self. 
+        Inverse of self. 
         """
         F=self.parent()
         A=F.alphabet()
