@@ -77,14 +77,13 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
         False
 
         """
-        assert(word in self)
         return not any(self._alphabet.are_inverse(word[i],word[i+1]) for i in xrange(len(word)-1))
         
     def reduce(self,word):
         """
-        Returns the reduced form of the word
+        Reduced form of ``word``.
         
-        EXAMPLES
+        EXAMPLES::
         
         sage: F=FreeGroup(['a','b','c'])
         sage: w="abcAab"
@@ -111,7 +110,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
         
     def inverse_word(self,w):
         """
-        Returns the inverse of w.
+        Inverse of ``w``.
         
         EXAMPLES::
             
@@ -126,16 +125,18 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def is_identity(self,w):
         r"""
-        Test whether the argument is trivial.
+        Tests whether the argument is trivial.
         """
-        return self.reduce(self(w)) == self('')
+        return len(self.reduce(w)) == 0
     
 
     def less(self,u,v):
         """ 
-        Returns True if u is before (or equal to) v in alphabetical order.
+        True if u is before (or equal to) v in alphabetical order.
 
-        u and v are assumed to be reduced.
+        WARNING:
+
+        ``u`` and ``v`` are assumed to be reduced.
 
         EXAMPLES::
         
@@ -147,19 +148,21 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
         True
 
         """
-        result=false
+        result=False
         k=0
         while(k<len(u) and k<len(v) and u[k]==v[k]): k=k+1
-        if (k==len(u)): result=true
-        elif (k==len(v)): result=false
+        if (k==len(u)): result=True
+        elif (k==len(v)): result=False
         else: result=self._alphabet.less_letter(u[k],v[k])
         return result
 
     def common_prefix_length(self,u,v):
         """
-        Returns the length of the common prefix of the words u and v.
+        Length of the common prefix of the words ``u`` and ``v``.
 
-        u and v are assumed to be reduced.
+        WARNING:
+
+        ``u`` and ``v`` are assumed to be reduced.
 
         EXAMPLES::
         
@@ -172,7 +175,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def is_prefix(self,u,v):
         """
-        Returns True if u is a prefix of v.
+        True if ``u`` is a prefix of ``v``.
 
         EXAMPLES::
         
@@ -193,6 +196,13 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
 
     def equal_words(self,worda,wordb):
+        """
+        True if ``worda``and ``wordb``are equal.
+
+        WARNING:
+        
+        ``worda`` and ``wordb``are assumed to be reduced. 
+        """
         result= (len(worda)==len(wordb))
         i=0
         while(result and i<len(worda)):
@@ -202,12 +212,17 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def nielsen_strictly_less(self,u,v):
         """
-        Determines wether u is strcitly before v in the Nielsen order
+        Determines wether ``u`` is strcitly before ``v`` in the Nielsen order
         used in the Nielsen reduction algorithm.
 
-        Returns len(v)-len(u) if it is >0,
-        Returns 0 if they have the same length, but u<v in the Nielsen order
-        Returns <0 if v=<u in the Nielsen order
+        OUTPUT:
+        
+        - ``len(v)-len(u)`` if it is >0, 
+
+        - ``0`` if they have the same length, but ``u``<``v`` in the
+          Nielsen order
+
+        - ``-1`` if ``v=<u`` in the Nielsen order
 
         Recall that u<v iff 
              (len(u)<len(v)) 
@@ -233,7 +248,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
                 if (not self.less(uu,vv)): # if vv<uu
                     result=-1
                 elif (self.less(vv,uu)): # now uu=vv
-                    uuu=u[l-half:l]
+                    uuu=u[l-half:l] #TODO: do not we have to compare self.inverse(uuu) and self.inverse(vvv) instead ?
                     vvv=v[l-half:l]
                     if (self.less(vvv,uuu)): result=-1 # if vvv<=uuu
         return result
@@ -241,17 +256,17 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def identity_automorphism(self):
         """
-        Return the identity automorphism of self.
+        Identity automorphism of ``self``.
         """
         morph=dict((a,self([a])) for a in self._alphabet.positive_letters())
         return FreeGroupAutomorphism(morph,group=self)
 
     def dehn_twist(self,a,b,on_left=False):
         """
-        Return the Dehn twist
+        Dehn twist automorphism of ``self``.
 
-        if on_left is False: a -> ab
-        if on_left is True: a -> ba
+        if ``on_left`` is ``False``: ``a -> ab``
+        if ``on_left`` is ``True``: ``a -> ba``
 
         EXAMPLES
 
@@ -294,7 +309,9 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def random_automorphism(self,length=1):
         """
-        Returns the automorphism given by a random word of a given length  on the set of Dehn twists.
+        Random automorphism of ``self``.
+
+        The output is a random word of given ``length`` on the set of Dehn twists.
         """
 
         if length==0: return self.identity_automorphism()
@@ -342,10 +359,14 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def surface_dehn_twist(self,k):
         """
-        Returns the Dehn twist of the surface (with boundary). The
-        surface is assumed to have genus g and 1 boundary
-        component. The fundamental group has rank 2g, thus self is
-        assumed to be of even rank. k is assumed to be 0<=k<3g-1
+        Dehn twist of the surface (with one boundary component) with
+        fundamental group ``self``.
+
+        The surface is assumed to have genus g and 1 boundary
+        component. The fundamental group has rank 2g, thus ``self`` is
+        assumed to be of even rank. 
+
+        ``k`` is an integer 0<=k<3g-1.
 
         MCG(S_{g,1}) is generated by the Dehn twist along
         the curves: 
@@ -354,7 +375,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
         
         - g meridian m_i 
         
-        - g-1 circles c_i around two consecutive holes.  
+        - g-1 circles c_i around two consecutive 'holes'.  
 
         for 0<=k<g returns the Dehn twist along e_i with i=k
 
@@ -377,6 +398,10 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
         T_{c_i}: x_j->x_j, y_j->y_j, y_i->x_{i+1}x_i\inv y_i, y_{i+1}->y_{i+1}x_{i+1}x_i\inv
 
+        WARNING:
+
+        ``self`` is assumed to be of even rank.
+
         """
         assert len(self._alphabet)%2==0
 
@@ -391,9 +416,12 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
  
     def random_mapping_class(self,n=1):
         """
-        Returns a random mapping class of length (as a product of
-        generating dehn twists) at most n. The rank of self is assumed
-        to be even.
+        Random mapping class of length (as a product of
+        generating dehn twists) at most ``n``. `
+
+        WARNING:
+
+        The rank of ``self` is assumed to be even.
         """
 
         assert len(self._alphabet)%2==0
@@ -427,12 +455,19 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def braid_automorphism(self,i,inverse=False):
         """
-        Returns the automorphism of F which corresponds to the
-        generator sigma_i of the braid group.  We need 0<i<n. If
-        inverse!=0 returns the inverse of sigma_i.
+        Automorphism of ``self`` which corresponds to the generator
+        sigma_i of the braid group.
+
+        sigma_i: a_i -> a_i a_{i+1} a_i^{-1}
+                 a_j -> a_j, for j!=i
+
+        We assume 0<i<n, where n is the rank of ``self``. 
+
+        If ``inverse`` is True returns the inverse of sigma_i.
+
         """
         A=self._alphabet
-        result=dict((a,self(a)) for a in A.positive_letters())
+        result=dict((a,self([a])) for a in A.positive_letters())
         if not inverse:
             a=A[i-1]
             result[a]=self([a,A[i],A.inverse_letter(a)])
@@ -446,7 +481,8 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def random_braid(self,n=1):
         """
-        Returns a random braid automorphism of length at most n.
+        A random braid automorphism of ``self`` of length at most
+        ``n``.
         """
         A=self._alphabet
         if n==0:
