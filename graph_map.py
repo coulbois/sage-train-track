@@ -26,9 +26,13 @@ class GraphMap():
 
     def __call__(self,argument):
         """
-        Applies self to argument which is either a vertex of self or
-        an edge path. To compute the image of a letter of the alphabet
-        use self.image(a).
+        Applies ``self`` to ``argument`` which is either a vertex of ``self`` or
+        an edge path. 
+
+        SEE ALSO:
+
+        To compute the image of a letter of the alphabet use
+        ``self.image(a)``.
         """
         if self._domain.has_vertex(argument):
             if self._vertex_map==None:
@@ -40,9 +44,9 @@ class GraphMap():
 
     def __mul__(self,other):
         """
-        Compose two GraphMap.
+        Compose ``self`` with ``other``.
         """
-        A=other._domain._alphabet
+        A=other._domain.alphabet()
         result_map={}
         for a in A.positive_letters():
             result_map[a]=self(other._edge_map.image(a))
@@ -51,7 +55,7 @@ class GraphMap():
     
     def __str__(self):
         """
-        String represetation of self.
+        String represetation of ``self``.
         """
         result="Graph map:\n"+self._domain.__str__()+"\n"
         result+=self._codomain.__str__()+"\n"
@@ -64,29 +68,32 @@ class GraphMap():
            
     def domain(self):
         """
-        The domain of self: this is a graph.
+        Domain of ``self``: this is a graph.
         """
         return self._domain
 
     def codomain(self):
         """
-        The codomain of self: this is a graph.
+        Codomain of ``self``: this is a graph.
         """
         return self._codomain
 
     def set_edge_map(self,edge_map):
         """
-        Sets the edge map of self. 
+        Sets the edge map of ``self``. 
 
         ``edge_map`` is anything that is accepted by
-        ``Wordmorphism(edge_map)``, the image of the inverse letters will
-        be calculated: they need not be explicit in ``edge_map``.
+        ``Wordmorphism(edge_map)``, the image of the inverse letters
+        will be calculated: they need not be explicit in ``edge_map``,
+        only one of the images of each pair [letter,inverse(letter)]
+        need to be given by ``edge_map``. Images of ``edge_map`` need
+        not be reduced.
 
         """
-        A=self._domain._alphabet
+        A=self.domain().alphabet()
         tmp_map=WordMorphism(edge_map)
         m={}
-        for a in tmp_map._domain._alphabet:
+        for a in tmp_map._domain.alphabet():
             m[a]=self._codomain.reduce_path(tmp_map.image(a))
             m[A.inverse_letter(a)]=self._codomain.reverse_path(m[a])
         self._edge_map=WordMorphism(m)
@@ -94,13 +101,17 @@ class GraphMap():
 
     def compose_edge_map(self,edge_morph):
         """
-        Compose self with the morphism edge_morph and update the
-        edge_map of self with edge_morph o self.
+        Compose ``self`` with the morphism ``edge_morph``.
+
+        Update the edge_map of ``self`` with (``edge_morph`` o ``self``).
         """
         edge_map=dict((a,edge_morph(self._edge_map.image(a))) for a in self._domain._alphabet.positive_letters())
         self.set_edge_map(edge_map)
 
     def update_vertex_map(self):
+        """
+        Computes the vertex map of ``self`` from its edge map.
+        """
         vertex_map={}
         for e in self._domain._alphabet.positive_letters():
             p=self.image(e)
@@ -110,6 +121,9 @@ class GraphMap():
         self._vertex_map=vertex_map
         
     def edge_map(self):
+        """
+        The edge map of ``self``: this is a word morphism.
+        """
         return self._edge_map
 
     def image(self,letter,iter=1):
@@ -126,8 +140,10 @@ class GraphMap():
 
     def inverse(self):
         """
-        A homotopy inverse. 
+        A homotopy inverse of ``self``. 
 
+        WARNING:
+        
         ``self`` is assumed to be a homotopy equivalence.
         """
 
@@ -186,7 +202,7 @@ class GraphMap():
                 edge_map[a]=G1.reduce_path(result)
                 i+=1
 
-        #TODO: tighten the edge_map
+        #TODO: tighten the edge_map ?
 
         return GraphMap(G2,G1,edge_map)
           
@@ -194,10 +210,12 @@ class GraphMap():
     @staticmethod
     def rose_map(automorphism):
         """
-        Returns the graph map of the rose on a copy of the alphabet
-        corresponding to the automorphism.
+        The graph map of the rose representing the automorphism.
+
+        The rose is built on a copy of the alphabet of the domain of
+        ``automorphism``.
         """
 
-        graph=GraphWithInverses.rose_graph(automorphism._domain._alphabet.copy())
+        graph=GraphWithInverses.rose_graph(automorphism.domain().alphabet().copy())
         return GraphMap(graph,graph,automorphism)
 
