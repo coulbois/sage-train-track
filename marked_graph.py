@@ -70,6 +70,9 @@ class MarkedGraph(GraphWithInverses):
               self._marking=marking
 
      def __str__(self):
+          """
+          String representation of ``self``.
+          """
           result="Marked graph: "
           for a in self._alphabet.positive_letters(): 
                result=result+a+": {0}->{1}, ".format(self.initial_vertex(a),self.terminal_vertex(a))
@@ -89,7 +92,7 @@ class MarkedGraph(GraphWithInverses):
 
      def precompose(self,automorphism):
           """
-          Precompose the marking by the automorphism.
+          Precompose the marking by ``automorphism``.
           """
           edge_map=dict()
           for a in self._marking.domain().alphabet().positive_letters():
@@ -109,6 +112,14 @@ class MarkedGraph(GraphWithInverses):
      def subdivide(self,edge_list):
           """
           Subdivides edges in the edge_list into two edges.
+
+          WARNING:
+
+          each edge in ``edge_list`` must appear only once.
+
+          SEE ALSO:
+
+          ``GraphWithInverses.subdivide()``
           """
 
           subdivide_map=GraphWithInverses.subdivide(self,edge_list)
@@ -123,6 +134,10 @@ class MarkedGraph(GraphWithInverses):
           OUTPUT:
 
           A dictionnary that maps old edges to new graph paths.
+
+          SEE ALSO:
+
+          ``GraphWithInverses.fold()``
           """
           
           fold_map=GraphWithInverses.fold(self,edges_full,edges_partial)
@@ -137,6 +152,10 @@ class MarkedGraph(GraphWithInverses):
           OUTPUT:
 
           A dictionnary that maps old edges to new edges.
+
+          SEE ALSO:
+
+          ``GraphWithInverses.contract_forest()``
           """
           
           contract_map=GraphWithInverses.contract_forest(self,forest)
@@ -159,6 +178,15 @@ class MarkedGraph(GraphWithInverses):
 class MarkedMetricGraph(MarkedGraph):
      """
      A ``MarkedGraph`` together with a length function on edges.
+
+     EXAMPLES::
+
+     sage: G=MarkedMetricGraph({'a':(0,0),'b':(0,1),'c':(1,0)})
+     Marked metric graph:
+     a: 0->0, b: 0->1, c: 1->0
+     Marking: a->a, b->bc
+     Length: a: 1, b: 1, c: 1 
+
      """
 
      def __init__(self,graph=None,marking=None,length=None,alphabet=None,marking_alphabet=None):
@@ -175,7 +203,7 @@ class MarkedMetricGraph(MarkedGraph):
 
      def __str__(self):
           """
-          String representation for self.
+          String representation for ``self``.
           """
           result=MarkedGraph.__str__(self)+"\n"
           result+="Length: "
@@ -192,6 +220,9 @@ class MarkedMetricGraph(MarkedGraph):
           return self._length[a]
 
      def set_length(self,a,l):
+          """
+          Sets the length of the edge ``a`` to ``l``.
+          """
           length[a]=l
           length[self.alphabet().inverse_letter(a)]=l
 
@@ -204,7 +235,7 @@ class MarkedMetricGraph(MarkedGraph):
           ``F(A)=F(A[:i])*F(A[i:])``.
 
           This is a graph with two vertices linked by an edge e and a
-          loop for each letter in A. letters in A[:i] are attached to
+          loop for each letter in A. Letters in A[:i] are attached to
           the first vertex while letters in A[:i] are attached to the
           second vertex.
 
@@ -239,7 +270,10 @@ class MarkedMetricGraph(MarkedGraph):
      @staticmethod
      def HNN_splitting(A):
           """
-          The rose graph with all edges of length 0 except ``A[0]``
+          The marked metric graph corresponding to the HNN splitting
+          F_N=F_{N-1}*<t>.
+
+          The rose marked graph with all edges of length 0 except ``A[0]``
           which is of length 1.
           """
 
