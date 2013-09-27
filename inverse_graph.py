@@ -38,10 +38,11 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
           self._initial={}
           self._terminal={}
 
-
+          letters=[]
           if isinstance(data,dict):
                new_data=dict()
                for a in data:
+                    letters.append(a)
                     if data[a][0] in new_data:
                          if data[a][1] in new_data[data[a][0]]:
                               new_data[data[a][0]][data[a][1]].append(a)
@@ -49,11 +50,13 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
                               new_data[data[a][0]][data[a][1]]=[a]
                     else:
                          new_data[data[a][0]]={data[a][1]:[a]}
+
                data=new_data
 
           elif isinstance(data,list):
                new_data=dict()
                for e in data:
+                    letters.append(e[2])
                     if e[0] in new_data:
                          if e[1] in new_data[e[0]]:
                               new_data[e[0]][e[1]].append(e[2])
@@ -63,21 +66,23 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
                          new_data[e[0]]={e[1]:[e[2]]}
                data=new_data
 
-          DiGraph.__init__(self,data=data,loops=True,multiedges=True,vertex_labels=True,pos=None,format=None,\
-                                boundary=[],weighted=None,implementation='c_graph',sparse=True)
-
-          for e in self.edges():
-               self._initial[e[2]]=e[0]
-               self._terminal[e[2]]=e[1]
 
           if alphabet is None:
                alphabet=AlphabetWithInverses(self._initial.keys())
 
           self._alphabet=alphabet
 
+
+          DiGraph.__init__(self,data=data,loops=True,multiedges=True,vertex_labels=True,pos=None,format=None,\
+                                boundary=[],weighted=None,implementation='c_graph',sparse=True)
+
+
           for e in self.edges():
-               self._initial[alphabet.inverse_letter(e[2])]=self._terminal[e[2]]
-               self._terminal[alphabet.inverse_letter(e[2])]=self._initial[e[2]]
+               self._initial[e[2]]=e[0]
+               self._terminal[e[2]]=e[1]
+               self._initial[alphabet.inverse_letter(e[2])]=e[1]
+               self._terminal[alphabet.inverse_letter(e[2])]=e[0]
+
          
 
      def copy(self):
@@ -771,6 +776,8 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
      def rose_graph(alphabet):
           """
           The rose graph labeled by the alphabet.
+
+          The alphabet is copied.
           """
           graph=GraphWithInverses()
           graph._alphabet=alphabet.copy()
