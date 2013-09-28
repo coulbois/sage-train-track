@@ -1,7 +1,7 @@
 #*****************************************************************************
 #
 #
-#
+# modified by Thierry
 #
 #*****************************************************************************
     
@@ -11,15 +11,24 @@ class Core():
     objects G and H where g: G -> H and h: H -> G are homotopy inverses and
     v and w are the corresponding (optional) vertex maps.
 
+    Core(G,H) builds the Guirardel Core for the two MarkedGraph
+    objects G and H.
+
     AUTHORS:
 
     - Matt Clay
 
     """
 
-    def __init__(self,domain,codomain,edge_map,inv_edge_map,vertex_map=None,\
+    def __init__(self,domain,codomain,edge_map=None,inv_edge_map=None,vertex_map=None,\
                  inv_vertex_map=None,consolidate=False):
         
+        self._domain=domain
+        self._codomain=codomain
+        if edge_map is None:
+            edge_map=domain.difference_of_marking(codomain).tighten().edge_map()
+        if inv_edge_map is None:
+            inv_edge_map=codomain.difference_of_marking(domain).edge_map()
         self._graph_map=GraphMap(domain,codomain,edge_map,vertex_map)
         self._inv_graph_map=GraphMap(codomain,domain,inv_edge_map,inv_vertex_map)
         
@@ -44,7 +53,7 @@ class Core():
         result=result+"Slices of core:\n"
         #for x in self._core_slice.keys(): # doesn't work right as some letters in the alphabet are not used to label edges
         #    result=result+str(x)+": "+str(self._core_slice[x])+"\n"
-        result=result+"Volume: "+str(self._i)
+        result=result+"Volume: "+str(self.volume())
         return result
 
     def _build_endmap(self,consolidate=False):
@@ -53,7 +62,8 @@ class Core():
         """
         alph=self._graph_map.domain()._alphabet
         inv_alph=self._inv_graph_map.domain()._alphabet
-        F=FreeGroup(alph)
+        FA=FreeGroup(alph)
+        FB=FreeGroup(inv_alph)
         for x in self._graph_map.domain().edge_labels():
             X=alph.inverse_letter(x)
             self._signed_ends[x]=[]
@@ -70,7 +80,7 @@ class Core():
                 else: # coming from - side, cancels x
                     self._signed_ends[a].append('-' + vp) # - + vp #
                 # add to vanishing path
-                vp=str(F.reduced_product(str(self._graph_map(A)),vp))
+                vp=str(FB.reduced_product(str(self._graph_map(A)),vp))
                 # repeat for inverse, we've added to the vanishing path because we are
 	  	# coming from the other side
                 if vp=='' or vp[-1]!=X: # coming from - side, no cancellation
@@ -161,13 +171,58 @@ class Core():
   
     def core_slice(self,e=None):
         """
-        Returns the slice of core above e if specified.  Else returns the dictionary
+        The slice of core above e if specified.  Else returns the dictionary
         of core slices.
         """
         if e==None or e not in self._core_slice.keys():
             return self._core_slice
         else:
             return self._core_slice[e]
+
+    def fusioned_core_slice(self,e):
+        """
+        The slice of ``self`` above ``e`` after collapsing the edges of length 0.
+        """
+        Ce=self._core_slice[e]
+        i=0
+        classes=dict()
+        edges=[]
+        for e in Ce.edges():
+            if self._codomain.length(e[2])==0:
+                if e[0] in classes and e[1] in classes:
+                    j=classes[e[0]]
+                    k=classes[e[1]]
+                    if j!=k:
+                        for a in classes:
+                            if classes[a]==k:
+                                classes[a]=j
+                elif e[0] in classes:
+                    classes[e[1]]=classes[e[0]]
+                elif e[1] in classes:
+                    classes[e[0]]=classes[e[1]]
+                else:
+                    classes[e[0]]=classes[e[1]]=i
+                    i+=1
+            else:
+                edges.append(e)
+
+
+        for e in edges:
+            if e[0] not in classes:
+                classes[e[0]]=i
+                i+=1
+            if e[1] not in classes:
+                classes[e[1]]=i
+                i+=1
+
+        print classes #debug
+
+
+        for i in xrange(len(edges)):
+            edges[i]=(classes[edges[i][0]],classes[edges[i][1]],edges[i][2])
+
+        return DiGraph(edges)
+        
 
     def volume(self,e=None):
         """
