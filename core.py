@@ -204,7 +204,10 @@ class Core():
                     classes[e[0]]=classes[e[1]]=i
                     i+=1
             else:
-                edges.append(e)
+                if self._codomain.alphabet().is_positive_letter(e[2]):
+                    edges.append((e[0],e[1],(e[0],self._domain.reverse_path(self._inv_graph_map(e[0])))))
+                else:
+                    edges.append((e[0],e[1],(e[1],self._domain.reverse_path(self._inv_graph_map(e[1])))))
 
 
         for e in edges:
@@ -214,9 +217,6 @@ class Core():
             if e[1] not in classes:
                 classes[e[1]]=i
                 i+=1
-
-        print classes #debug
-
 
         for i in xrange(len(edges)):
             edges[i]=(classes[edges[i][0]],classes[edges[i][1]],edges[i][2])
