@@ -202,10 +202,58 @@ class GraphMap():
                 edge_map[a]=G1.reduce_path(result)
                 i+=1
 
-        #TODO: tighten the edge_map ?
-
         return GraphMap(G2,G1,edge_map)
-          
+
+        
+    def tighten(self):
+        """
+        Tighten ``self`` such that there are at least two gates at
+        each vertex of the domain.
+
+        A map is tight if for each vertex ``v`` of the domain, there
+        exist reduced edge paths ``u`` and ``v`` in the domain with
+        ``self(u)`` and ``self(v)`` non-trivial reduced paths starting
+        with different edges.
+
+        ``self`` and ``self.tighten()`` are homotopic.
+
+        """
+        G1=self.domain()
+        A1=G1.alphabet()
+        G2=self.domain()
+
+        edge_map=dict((a,self.image(a)) for a in A1)
+
+        done=False
+        while not done:
+            done=True
+            prefix=dict()
+            for a in A1:
+                u=edge_map[a]
+                v=G1.initial_vertex(a)
+                if len(u)>0:
+                    if v in prefix:
+                        if len(prefix[v])>0:
+                            p=G2.common_prefix_length(u,prefix[v])
+                            prefix[v]=prefix[v][:p]
+                    else:
+                        prefix[v]=u
+
+            for a in A1: 
+                v=G1.initial_vertex(a)
+                if v in prefix and len(prefix[v])>0:
+                    done=False
+                    aa=A1.inverse_letter(a)
+                    if len(edge_map[a])>0:
+                        edge_map[a]=edge_map[a][len(prefix[v]):]
+                        edge_map[aa]=edge_map[aa][:-len(prefix[v])]
+                    else:    
+                        edge_map[a]=G2.reverse_path(prefix[v])
+                        edge_map[aa]=prefix[v]
+
+        self.set_edge_map(edge_map)
+
+        return self
 
     @staticmethod
     def rose_map(automorphism):
