@@ -50,7 +50,7 @@ class FreeGroupWord(FiniteWord_list):
         i=0
         while (i<len(self) and i<len(other) and A.are_inverse(self[-i-1],other[i])):
             i=i+1
-        return self.parent()(self[:len(self)-i]+other[i:])
+        return self.parent()(list(self[:len(self)-i])+list(other[i:]))
 
     def inverse(self):
         """
