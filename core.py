@@ -158,6 +158,7 @@ class Core():
                     v_label=t_label
             self._core_slice[x]=slice_x
 
+
     def end_map(self,e=None):
         """
         Returns the image as a union (+) and difference (-) of cylinders of the
@@ -179,49 +180,6 @@ class Core():
         else:
             return self._core_slice[e]
 
-    def fusioned_core_slice(self,e):
-        """
-        The slice of ``self`` above ``e`` after collapsing the edges of length 0.
-        """
-        Ce=self._core_slice[e]
-        i=0
-        classes=dict()
-        edges=[]
-        for e in Ce.edges():
-            if self._codomain.length(e[2])==0:
-                if e[0] in classes and e[1] in classes:
-                    j=classes[e[0]]
-                    k=classes[e[1]]
-                    if j!=k:
-                        for a in classes:
-                            if classes[a]==k:
-                                classes[a]=j
-                elif e[0] in classes:
-                    classes[e[1]]=classes[e[0]]
-                elif e[1] in classes:
-                    classes[e[0]]=classes[e[1]]
-                else:
-                    classes[e[0]]=classes[e[1]]=i
-                    i+=1
-            else:
-                if self._codomain.alphabet().is_positive_letter(e[2]):
-                    edges.append((e[0],e[1],(e[0],self._domain.reverse_path(self._inv_graph_map(e[0])))))
-                else:
-                    edges.append((e[0],e[1],(e[1],self._domain.reverse_path(self._inv_graph_map(e[1])))))
-
-
-        for e in edges:
-            if e[0] not in classes:
-                classes[e[0]]=i
-                i+=1
-            if e[1] not in classes:
-                classes[e[1]]=i
-                i+=1
-
-        for i in xrange(len(edges)):
-            edges[i]=(classes[edges[i][0]],classes[edges[i][1]],edges[i][2])
-
-        return DiGraph(edges)
         
 
     def volume(self,e=None):

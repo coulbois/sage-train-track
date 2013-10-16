@@ -788,3 +788,10 @@ class GraphWithInverses(sage.graphs.graph.DiGraph):
 
 
 
+class MetricGraph(GraphWithInverses):
+     """
+     Graph with edges labeled by an AlphabetWithInverses, with length on edges.
+     """
+
+     def length(self,a):
+          pass

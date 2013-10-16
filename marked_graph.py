@@ -175,7 +175,7 @@ class MarkedGraph(GraphWithInverses):
           
 
              
-class MarkedMetricGraph(MarkedGraph):
+class MarkedMetricGraph(MarkedGraph,MetricGraph):
      """
      A ``MarkedGraph`` together with a length function on edges.
 
