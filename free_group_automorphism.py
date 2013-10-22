@@ -227,7 +227,7 @@ class FreeGroupAutomorphism(WordMorphism):
         EXAMPLES::
 
         sage: phi=FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
-        sage phi.simple_outer_representative()
+        sage: phi.simple_outer_representative()
         Automorphism of the Free group over ['a', 'b', 'c']: a->c,b->Ca,c->Cb
 
         """
@@ -252,11 +252,11 @@ class FreeGroupAutomorphism(WordMorphism):
                     if result[a][0]==b and result[a][-1]==B:
                         result[a]=result[a][1:-1]
                     elif result[a][0]==b:
-                        result[a]=result[a][1:]+Word(b)
+                        result[a]=result[a][1:]*Word([b])
                     elif result[a][-1]==B:
-                        result[a]=Word(B)+result[a][:-1]
+                        result[a]=Word([B])*result[a][:-1]
                     else:
-                        result[a]=Word(B)+result[a]+Word(b)
+                        result[a]=Word([B])*result[a]*Word([b])
                                         
         return FreeGroupAutomorphism(result,F)
     
