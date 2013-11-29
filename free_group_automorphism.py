@@ -306,7 +306,7 @@ class FreeGroupMorphism(WordMorphism):
         """
         D = self.domain()
         A = D.alphabet()
-        assert D.domain() is self.codomain()
+        assert D is self.codomain()
         wait = [D([a]) for a in self._domain.alphabet()]
         result = set()
 
