@@ -386,17 +386,17 @@ class FreeGroupMorphism(WordMorphism):
 
         Some train-track examples::
 
-            sage: FreeGroupMorphism('a->ab,b->C,c->A').is_orientable()
+            sage: FreeGroupAutomorphism('a->ab,b->C,c->A').is_orientable()
             True
-            sage: FreeGroupMorphism('a->bcc,b->a,c->CBa').is_orientable()
+            sage: FreeGroupAutomorphism('a->bcc,b->a,c->CBa').is_orientable()
             True
 
-            sage: FreeGroupMorphism('a->cAbc,b->bc,c->ACa').is_orientable()
+            sage: FreeGroupAutomorphism('a->cAbc,b->bc,c->ACa').is_orientable()
             False
 
         We check a conjugate of Fibonacci (which is not train-track)::
 
-            sage: FreeGroupMorphism('a->Babb,b->Bab').is_orientable()
+            sage: FreeGroupAutomorphism('a->Babb,b->Bab').is_orientable()
             True
 
         .. TODO::
@@ -405,8 +405,8 @@ class FreeGroupMorphism(WordMorphism):
             GraphMap ?
         """
         if self.is_train_track():
+            A = self.domain().alphabet()
             f = self.to_word_morphism()
-            A = f.domain().alphabet()
         else:
             tt = self.train_track()
             if not tt.is_train_track():
@@ -440,6 +440,95 @@ class FreeGroupMorphism(WordMorphism):
                     seen.add(b)
 
         return True
+
+    def complete_return_words(self, letter):
+        r"""
+        Compute the set of return words on ``letter``.
+
+        The morphism must be train-track and irreducible.
+
+        EXAMPLES:
+
+        It is well known that for Tribonacci and its flipped version, the return
+        words form a basis of the free group. Hence there are 6 of them::
+
+            sage: f = FreeGroupAutomorphism('a->ab,b->ac,c->a')
+            sage: Ra = f.complete_return_words('a'); Ra
+            set([word: ACA, word: AA, word: aca, word: aba, word: ABA, word: aa])
+            sage: Rb = f.complete_return_words('b'); Rb
+            set([word: bacab, word: bab, word: BAB, word: baab, word: BACAB, word: BAAB])
+            sage: Rc = f.complete_return_words('c'); Rc
+            set([word: CABAABAC, word: cabac, word: CABABAC, word: cababac, word: cabaabac, word: CABAC])
+
+            sage: f = FreeGroupAutomorphism('a->ab,b->ca,c->a')
+            sage: [len(f.complete_return_words(letter)) for letter in 'abc']
+            [6, 6, 6]
+
+        In general, the number of return words can be much larger::
+
+            sage: f = FreeGroupAutomorphism('a->cAbc,b->bc,c->ACa')
+            sage: [len(f.complete_return_words(letter)) for letter in 'abc']
+            [12, 12, 18]
+        """
+        if not self.is_train_track():
+            raise ValueError("self must be train-track")
+
+        # we first need to compute a power of self which is positive (all
+        # letters appear in each image)
+
+        A = self.domain().alphabet()
+        f = self
+        while True:
+            for a in A:
+                u = f.image(a)
+                if any(b not in u and A.inverse_letter(b) not in u for b in A):
+                    f *= self
+                    break
+            else:
+                break
+
+        inv_letter = A.inverse_letter(letter)
+
+        # precompute the first and last occurrence of letter/inv_letter in
+        # images as well as return words contained inside the images
+        complete_return_words = set()
+        first_and_last = {}
+        for a in A.positive_letters():
+            b = A.inverse_letter(a)
+            u = f.image(a)
+            i = 0
+            while u[i] != letter and u[i] != inv_letter:
+                i += 1
+            first_and_last[a] = [i,None]
+            first_and_last[b] = [None,len(u)-i-1]
+
+            j = i + 1
+            while j < len(u):
+                if u[j] == letter or u[j] == inv_letter:
+                    r = u[i:j+1]
+                    complete_return_words.add(r)
+                    complete_return_words.add(~r)
+                    i = j
+                j += 1
+
+            first_and_last[a][1] = i
+            first_and_last[b][0] = len(u) - i - 1
+
+
+        for a0,a1 in self.length2_words():
+            u0 = f.image(a0)
+            u1 = f.image(a1)
+
+            i = first_and_last[a0][1]
+            j = first_and_last[a1][0]
+
+            r = u0[i:] * u1[:j+1]
+            complete_return_words.add(r)
+            complete_return_words.add(~r)
+
+        return complete_return_words
+
+
 
 class FreeGroupAutomorphism(FreeGroupMorphism):
     """
