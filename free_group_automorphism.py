@@ -376,6 +376,71 @@ class FreeGroupMorphism(WordMorphism):
             return True, None
         return True
 
+    def is_orientable(self):
+        r"""
+        Check whether the attracting lamination of ``self`` is orientable.
+
+        The result makes no sense is ``self`` is not irreducible.
+
+        EXAMPLES::
+
+        Some train-track examples::
+
+            sage: FreeGroupMorphism('a->ab,b->C,c->A').is_orientable()
+            True
+            sage: FreeGroupMorphism('a->bcc,b->a,c->CBa').is_orientable()
+            True
+
+            sage: FreeGroupMorphism('a->cAbc,b->bc,c->ACa').is_orientable()
+            False
+
+        We check a conjugate of Fibonacci (which is not train-track)::
+
+            sage: FreeGroupMorphism('a->Babb,b->Bab').is_orientable()
+            True
+
+        .. TODO::
+
+            For Thierry, perhaps you want to include the method directly on
+            GraphMap ?
+        """
+        if self.is_train_track():
+            f = self.to_word_morphism()
+            A = f.domain().alphabet()
+        else:
+            tt = self.train_track()
+            if not tt.is_train_track():
+                raise ValueError("no train track representative for self")
+            f = tt.edge_map()  # it is a word morphism!!!
+            A = tt.domain().alphabet()
+
+        # we first find a letter which occurs in its image
+        g = f
+        while True:
+            for letter in A:
+                if letter in g.image(letter):
+                    break
+            else:
+                g *= self
+                continue
+            break
+
+        # then we can start computing its connected component
+        seen = set([letter])
+        wait = [letter]
+
+        while wait:
+            a = wait.pop()
+            for b in set(g.image(a)):
+                if A.inverse_letter(b) in seen:
+                    return False
+
+                if b not in seen:
+                    wait.append(b)
+                    seen.add(b)
+
+        return True
+
 class FreeGroupAutomorphism(FreeGroupMorphism):
     """
     Free group automorphism.

@@ -28,11 +28,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
     AUTHORS:
 
     - Thierry Coulbois (2013-05-16): beta.0 version
-	
-
-
     """
-
     def __init__(self,alphabet):
         if not isinstance(alphabet,AlphabetWithInverses):
             alphabet=AlphabetWithInverses(alphabet)
@@ -55,16 +51,13 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
         EXAMPLES::
 
-        sage: FreeGroup(3).reduced_product("abAc","Caa")
-        word: aba
-
+            sage: FreeGroup(3).reduced_product("abAc","Caa")
+            word: aba
         """
         i=0
         while (i<len(u) and i<len(v) and self._alphabet.are_inverse(u[-i-1],v[i])):
             i=i+1
         return self(u[:len(u)-i]+v[i:])
-
-
 
     def is_reduced(self,word):
         """
@@ -72,14 +65,13 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
         EXAMPLES::
 
-        sage: A= AlphabetWithInverses(['a','b','c'])
-        sage: F= FreeGroup(A)
-        sage: w="abcAab"
-        sage: print F.is_reduced(w)
-        False
-
+            sage: A= AlphabetWithInverses(['a','b','c'])
+            sage: F= FreeGroup(A)
+            sage: w="abcAab"
+            sage: print F.is_reduced(w)
+            False
         """
-        return not any(self._alphabet.are_inverse(word[i],word[i+1]) for i in xrange(len(word)-1))
+        return all(self._alphabet.are_inverse(word[i],word[i+1]) for i in xrange(len(word)-1))
 
     def reduce(self,word):
         """
@@ -87,13 +79,11 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
         EXAMPLES::
 
-        sage: F=FreeGroup(['a','b','c'])
-        sage: w="abcAab"
-        sage: print w," = ",F.reduce(w)
-        abcAab = abcb
-
+            sage: F=FreeGroup(['a','b','c'])
+            sage: w="abcAab"
+            sage: print w," = ",F.reduce(w)
+            abcAab = abcb
         """
-
         result = list(word)
 
         i=0
@@ -120,17 +110,14 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
             sage: F=FreeGroup(A)
             sage: F.inverse('aBc')
             word: CbA
-
         """
         return self([self._alphabet.inverse_letter(a) for a in reversed(w)])
-
 
     def is_identity(self,w):
         r"""
         Tests whether the argument is trivial.
         """
         return len(self.reduce(w)) == 0
-
 
     def less(self,u,v):
         """
@@ -181,10 +168,9 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
         EXAMPLES::
 
-        sage: FreeGroup(3).is_prefix("aBaa","aBcb")
-        False
+            sage: FreeGroup(3).is_prefix("aBaa","aBcb")
+            False
         """
-
         i=0
         l=len(u)
         if l<=len(v):
@@ -195,22 +181,6 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
             return not done
         else:
             return False
-
-
-    def equal_words(self,worda,wordb):
-        """
-        True if ``worda``and ``wordb``are equal.
-
-        WARNING:
-
-        ``worda`` and ``wordb``are assumed to be reduced.
-        """
-        result= (len(worda)==len(wordb))
-        i=0
-        while(result and i<len(worda)):
-            result=result and (worda[i]==wordb[i])
-            i=i+1
-        return result
 
     def nielsen_strictly_less(self,u,v):
         """
@@ -255,7 +225,6 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
                     if (self.less(vvv,uuu)): result=-1 # if vvv<=uuu
         return result
 
-
     def identity_automorphism(self):
         """
         Identity automorphism of ``self``.
@@ -273,25 +242,24 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
         EXAMPLES
 
-        sage: F=FreeGroup(3)
-        sage: F.dehnt_twist('a','c')
+            sage: F=FreeGroup(3)
+            sage: F.dehnt_twist('a','c')
 
-        a->ac, b->b, c->c
+            a->ac, b->b, c->c
 
-        sage: F.dehn_twist('A','c')
-        a->Ca,b->b,c->c
-
+            sage: F.dehn_twist('A','c')
+            a->Ca,b->b,c->c
         """
         A = self.alphabet()
 
         if a not in A:
-            raise ValueError, "Letter %s not in alphabet" %str(a)
+            raise ValueError("Letter %s not in alphabet" %str(a))
         if b not in A:
-            raise ValueError, "Letter %s not in alphabet" %str(b)
+            raise ValueError("Letter %s not in alphabet" %str(b))
         if a == b:
-            raise ValueError, "Letter a=%s should be different from b=%s" %(str(a),str(b))
+            raise ValueError("Letter a=%s should be different from b=%s"%(str(a),str(b)))
         if A.are_inverse(a,b):
-            raise ValueError, "Letter a=%s should be different from the inverse of b=%s" %(str(a),str(b))
+            raise ValueError("Letter a=%s should be different from the inverse of b=%s" %(str(a),str(b)))
 
         morphism = dict((letter,self([letter])) for letter in A.positive_letters())
 
@@ -311,13 +279,32 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
         from free_group_automorphism import FreeGroupAutomorphism
         return FreeGroupAutomorphism(morphism,group=self)
 
+    def random_permutation(self):
+        r"""
+        Return a random permutation of ``self``.
+        """
+        from sage.misc.prandom import randint
+        from sage.groups.perm_gps.permgroup_named import SymmetricGroup
+
+        A = self.alphabet()
+        P = A.positive_letters()
+        s = SymmetricGroup(P).random_element()
+        f = {}
+        for a in P:
+            if randint(0,1):
+                f[a] = self([s(a)])
+            else:
+                f[a] = self([A.inverse_letter(s(a))])
+
+        from free_group_automorphism import FreeGroupAutomorphism
+        return FreeGroupAutomorphism(f, group=self)
+
     def random_automorphism(self,length=1):
         """
         Random automorphism of ``self``.
 
         The output is a random word of given ``length`` on the set of Dehn twists.
         """
-
         if length==0: return self.identity_automorphism()
 
         A=self.alphabet()
@@ -423,8 +410,8 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def random_mapping_class(self,n=1):
         """
-        Random mapping class of length (as a product of
-        generating dehn twists) at most ``n``. `
+        Random mapping class of length (as a product of generating dehn twists)
+        at most ``n``. `
 
         WARNING:
 
@@ -487,8 +474,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
     def random_braid(self,n=1):
         """
-        A random braid automorphism of ``self`` of length at most
-        ``n``.
+        A random braid automorphism of ``self`` of length at most ``n``.
         """
         from sage.misc.prandom import randint
 
