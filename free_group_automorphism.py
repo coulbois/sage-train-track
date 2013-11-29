@@ -41,9 +41,10 @@ class FreeGroupMorphism(WordMorphism):
         """
         Apply the automorphism to the word w.
 
-        WARNING:
+        .. WARNING::
 
-        if w is a letter of the alphabet which is iterable it will be considered as a word.
+        if w is a letter of the alphabet which is iterable it will be considered
+        as a word. If you want the image of a letter use :meth:`image` instead.
         """
         F=self.codomain()
         while order>0:
@@ -63,23 +64,24 @@ class FreeGroupMorphism(WordMorphism):
             return FreeGroupMorphism(m,self.domain())
         return super(FreeGroupMorphism, self).__mul__(other)
 
-    def __pow__(self,other):
+    def __pow__(self, n):
         """
-        returns self^other, where other is an integer.
+        returns self^n, where other is an integer.
+
+        TESTS::
+
+            sage: f = FreeGroupAutomorphism('a->ab,b->A')
+            sage: f**-3
+            Automorphism of the Free group over ['a', 'b']: a->bAB,b->baBAB
         """
-        if other>0:
-            if other%2==0:
-                phi=pow(self,other/2)
-                return phi*phi
-            elif other>2:
-                phi=pow(self,(other-1)/2)
-                return phi*phi*self
-            else: #other==1
-                return self
-        elif other<0:
-            return pow(self.inverse(),-other)
-        else: #other==0
-            return self._domain.identity_automorphism()
+        if n > 0:
+            from sage.structure.element import generic_power
+            return generic_power(self,n)
+        elif n < 0:
+            from sage.structure.element import generic_power
+            return generic_power(self.inverse(), -n)
+        else:
+            return self.domain().identity_automorphism()
 
     def __str__(self):
         """
@@ -130,16 +132,26 @@ class FreeGroupMorphism(WordMorphism):
     def size(self):
         """
         Size of the endomorphism: half the maximum length of the image of a two letter word.
+
+        .. TODO::
+
+            the definition is ambiguous, do we take floor or ceil ?
+
+        EXAMPLES::
+
+            sage: FreeGroupMorphism('a->abc,b->,c->ccc').size()
+            3
         """
         result=0
+        D = self.domain()
         A=self._domain._alphabet
         for a in A:
             for b in A:
-                if a!=A.inverse_letter(b):
-                    l=len(self(self.domain([a,b])))
-                    if result<l:
-                        result=l
-        return result/2
+                if not A.are_inverse(a,b):
+                    l = (self.image(a) * self.image(b)).length()
+                    if result < l:
+                        result = l
+        return result // 2
 
     def is_permutation(self):
         """
@@ -167,10 +179,10 @@ class FreeGroupMorphism(WordMorphism):
 
     def _inverse_permutation(self):
         """
-        Inverse ``self`` if it is a permutation
+        Return the inverse of ``self`` if it is a permutation
         """
-        F= self.domain()
-        A=F.alphabet()
+        F = self.domain()
+        A = F.alphabet()
         result = {}
         for a in A.positive_letters():
             b = self.image(a)[0]
@@ -282,6 +294,10 @@ class FreeGroupMorphism(WordMorphism):
         r"""
         Return the words of length 2 in the attracting language of ``self``.
 
+        If the morphism is everywhere growing (a weaker condition than iwip)
+        then there is a well defined notion of attracting lamination. If it is
+        not the case, the output of this method should not be used.
+
         EXAMPLES::
 
             sage: f = FreeGroupMorphism('a->ab,b->a')
@@ -289,6 +305,7 @@ class FreeGroupMorphism(WordMorphism):
             [word: aa, word: ab, word: ba, word: AA, word: AB, word: BA]
         """
         D = self.domain()
+        A = D.alphabet()
         assert D.domain() is self.codomain()
         wait = [D([a]) for a in self._domain.alphabet()]
         result = set()
@@ -309,7 +326,9 @@ class FreeGroupMorphism(WordMorphism):
         Check wether ``self`` is train track (on the rose).
 
         A morphism is `train-track` if there is no cancellation between the
-        images in the iteration of ``self``.
+        images in the iteration of ``self``. If ``proof`` is set to ``True``
+        then return a word also a word of length 2 in the attracting language of
+        ``self`` such that there is a cancellation in its image under ``self``.
 
         EXAMPLES::
 
@@ -345,6 +364,7 @@ class FreeGroupMorphism(WordMorphism):
         A = self.domain().alphabet()
         L2 = self.length2_words()
         for u in self.length2_words():
+            # TODO: the job is done twice
             u1 = self.image(u[0])
             u2 = self.image(u[1])
             if A.are_inverse(u1[-1],u2[0]):
@@ -365,7 +385,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         sage: FreeGroupAutomorphism("a->ab,b->ac,c->a")
         Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
-        sage: F=FreeGroup(3)
+        sage: F = FreeGroup('abc')
         sage: FreeGroupAutomorphism("a->ab,b->ac,c->a",F)
         Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
