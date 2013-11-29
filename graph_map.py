@@ -1,9 +1,9 @@
 #*****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
-# 
-#  Distributed under the terms of the GNU General Public License (GPL) 
-#                  http://www.gnu.org/licenses/ 
-#***************************************************************************** 
+#
+#  Distributed under the terms of the GNU General Public License (GPL)
+#                  http://www.gnu.org/licenses/
+#*****************************************************************************
 from sage.combinat.words.morphism import WordMorphism
 
 class GraphMap():
@@ -12,12 +12,11 @@ class GraphMap():
     a vertex and an edge to an edge-path. It respects incidence
     relation. The inverse of an edge is send to the reverse path.
 
-    AUTHORS: 
- 
-    - Thierry Coulbois (2013-05-16): beta.0 version 
-	 
+    AUTHORS:
+
+    - Thierry Coulbois (2013-05-16): beta.0 version
     """
-    
+
     def __init__(self,domain,codomain,edge_map,vertex_map=None):
         self._domain=domain
         self._codomain=codomain
@@ -27,7 +26,7 @@ class GraphMap():
     def __call__(self,argument):
         """
         Applies ``self`` to ``argument`` which is either a vertex of ``self`` or
-        an edge path. 
+        an edge path.
 
         SEE ALSO:
 
@@ -37,7 +36,7 @@ class GraphMap():
         if self._domain.has_vertex(argument):
             if self._vertex_map==None:
                 self.update_vertex_map()
-                
+
             return self._vertex_map[argument]
         else:
             return self._codomain.reduce_path(self._edge_map(argument))
@@ -52,7 +51,7 @@ class GraphMap():
             result_map[a]=self(other._edge_map.image(a))
         return GraphMap(other._domain,self._codomain,result_map)
 
-    
+
     def __str__(self):
         """
         String represetation of ``self``.
@@ -65,7 +64,7 @@ class GraphMap():
         if self._vertex_map!=None:
             result=result+"vertex map: "+self._vertex_map.__str__()+"\n"
         return result
-           
+
     def domain(self):
         """
         Domain of ``self``: this is a graph.
@@ -80,7 +79,7 @@ class GraphMap():
 
     def set_edge_map(self,edge_map):
         """
-        Sets the edge map of ``self``. 
+        Sets the edge map of ``self``.
 
         ``edge_map`` is anything that is accepted by
         ``Wordmorphism(edge_map)``, the image of the inverse letters
@@ -119,7 +118,7 @@ class GraphMap():
                 vertex_map[self._domain.initial_vertex(e)]=self._codomain.initial_vertex(p[0])
                 vertex_map[self._domain.terminal_vertex(e)]=self._codomain.terminal_vertex(p[-1])
         self._vertex_map=vertex_map
-        
+
     def edge_map(self):
         """
         The edge map of ``self``: this is a word morphism.
@@ -140,10 +139,10 @@ class GraphMap():
 
     def inverse(self):
         """
-        A homotopy inverse of ``self``. 
+        A homotopy inverse of ``self``.
 
         WARNING:
-        
+
         ``self`` is assumed to be a homotopy equivalence.
         """
 
@@ -188,7 +187,7 @@ class GraphMap():
 
         for a in map:
             map[a]=F([rename[b] for b in map[a] if b in rename])
-                
+
         phi=FreeGroupAutomorphism(map,F)
         psi=phi.inverse()
 
@@ -204,7 +203,7 @@ class GraphMap():
 
         return GraphMap(G2,G1,edge_map)
 
-        
+
     def tighten(self):
         """
         Tighten ``self`` such that there are at least two gates at
@@ -239,7 +238,7 @@ class GraphMap():
                     else:
                         prefix[v]=u
 
-            for a in A1: 
+            for a in A1:
                 v=G1.initial_vertex(a)
                 if v in prefix and len(prefix[v])>0:
                     done=False
@@ -247,7 +246,7 @@ class GraphMap():
                     if len(edge_map[a])>0:
                         edge_map[a]=edge_map[a][len(prefix[v]):]
                         edge_map[aa]=edge_map[aa][:-len(prefix[v])]
-                    else:    
+                    else:
                         edge_map[a]=G2.reverse_path(prefix[v])
                         edge_map[aa]=prefix[v]
 

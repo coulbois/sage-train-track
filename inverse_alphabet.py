@@ -5,6 +5,8 @@
 #                  http://www.gnu.org/licenses/ 
 #***************************************************************************** 
 
+from sage.rings.integer import Integer
+
 class AlphabetWithInverses():
     """
     Class for alphabet with inverse letters.
@@ -238,6 +240,8 @@ class AlphabetWithInverses():
         """
         A random letter, different from the letters in ``exclude``.
         """
+        from sage.misc.prandom import randint
+
         done=False
         while not done:
             j=randint(0,2*len(self)-1)

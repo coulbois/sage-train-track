@@ -1,9 +1,13 @@
 #*****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
-# 
-#  Distributed under the terms of the GNU General Public License (GPL) 
-#                  http://www.gnu.org/licenses/ 
-#***************************************************************************** 
+#
+#  Distributed under the terms of the GNU General Public License (GPL)
+#                  http://www.gnu.org/licenses/
+#*****************************************************************************
+from inverse_graph import GraphWithInverses, MetricGraph
+from graph_map import GraphMap
+from sage.combinat.words.morphism import WordMorphism
+
 class MarkedGraph(GraphWithInverses):
      """
      A MarkedGraph is a GraphWithInverses together with a GraphMap
@@ -20,22 +24,19 @@ class MarkedGraph(GraphWithInverses):
      a: 0->0, b: 0->1, c: 1->0
      Marking: a->a, b->bc
 
-     AUTHORS: 
- 
-     - Thierry Coulbois (2013-05-16): beta.0 version 
-	 
+     AUTHORS:
 
+     - Thierry Coulbois (2013-05-16): beta.0 version
      """
-
      def __init__(self,graph=None,marking=None,alphabet=None,marking_alphabet=None):
          if isinstance(marking,GraphMap):
               GraphWithInverses.__init__(self,marking.codomain(),marking.codomain().alphabet())
               self._marking=marking
          else:
-              if isinstance(graph,GraphWithInverses): 
+              if isinstance(graph,GraphWithInverses):
                    alphabet=graph._alphabet
               GraphWithInverses.__init__(self,graph,alphabet)
-              
+
               if marking is None: #computes a (random) marking from a rose equivalent to graph
 
                    A=graph.alphabet()
@@ -74,11 +75,11 @@ class MarkedGraph(GraphWithInverses):
           String representation of ``self``.
           """
           result="Marked graph: "
-          for a in self._alphabet.positive_letters(): 
+          for a in self._alphabet.positive_letters():
                result=result+a+": {0}->{1}, ".format(self.initial_vertex(a),self.terminal_vertex(a))
           result=result[:-2]+"\n"
           result+="Marking: "
-          for a in self._marking._domain._alphabet.positive_letters(): 
+          for a in self._marking._domain._alphabet.positive_letters():
                result+=a+"->"+self._marking.image(a).__str__()+", "
           result=result[:-2]
 
@@ -99,7 +100,7 @@ class MarkedGraph(GraphWithInverses):
                edge_map[a]=self._marking(automorphism.image(a))
           self._marking.set_edge_map(edge_map)
           return self
-          
+
 
      def difference_of_marking(self,other):
           """
@@ -139,7 +140,7 @@ class MarkedGraph(GraphWithInverses):
 
           ``GraphWithInverses.fold()``
           """
-          
+
           fold_map=GraphWithInverses.fold(self,edges_full,edges_partial)
           fold_morph=WordMorphism(fold_map)
           self._marking.set_edge_map(fold_morph*self._marking._edge_map)
@@ -157,7 +158,7 @@ class MarkedGraph(GraphWithInverses):
 
           ``GraphWithInverses.contract_forest()``
           """
-          
+
           contract_map=GraphWithInverses.contract_forest(self,forest)
           contract_morph=WordMorphism(contract_map)
           self._marking.set_edge_map(contract_morph*self._marking._edge_map)
@@ -172,9 +173,9 @@ class MarkedGraph(GraphWithInverses):
           marking=dict((a,a) for a in alphabet.positive_letters())
           return MarkedGraph(graph=GraphWithInverses.rose_graph(alphabet),marking=marking,marking_alphabet=alphabet)
 
-          
 
-             
+
+
 class MarkedMetricGraph(MarkedGraph,MetricGraph):
      """
      A ``MarkedGraph`` together with a length function on edges.
@@ -185,14 +186,12 @@ class MarkedMetricGraph(MarkedGraph,MetricGraph):
      Marked metric graph:
      a: 0->0, b: 0->1, c: 1->0
      Marking: a->a, b->bc
-     Length: a: 1, b: 1, c: 1 
-
+     Length: a: 1, b: 1, c: 1
      """
-
      def __init__(self,graph=None,marking=None,length=None,alphabet=None,marking_alphabet=None):
           MarkedGraph.__init__(self,graph=graph,marking=marking,alphabet=alphabet,marking_alphabet=marking_alphabet)
-          
-          if length is None: 
+
+          if length is None:
                length=dict((a,1) for a in self.alphabet())
           else:
                for a in length.keys():
@@ -211,7 +210,7 @@ class MarkedMetricGraph(MarkedGraph,MetricGraph):
                result+=a+":{0}".format(self.length(a))+", "
           result=result[:-2]
           return result
-          
+
 
      def length(self,a):
           """
@@ -255,7 +254,7 @@ class MarkedMetricGraph(MarkedGraph,MetricGraph):
                graph[a]=(0,0)
                length[a]=0
                marking[a]=Word([a])
-     
+
           for j in xrange(i,len(A)):
                a=A[j]
                graph[a]=(1,1)
@@ -279,7 +278,7 @@ class MarkedMetricGraph(MarkedGraph,MetricGraph):
 
           length=dict((a,0) for a in A.positive_letters())
           length[A[0]]=1
-          
+
           RA=GraphWithInverses.rose_graph(A)
           RAA=GraphWithInverses.rose_graph(A)
           marking=GraphMap(RA,RAA,edge_map=dict((a,Word([a])) for a in A.positive_letters()))
