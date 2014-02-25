@@ -3490,14 +3490,14 @@ class TopologicalRepresentative(GraphMap):
 
     def endpoints_of_pnp(self,path):
         '''
-        Determines the fixed points of a periodic nielsen path, using the
+        Determines the fixed points of an indivisible nielsen path, using the
         format in the pnp function.
 
         Author: Brian Mann
         '''
 
-        p1 = self.domain().terminal_vertex(path[0][0][1])
-        p2 = self.domain().terminal_vertex(path[0][1][1])
+        p1 = self.domain().terminal_vertex(path[0][1])
+        p2 = self.domain().terminal_vertex(path[1][1])
         if (p1 == p2):
             return [p1]
         else:    
@@ -3505,7 +3505,7 @@ class TopologicalRepresentative(GraphMap):
 
     def nielsen_classes(self,verbose=True):
         '''
-        For vertices v,w we define v~w if there exists a periodic nielsen path
+        For vertices v,w we define v~w if there exists a indivisible nielsen path
         from v to w. An equivlance class is called a nielsen class.
 
         Returns a list of nielsen classes for self.
@@ -3515,9 +3515,18 @@ class TopologicalRepresentative(GraphMap):
         Author: Brian Mann
         '''
         classes = []
-        for path in self.periodic_nielsen_paths():
-            pair = self.endpoints_of_pnp(path)
-            
+        for path in self.indivisible_nielsen_paths():
+            endpts = self.endpoints_of_pnp(path)
+            classes.append(endpts)
+            for p in endpts:
+                for ncls in classes:
+                    if p in ncls:
+                        ncls = list(set(ncls + endpts))
+                    else:
+                        classes.append(endpts)
+
+        return classes
+
 
     def index_list(self,verbose=True):
         '''
@@ -3532,7 +3541,20 @@ class TopologicalRepresentative(GraphMap):
                 ind.append(1-(self.number_of_gates(v))/2.0)
                 return ind
         else:
-            return None
+            for ncls in self.nielsen_classes():
+                n = 0
+                for v in ncls:
+                    n += self.number_of_gates(v)
+                for path in self.indivisible_nielsen_paths():
+                    if self.endpoints_of_pnp(path)[0] in ncls:
+                        n -= 1
+                ind.append(n)
+
+            ind = map(lambda x: 1 - x/2.0,ind)
+
+        return ind
+
+
     
 
 
