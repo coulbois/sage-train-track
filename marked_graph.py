@@ -7,6 +7,7 @@
 from inverse_graph import GraphWithInverses, MetricGraph
 from graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
+from inverse_alphabet import AlphabetWithInverses
 
 class MarkedGraph(GraphWithInverses):
      """

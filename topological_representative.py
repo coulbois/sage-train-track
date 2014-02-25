@@ -14,6 +14,7 @@ from free_group import FreeGroup
 from free_group_automorphism import FreeGroupAutomorphism
 from sage.graphs.graph import DiGraph
 
+
 class TopologicalRepresentative(GraphMap):
     """
     A topological representative of an automorphism of a free group,
@@ -3476,11 +3477,13 @@ class TopologicalRepresentative(GraphMap):
         for e in self.domain().alphabet():
             if self.domain().initial_vertex(e) == v:
                 directions.append(e)
+        '''
+        I think this section would compute the ideal whitehead graph but not sure
         for e in directions:
             for f in directions:
                 if (e,f) in self.illegal_turns():
                     directions.remove(f)
-
+        '''
         G = DiGraph([directions,lambda d1,d2: (d1,d2) in self.edge_turns()])
         if verbose:
             print G.to_undirected()
@@ -3532,14 +3535,20 @@ class TopologicalRepresentative(GraphMap):
         '''
         Computes Catherine Pfaff's index list. 
         ASSUMES self IS FULLY IRREDUCIBLE!!!!!
+        Assumes self is a train track.
 
         Author: Brian Mann
         '''
+        if not self.is_train_track():
+            print "You didn't input a train track. Applying train_track() for you."
+            self = self.train_track()
+
         ind = []
         if len(self.periodic_nielsen_paths()) == 0:
-            for v in self.domain.vertices():
+            for v in self.domain().vertices():
                 ind.append(1-(self.number_of_gates(v))/2.0)
-                return ind
+                
+            return ind
         else:
             for ncls in self.nielsen_classes():
                 n = 0
