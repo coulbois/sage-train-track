@@ -3467,8 +3467,7 @@ class TopologicalRepresentative(GraphMap):
         Author: Brian Mann
         '''
         if not self.is_train_track():
-            print "You didn't input a train track. Applying train_track() for you."
-            self = self.train_track()
+            print "You didn't input a train track."
         if (v not in self.domain().vertices()):
             v = self.domain().vertices()[0]
             print "Not a valid vertex. Picking vertex",v,"for you."
@@ -3540,8 +3539,7 @@ class TopologicalRepresentative(GraphMap):
         Author: Brian Mann
         '''
         if not self.is_train_track():
-            print "You didn't input a train track. Applying train_track() for you."
-            self = self.train_track()
+            print "You didn't input a train track."
 
         ind = []
         if len(self.periodic_nielsen_paths()) == 0:
