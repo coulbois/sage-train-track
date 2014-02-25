@@ -3431,7 +3431,7 @@ class TopologicalRepresentative(GraphMap):
 
         return result_morph
 
-    def gates(self,v):
+    def gates(self,v=0):
         '''
         Returns a list of equivalence classes of edges out of a vertex v.
         Author: Brian Mann
@@ -3450,13 +3450,13 @@ class TopologicalRepresentative(GraphMap):
                     directions.remove(f)
         return directions
 
-    def number_of_gates(self,v):
+    def number_of_gates(self,v=0):
         '''
         Returns the number of gates at v.
         '''
         return len(self.gates(v))
 
-    def local_whitehead_graph(self,v,verbose=True,show_plot=False):
+    def local_whitehead_graph(self,v=0,verbose=False,show_plot=False):
         '''
         Returns the local whitegraph at a vertex v. Vertices are directions 
         of v, and two directions are joined by an edge if some iterate of
@@ -3467,7 +3467,8 @@ class TopologicalRepresentative(GraphMap):
         Author: Brian Mann
         '''
         if not self.is_train_track():
-            print "You didn't input a train track."
+            print "You didn't input a train track. Making it a train track..."
+            return self.train_track().local_whitehead_graph(v)
         if (v not in self.domain().vertices()):
             v = self.domain().vertices()[0]
             print "Not a valid vertex. Picking vertex",v,"for you."
@@ -3476,13 +3477,7 @@ class TopologicalRepresentative(GraphMap):
         for e in self.domain().alphabet():
             if self.domain().initial_vertex(e) == v:
                 directions.append(e)
-        '''
-        I think this section would compute the ideal whitehead graph but not sure
-        for e in directions:
-            for f in directions:
-                if (e,f) in self.illegal_turns():
-                    directions.remove(f)
-        '''
+        
         G = DiGraph([directions,lambda d1,d2: (d1,d2) in self.edge_turns()])
         if verbose:
             print G.to_undirected()
@@ -3498,8 +3493,8 @@ class TopologicalRepresentative(GraphMap):
         Author: Brian Mann
         '''
 
-        p1 = self.domain().terminal_vertex(path[0][1])
-        p2 = self.domain().terminal_vertex(path[1][1])
+        p1 = self.domain().terminal_vertex(path[0][len(path[0])-1])
+        p2 = self.domain().terminal_vertex(path[1][len(path[1])-1])
         if (p1 == p2):
             return [p1]
         else:    
@@ -3526,6 +3521,13 @@ class TopologicalRepresentative(GraphMap):
                         ncls = list(set(ncls + endpts))
                     else:
                         classes.append(endpts)
+        for cls1 in classes:
+            for x in cls1:
+                for cls2 in classes:
+                    if x in cls2:
+                        cls1 = list(set(cls1 + cls2))
+                        classes.remove(cls2)
+
 
         return classes
 
@@ -3540,7 +3542,7 @@ class TopologicalRepresentative(GraphMap):
         '''
         if not self.is_train_track():
             print "You didn't input a train track."
-
+            return self.train_track().index_list()
         ind = []
         if len(self.periodic_nielsen_paths()) == 0:
             for v in self.domain().vertices():
@@ -3559,7 +3561,7 @@ class TopologicalRepresentative(GraphMap):
 
             ind = map(lambda x: 1 - x/2.0,ind)
 
-        return ind
+            return ind
 
 
     
