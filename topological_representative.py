@@ -368,7 +368,7 @@ class TopologicalRepresentative(GraphMap):
 
         return subdivide_morph
 
-    def subdivide_edge(self,edge,position,verbose):
+    def subdivide_edge(self,edge,position,verbose=True):
         """
         Subdivides ``edge`` in two edges a and b. The image of a is
         the prefix of length ``position`` of the image of ``edge``.
@@ -3468,7 +3468,7 @@ class TopologicalRepresentative(GraphMap):
         '''
         if not self.is_train_track():
             print "You didn't input a train track. Making it a train track..."
-            return self.train_track().local_whitehead_graph(v)
+            #return self.train_track().local_whitehead_graph(v)
         if (v not in self.domain().vertices()):
             v = self.domain().vertices()[0]
             print "Not a valid vertex. Picking vertex",v,"for you."
@@ -3485,7 +3485,7 @@ class TopologicalRepresentative(GraphMap):
             G.to_undirected().plot()
         return G.to_undirected()
 
-    def endpoints_of_pnp(self,path):
+    def endpoints_of_inp(self,path):
         '''
         Determines the fixed points of an indivisible nielsen path, using the
         format in the pnp function.
@@ -3502,6 +3502,8 @@ class TopologicalRepresentative(GraphMap):
 
     def nielsen_classes(self,verbose=True):
         '''
+        WARNING: ONLY WORKS IF ALL ENDPOINTS OF INPs ARE VERTICES.
+
         For vertices v,w we define v~w if there exists a indivisible nielsen path
         from v to w. An equivlance class is called a nielsen class.
 
@@ -3511,9 +3513,11 @@ class TopologicalRepresentative(GraphMap):
 
         Author: Brian Mann
         '''
+        print "Currently only works if you subdivide the graph by hand"
+        print "to include endpoints of nielsen paths as vertices."
         classes = []
         for path in self.indivisible_nielsen_paths():
-            endpts = self.endpoints_of_pnp(path)
+            endpts = self.endpoints_of_inp(path)
             classes.append(endpts)
             for p in endpts:
                 for ncls in classes:
@@ -3521,15 +3525,31 @@ class TopologicalRepresentative(GraphMap):
                         ncls = list(set(ncls + endpts))
                     else:
                         classes.append(endpts)
-        for cls1 in classes:
-            for x in cls1:
-                for cls2 in classes:
-                    if x in cls2:
-                        cls1 = list(set(cls1 + cls2))
-                        classes.remove(cls2)
+        
+        def union(lists):
+            if len(lists) == 0:
+                return lists
+            elif len(lists) == 1:
+                return lists[0]
+            else:
+                return list(set(lists[0] + union(lists[1:])))
 
+        def merge(lists):
+            i=0
+            while i < len(lists):
+                temp = [lists[i]]
+                for ls in lists[i+1:]:
+                    for x in lists[i]:
+                        if x in ls:
+                            temp.append(ls)
+                            lists.remove(ls)
+                if temp == [lists[i]]:
+                    i += 1
+                else:
+                    lists[i] = union(temp)
+            return lists
 
-        return classes
+        return merge(classes)
 
 
     def index_list(self,verbose=True):
@@ -3538,11 +3558,13 @@ class TopologicalRepresentative(GraphMap):
         ASSUMES self IS FULLY IRREDUCIBLE!!!!!
         Assumes self is a train track.
 
+        WARNING: subdivide the graph by hand so endpoints of inps are vertices
+
         Author: Brian Mann
         '''
         if not self.is_train_track():
             print "You didn't input a train track."
-            return self.train_track().index_list()
+            #return self.train_track().index_list()
         ind = []
         if len(self.periodic_nielsen_paths()) == 0:
             for v in self.domain().vertices():
@@ -3555,7 +3577,7 @@ class TopologicalRepresentative(GraphMap):
                 for v in ncls:
                     n += self.number_of_gates(v)
                 for path in self.indivisible_nielsen_paths():
-                    if self.endpoints_of_pnp(path)[0] in ncls:
+                    if self.endpoints_of_inp(path)[0] in ncls:
                         n -= 1
                 ind.append(n)
 
