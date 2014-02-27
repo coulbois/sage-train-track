@@ -4,7 +4,11 @@
 # modified by Thierry
 #
 #*****************************************************************************
-    
+
+from free_group import FreeGroup
+from graph_map import GraphMap
+from inverse_graph import GraphWithInverses
+
 class Core():
     """
     Core(G,H,g,h,v,w) builds the Guirardel Core for the two GraphWithInverse
