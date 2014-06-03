@@ -19,7 +19,7 @@ class ConvexCore():
        v      v
         ----->
           e
-    
+
     where e is an edge of G1 and f an edge of G2.
 
     ConvexCore(phi): where phi is an automorphism of the free group
@@ -48,7 +48,7 @@ class ConvexCore():
             fe=f.edge_map()
             ge=g.edge_map()
             #CC=Core(H,G,g.edge_map(),f.edge_map())
-        elif len(args)==1: 
+        elif len(args)==1:
             if isinstance(args[0],GraphMap): #ConvexCore(f)
                 G=f.domain()
                 H=f.codomain()
@@ -70,12 +70,12 @@ class ConvexCore():
             (G,H,fe,ge)=args
             f=fe
             g=ge
-        
+
         self._T0=G
         self._T1=H
 
         C=Core(G,H,fe,ge)
-        
+
         A=G.alphabet()
         B=H.alphabet()
 
@@ -95,8 +95,8 @@ class ConvexCore():
         zero_cells=set()
         one_cell_G_boundary=dict()
         one_cell_H_boundary=dict()
-        
-        
+
+
         for c in two_cells:
             v=c[0]
             a=c[1]
@@ -137,7 +137,7 @@ class ConvexCore():
                     for e in one_cell_G_class:
                         if one_cell_G_class[e]==k:
                             one_cell_G_class[e]=j
-        
+
         zero_cell_class=dict((v,i) for i,v in enumerate(zero_cells))
         if isinstance(G,MetricGraph):
             for e in one_cells_G:
@@ -171,9 +171,9 @@ class ConvexCore():
             if j not in map_H:
                 map_H[j]=i
                 i+=1
-                
 
-        i=0 
+
+        i=0
         boundary_2=dict()
         label_2=dict()
         for c in two_cells:
@@ -262,7 +262,7 @@ class ConvexCore():
         ``(u,v)``: the initial vertex ``u`` and the terminal
         vertex ``v`` of ``e``.
         """
-        
+
         return self._boudary_1[e]
 
     def label_2(self,c):
@@ -270,7 +270,7 @@ class ConvexCore():
         Label of the two-cell ``c``.
 
         OUTPUT:
-        
+
         ``(a,b)`` where ``a`` is an edge of ``T0`` and ``b`` is an
         edge of ``T1``.
         """
@@ -282,7 +282,7 @@ class ConvexCore():
         Label of the one-cell ``e``.
 
         OUTPUT:
-        
+
         ``(a,side)`` where ``side`` is 0 or 1 and ``a`` is an edge of
         ``Tside``.
 
@@ -294,7 +294,7 @@ class ConvexCore():
 
     def slice(self,a,side):
         """
-        Slice of ``self`` for the edge ``a`` of the given ``side``. 
+        Slice of ``self`` for the edge ``a`` of the given ``side``.
 
         The slice is the tree whose vertices are edges labeled by
         ``(a,side)`` and with edges the two cells with one side
@@ -306,7 +306,7 @@ class ConvexCore():
         two-cells of ``self``.
 
         INPUT:
-        
+
         If ``self`` is the core of the trees ``T0`` and ``T1`` and
         ``side==0`` then ``a`` is an edge of ``T0``. Conversely if
         ``side==1`` then ``a`` is an edge of ``T1``.
@@ -318,7 +318,7 @@ class ConvexCore():
                 G.add_edge(b[2*side],b[2*side+1],i)
 
         return G
-                
+
 
     def one_squeleton(self,side):
         """
@@ -326,7 +326,7 @@ class ConvexCore():
 
         INPUT:
 
-        ``side`` is 0 or 1, standing for ``T0`` or ``T1`` 
+        ``side`` is 0 or 1, standing for ``T0`` or ``T1``
 
 
         OUTPUT:
