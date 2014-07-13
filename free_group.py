@@ -8,7 +8,6 @@
 from sage.combinat.words.words import FiniteWords_over_OrderedAlphabet
 from inverse_alphabet import AlphabetWithInverses
 from free_group_word import FreeGroupWord
-from free_group_automorphism import FreeGroupAutomorphism
 
 
 class FreeGroup(FiniteWords_over_OrderedAlphabet):
@@ -233,6 +232,8 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
         Identity automorphism of ``self``.
         """
         morph=dict((a,self([a])) for a in self._alphabet.positive_letters())
+
+        from free_group_automorphism import FreeGroupAutomorphism #this has to be here and not in the preamble to prevent loop on import statements
         return FreeGroupAutomorphism(morph,group=self)
 
     def dehn_twist(self,a,b,on_left=False):
@@ -277,7 +278,8 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
                 morphism[a] = self([a,b])
             else:
                 morphism[a] = self([b,a])
-
+                
+        from free_group_automorphism import FreeGroupAutomorphism
         return FreeGroupAutomorphism(morphism,group=self)
 
     def random_permutation(self):
@@ -297,6 +299,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
             else:
                 f[a] = self([A.inverse_letter(s(a))])
 
+        from free_group_automorphism import FreeGroupAutomorphism #this has to be here and not in the preamble to prevent loop on import statements
         return FreeGroupAutomorphism(f, group=self)
 
     def random_automorphism(self,length=1):
@@ -333,6 +336,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
         result[A[2*i+1]]=self([A[2*i+2],A.inverse_letter(A[2*i]),A[2*i+1]])
         result[A[2*i+3]]=self([A[2*i+3],A[2*i],A.inverse_letter(A[2*i+2])])
 
+        from free_group_automorphism import FreeGroupAutomorphism #this has to be here and not in the preamble to prevent loop on import statements
         return FreeGroupAutomorphism(result,group=self)
 
     def _surface_dehn_twist_m(self,i):
@@ -347,6 +351,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
         for j in xrange(2*i+2,len(A)):
             result[A[j]]=self([a,A[j],aa])
 
+        from free_group_automorphism import FreeGroupAutomorphism #this has to be here and not in the preamble to prevent loop on import statements
         return FreeGroupAutomorphism(result,group=self)
 
     def surface_dehn_twist(self,k):
@@ -467,6 +472,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
             result[a]=self([A.inverse_letter(a),A[i-1],a])
             result[A[i-1]]=self(a)
 
+        from free_group_automorphism import FreeGroupAutomorphism #this has to be here and not in the preamble to prevent loop on import statements
         return FreeGroupAutomorphism(result,group=self)
 
     def random_braid(self,n=1):

@@ -13,6 +13,7 @@ from inverse_alphabet import AlphabetWithInverses
 from free_group import FreeGroup
 from free_group_automorphism import FreeGroupAutomorphism
 from sage.graphs.graph import DiGraph
+from sage.graphs.graph import Graph
 
 class TopologicalRepresentative(GraphMap):
     """
@@ -1210,10 +1211,12 @@ class TopologicalRepresentative(GraphMap):
             return False
 
         if len(self.find_folding())==0:
-            print "No edge is fold under iterations\nTrain-track"
+            if verbose:
+                print "No edge is fold under iterations\nTrain-track"
             return True
         else:
-            print "There is an edge which is fold under iterations"
+            if verbose:
+                print "There is an edge which is fold under iterations"
             return False
 
 
@@ -1337,6 +1340,9 @@ class TopologicalRepresentative(GraphMap):
     def illegal_turns(self,stratum=None,iteration=False):
         """
         The list of illegal turns of self.
+
+        A turn is illegal if it is mapped by a power of ``self`` to a
+        degenerate turn.
 
         OUPUT:
 
@@ -3430,161 +3436,264 @@ class TopologicalRepresentative(GraphMap):
 
         return result_morph
 
-    def gates(self,v=0):
-        '''
-        Returns a list of equivalence classes of edges out of a vertex v.
-        Author: Brian Mann
-        '''
-        if (v not in self.domain().vertices()):
-            v = self.domain().vertices()[0]
-            print "Not a valid vertex. Computing the gates at",v
+    def gates(self,v):
+        """
+        List of gates at vertex ``v``.
 
-        directions = []
+        A gate is a list of edges starting at vertex ``v`` such each
+        to of them form an illegal turn. That is to say after
+        iteration of ``self`` the two edges have a common prefix.
+
+        OUTPUT:
+        
+        list of list of edges out of the vertex ``v``.
+
+        WARNING:
+
+        ``self`` is assumed to be train-track.
+        
+        AUTHOR: 
+
+        Brian Mann
+        """
+
+        gates=[]
+
+        illegal_turns=self.illegal_turns(v)
+
         for e in self.domain().alphabet():
             if self.domain().initial_vertex(e) == v:
-                directions.append(e)
-        for e in directions:
-            for f in directions:
-                if (e,f) in self.illegal_turns():
-                    directions.remove(f)
-        return directions
+                for g in gates:
+                    if (g[0],e) in illegal_turns:
+                        g.append(e)
+                        break
+                else:
+                    gates.append([e])
+
+        return gates
 
     def number_of_gates(self,v=0):
-        '''
-        Returns the number of gates at v.
-        '''
+        """
+        Number of gates at v.
+        """
         return len(self.gates(v))
 
-    def local_whitehead_graph(self,v=0,verbose=False,show_plot=False):
-        '''
-        Returns the local whitegraph at a vertex v. Vertices are directions 
-        of v, and two directions are joined by an edge if some iterate of
-        and edge by self crosses that turn.
+    def local_whitehead_graph(self,v):
+        """
+        The local whitehead graph at a vertex ``v``. 
 
-        ASSUMES self IS FULLY IRREDUCIBLE!!!!!
+        Vertices are directions at v, and two directions are joined by
+        an edge if some iterate of an edge by ``self` crosses that turn.
 
-        Author: Brian Mann
-        '''
-        if not self.is_train_track():
-            print "You didn't input a train track. Making it a train track..."
-            #return self.train_track().local_whitehead_graph(v)
-        if (v not in self.domain().vertices()):
-            v = self.domain().vertices()[0]
-            print "Not a valid vertex. Picking vertex",v,"for you."
+        WARNING:
+        
+        ``self`` is assumed to be train-track and fully irreducible.
+
+        AUTHOR: 
+
+        Brian Mann
+        """
             
-        directions = []
-        for e in self.domain().alphabet():
-            if self.domain().initial_vertex(e) == v:
-                directions.append(e)
+        edges=[(e,f) for (e,f) in self.edge_turns() if self.domain().initial_vertex(e)==v]
         
-        G = DiGraph([directions,lambda d1,d2: (d1,d2) in self.edge_turns()])
-        if verbose:
-            print G.to_undirected()
-        if show_plot:
-            G.to_undirected().plot()
-        return G.to_undirected()
+        return Graph(edges)
 
-    def endpoints_of_inp(self,path):
-        '''
-        Determines the fixed points of an indivisible nielsen path, using the
-        format in the pnp function.
-
-        Author: Brian Mann
-        '''
-
-        p1 = self.domain().terminal_vertex(path[0][len(path[0])-1])
-        p2 = self.domain().terminal_vertex(path[1][len(path[1])-1])
-        if (p1 == p2):
-            return [p1]
-        else:    
-            return [p1,p2]
-
-    def nielsen_classes(self,verbose=True):
-        '''
-        WARNING: ONLY WORKS IF ALL ENDPOINTS OF INPs ARE VERTICES.
-
-        For vertices v,w we define v~w if there exists a indivisible nielsen path
-        from v to w. An equivlance class is called a nielsen class.
-
-        Returns a list of nielsen classes for self.
-
-        ASSUMES self IS FULLY IRREDUCIBLE!!!!!
-
-        Author: Brian Mann
-        '''
-        print "Currently only works if you subdivide the graph by hand"
-        print "to include endpoints of nielsen paths as vertices."
-        classes = []
-        for path in self.indivisible_nielsen_paths():
-            endpts = self.endpoints_of_inp(path)
-            classes.append(endpts)
-            for p in endpts:
-                for ncls in classes:
-                    if p in ncls:
-                        ncls = list(set(ncls + endpts))
-                    else:
-                        classes.append(endpts)
+    def stable_local_whitehead_graph(self,v):
+        """
+        The stable local Whitehead graph at a vertex ``v``.
         
-        def union(lists):
-            if len(lists) == 0:
-                return lists
-            elif len(lists) == 1:
-                return lists[0]
+        Vertices are stable directions at ``v`` (stable directions are
+        in one-to-one correspondence with gates). Two directions are
+        joined by an edge if some iterate of an edge`by
+        ``self``crosses that turn.
+
+        The stable local Whitehead graph is a subgraph of the local
+        Whitehead graph.
+
+        Note that if ``v`` is not a periodic vertex then its stable
+        local Whitehead graph is empty.
+
+        WARNING:
+        
+        ``self`` is assumed to be train-track and fully irreducible.
+
+        """
+        
+        lwg=self.local_whitehead_graph(v)
+        
+        directions=lwg.vertices()
+        images=directions
+
+        reached_vertices=set([v])
+        done=False
+        while not done:
+            w=self(v)
+            images=[self(e)[0] for e in images]
+            if w in reached_vertices:
+                done=True
             else:
-                return list(set(lists[0] + union(lists[1:])))
+                reached_vertices.add(w)
 
-        def merge(lists):
-            i=0
-            while i < len(lists):
-                temp = [lists[i]]
-                for ls in lists[i+1:]:
-                    for x in lists[i]:
-                        if x in ls:
-                            temp.append(ls)
-                            lists.remove(ls)
-                if temp == [lists[i]]:
-                    i += 1
-                else:
-                    lists[i] = union(temp)
-            return lists
+        if w!=v:
+            return Graph()
 
-        return merge(classes)
+        done=False
+        while not done:
+            done=True
+            for i,e in enumerate(directions):
+                if e not in images:
+                    directions.pop(i)
+                    images.pop(i)
+                    done=False
+        
+        return lwg.subgraph(vertices=directions)
+            
+    def ideal_whitehead_graph(self,verbose=False):
+        """
+        The ideal Whitehead graph of ``self``.
 
+        This is defined in [Pfaff] and is an invariant of the
+        conjugacy class of the outer automorphism represented by
+        ``self``.
+
+        Vertices are equivalence classes of germs of the graph of
+        ``self``. Two germs are equivalent if they are the end of a
+        periodic Nielsen path. There is an edge betwee two such germs
+        if the corresponding turn is used pass the iterated images of
+        edges. Of course only connected components with >2 vertices
+        are considered.
+
+        WARNING:
+        
+        ``self`` is assumed to be train-track and fully irreducible
+        and not geometric (no closed INP).
+
+        """
+        G=self.domain()
+        A=G.alphabet()
+
+        iwg=Graph(multiedges=False)
+
+        germ_classes=[]
+ 
+        pnps=self.periodic_nielsen_paths()
+
+        #the end of an inp is either a vertex of self or a point inside an edge which is denoted by (e,iter,portion)
+        
+        for i,((u,v),iter) in enumerate(pnps):
+            uu=self.image(u,iter)
+            vv=self.image(v,iter)
+            p=G.common_prefix_length(uu,vv)
+            v1=(u[-1],iter,len(uu)-p-len(u)) # TODO: ambiguity if the same point appears with different iter
+            v2=(v[-1],iter,len(vv)-p-len(v))
+
+            if v1[2]!=0: # vertex in the middle of an edge
+                vv1=len(self.image(v1[0],iter))-v1[2]-1 # always>0
+                iwg.add_edge((v1,(A.inverse_letter(v1[0]),v1[1],vv1)))
+            else:
+                v1=A.inverse_letter(v1[0])
+            if v2[2]!=0: # vertex in the middle of an edge
+                vv2=len(self.image(v2[0],iter))-v2[2]-1 # always>0
+                iwg.add_edge((v2,(A.inverse_letter(v2[0]),v2[1],vv2)))
+            else:
+                v2=A.inverse_letter(v2[0])
+
+            # build the germ classes of germs ending pnps
+
+            for (i,c) in enumerate(germ_classes): 
+                if v1 in c:
+                    i1=i
+                break
+            else:
+                i1=len(germ_classes)
+                germ_classes.append([v1])
+
+            for (i,c) in enumerate(germ_classes):
+                 if v2 in c:
+                     if i==i1:
+                         break
+                     else:
+                         germ_classes[i1]=germ_classes[i1]+c
+                         germ_classes.pop(i)
+                         break
+            else:
+                germ_classes[i1].append(v2)
+
+        if verbose:
+            print "Classes of germ at the end of pnp:",germ_classes
+                
+        for v in G.vertices():
+            iwg=iwg.union(self.stable_local_whitehead_graph(v))
+                       
+        if verbose:
+            print "Graph before identification of equivalent germs:", iwg.edges()
+
+        # NOW mod out the graph by inps
+
+        for c in germ_classes:
+            if len(c)>0:
+                for i in xrange(1,len(c)):
+                    for e in iwg.edges_incident(c[i]):
+                        iwg.delete_edge(e)
+                        if e[0]==c[i]:
+                            iwg.add_edge((c[0],e[1]))
+                        else:
+                            iwg.add_edge((e[0],c[0]))
+                    iwg.delete_vertex(c[i])
+
+
+        return iwg
+        
+                    
+
+
+    def index(self):
+        """
+        Stabilized index of ``self`` as defined by Gaboriau, Jaeger,
+        Levitt and Lustig.
+
+        Let Phi be an outer automorphism of the free group of rank N. Let ind(Phi)
+        be the GJLL index of Phi. This ind(Phi) is a positive integer
+        or half a positive integer and it is bounded by 1/2 and N-1.
+
+        The sequence ind(Phi^(n!)) is increasing and eventually
+        constant equal to what we call the stabilized index of Phi.
+        
+        The index and stabilized index of Phi are invariant of the
+        conjugacy class of the outer automorphism Phi.
+        
+        ``self.index()`` is the stabilized index of the outer
+        automorphism represented by Phi.
+
+        This is the sum of the index list of ``self``. It can be
+        computed using stable Whitehead graphs and Nielsen paths.
+
+        WARNING: 
+
+        ``self`` is assumed to be train-track and fully irreducible.
+        """
+
+        return sum(self.index_list())
 
     def index_list(self,verbose=True):
-        '''
-        Computes Catherine Pfaff's index list. 
-        ASSUMES self IS FULLY IRREDUCIBLE!!!!!
-        Assumes self is a train track.
+        """
+        Index list of ``self``.
 
-        WARNING: subdivide the graph by hand so endpoints of inps are vertices
+        This index list is defined in [pfaff], this is the list of
+        number of vertices of connected components of the ideal
+        whitehead graph.
 
-        Author: Brian Mann
-        '''
-        if not self.is_train_track():
-            print "You didn't input a train track."
-            #return self.train_track().index_list()
-        ind = []
-        if len(self.periodic_nielsen_paths()) == 0:
-            for v in self.domain().vertices():
-                ind.append(1-(self.number_of_gates(v))/2.0)
-                
-            return ind
-        else:
-            for ncls in self.nielsen_classes():
-                n = 0
-                for v in ncls:
-                    n += self.number_of_gates(v)
-                for path in self.indivisible_nielsen_paths():
-                    if self.endpoints_of_inp(path)[0] in ncls:
-                        n -= 1
-                ind.append(n)
+        This is also the list of indices of non-isogredient
+        automorphisms in the outer class of the outer automorphism
+        represente by ``self``.
 
-            ind = map(lambda x: 1 - x/2.0,ind)
+        WARNING:
 
-            return ind
+        Only works if ``self`` is a fully irreducible train-track not
+        geometric (without closed Nielsen path).
+        """
 
-
+        return [len(c) for c in self.ideal_whitehead_graph().connected_components()]
     
 
 
