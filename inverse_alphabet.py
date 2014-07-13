@@ -1,23 +1,23 @@
 #*****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
-# 
-#  Distributed under the terms of the GNU General Public License (GPL) 
-#                  http://www.gnu.org/licenses/ 
-#***************************************************************************** 
+#
+#  Distributed under the terms of the GNU General Public License (GPL)
+#                  http://www.gnu.org/licenses/
+#*****************************************************************************
 
 from sage.rings.integer import Integer
 
 class AlphabetWithInverses():
     """
     Class for alphabet with inverse letters.
-    
+
     Intended to be used by FreeGroup.  Builds a finite ordered
     alphabet with an inverse for each letter. There must be no
     duplicate. Inverse letters are either given or assumed to be
     capitalized letters.
 
     EXAMPLES::
-    
+
         sage: AlphabetWithInverse(['a','b','c'],['A','B','C'])
         Alphabet with inverse on ['a', 'b', 'c']
 
@@ -30,10 +30,10 @@ class AlphabetWithInverses():
         sage: AlphabetWithInverses(3,type='x0')
         Alphabet with inverse on ['x0', 'x1', 'x2']
 
-    AUTHORS: 
- 
-    - Thierry Coulbois (2013-05-16): beta.0 version 
-	 
+    AUTHORS:
+
+    - Thierry Coulbois (2013-05-16): beta.0 version
+
     """
 
     def __init__(self,alphabet,inverse=None,type='abc'):
@@ -46,8 +46,8 @@ class AlphabetWithInverses():
         and its type (default is 'abc'). `
 
         INPUT:
-        
-        `type`` can be: 
+
+        `type`` can be:
 
         - 'abc' to get an alphabet abc... and inverses ABC...
 
@@ -56,7 +56,7 @@ class AlphabetWithInverses():
         - 'a0' to get an alphabet a0, a1,... and inverses A0, A1,...
 
         EXAMPLES::
-        
+
         sage: AlphabetWithInverses(['a','b','c'],['A','B','C'])
         Alphabet with inverses on ['a', 'b', 'c']
 
@@ -82,7 +82,7 @@ class AlphabetWithInverses():
                 else:
                     self._positive=["%c" % (i+97) for i in xrange(26)]+["x%s" % i for i in xrange(alphabet-26)]
                     self._negative=["%c" % (i+65) for i in xrange(26)]+["X%s" % i for i in xrange(alphabet-26)]
-                    
+
             elif type=='a0':
                 self._positive=["a%s" % i for i in xrange(alphabet)]
                 self._negative=["A%s" % i for i in xrange(alphabet)]
@@ -92,9 +92,9 @@ class AlphabetWithInverses():
             else: #type is assumed to be 'x0'
                 self._positive=["x%s" % i for i in xrange(alphabet)]
                 self._negative=["X%s" % i for i in xrange(alphabet)]
-                
 
-        else: 
+
+        else:
             self._positive = list(alphabet)
             if inverse is not None:
                 self._negative = list(inverse)
@@ -130,7 +130,7 @@ class AlphabetWithInverses():
         """
         return AlphabetWithInverses(self.positive_letters()[:],self.negative_letters()[:],self._type)
 
-        
+
 
     def cardinality(self):
         """
@@ -147,7 +147,7 @@ class AlphabetWithInverses():
         Test whether the letter is contained in self
         """
         return letter in self._positive or letter in self._negative
-            
+
     def __len__(self):
         return len(self._positive)
 
@@ -175,7 +175,7 @@ class AlphabetWithInverses():
         else:
             return self._negative[n-self.cardinality()]
 
-    def inverse_letter(self,letter): 
+    def inverse_letter(self,letter):
        """
        Inverse of ``letter``.
        """
@@ -202,7 +202,7 @@ class AlphabetWithInverses():
     def to_positive_letter(self,letter):
         """
         Given letter a or a^-1 returns a.
-        
+
         EXAMPLES::
 
             sage: A = AlphabetWithInverse(['a','b','c'],['A','B','C'])
@@ -217,25 +217,25 @@ class AlphabetWithInverses():
             return self._inverse[letter]
         else:
            raise ValueError, "The letter %s is not in the alphabet %s" %(str(letter),str(self))
-       
+
     def positive_letters(self):
         """
         The list of positive letters of this alphabet.
         """
         return self._positive
-    
+
     def negative_letters(self):
         """
         The list of negative letters
         """
         return self._negative
 
-    def less_letter(self,a,b): 
+    def less_letter(self,a,b):
         """
         ``True`` if ``a`` is before ``b`` in the alphabet.
         """
         return (self.rank(a)<=self.rank(b))
-    
+
     def random_letter(self,exclude=[]):
         """
         A random letter, different from the letters in ``exclude``.
@@ -248,7 +248,7 @@ class AlphabetWithInverses():
             a=self[j]
             done=a not in exclude
         return a
-        
+
     def _new_letter(self):
         """
         A pair [positive_letter, negative_letter] not already in the
@@ -291,7 +291,7 @@ class AlphabetWithInverses():
     def _new_letters(self,n=1):
         """
         A list of length ``n`` of pairs [positve_letter, negative_letter]
-        not already in the alphabet.  
+        not already in the alphabet.
 
         The new_letters are constructed from the type of the
         alphabet. If the type is 'abc' and all 26 ASCII letters are
@@ -307,7 +307,7 @@ class AlphabetWithInverses():
                     n=n-1
                     result.append([e,"%c"%(i+65)])
                 i+=1
-        
+
         elif self._type=='x0':
             while n>0:
                 e="x%s"%i
@@ -322,14 +322,14 @@ class AlphabetWithInverses():
                 result.append([e,"A%s"%i])
                 n=n-1
             i+=1
-            
-     
+
+
         return result
 
     def add_new_letter(self):
-        """ 
+        """
         Adds a new letter to the alphabet.
-        
+
         OUTPUT:
 
         The pair[positive_letter,negative_letter].
@@ -343,11 +343,11 @@ class AlphabetWithInverses():
 
 
     def add_new_letters(self,n=1):
-        """ 
+        """
         Adds ``n`` new letters to the alphabet.
-        
+
         OUTPUT:
-        
+
         The list of [positive_letter,negative_letter] of new letters.
         """
         new_letters=self._new_letters(n)
@@ -356,13 +356,13 @@ class AlphabetWithInverses():
         self._inverse.update((a[0],a[1]) for a in new_letters)
         self._inverse.update((a[1],a[0]) for a in new_letters)
         return new_letters
-        
+
     def remove_letter(self,a):
         """
         Remove the letter a (and its inverse) from the alphabet.
 
         EXAMPLES::
-        
+
             sage: A=AlphabetWithInverses(4)
             sage: A.remove_letter('b')
             sage: print A
