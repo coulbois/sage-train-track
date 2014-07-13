@@ -593,8 +593,10 @@ class GraphWithInverses(DiGraph):
                v=self.initial_vertex(e)
                if v in vertex_map and v!=vertex_map[v]:
                     self.set_initial_vertex(e,vertex_map[self.initial_vertex(e)])
-                    if self.has_vertex(v):
-                         self.remove_vertex(v)
+
+          for v in vertex_map:
+               if v!=vertex_map[v]:   
+                    self.remove_vertex(v)
 
           return edge_map
 
