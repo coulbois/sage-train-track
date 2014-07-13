@@ -6,9 +6,10 @@
 #*****************************************************************************
 
 from sage.combinat.words.words import FiniteWords_over_OrderedAlphabet
+from inverse_alphabet import AlphabetWithInverses
+from free_group_word import FreeGroupWord
+from free_group_automorphism import FreeGroupAutomorphism
 
-# from inverse_alphabet import AlphabetWithInverses
-# from free_group_word import FreeGroupWord
 
 class FreeGroup(FiniteWords_over_OrderedAlphabet):
     """

@@ -5,9 +5,8 @@
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-# from inverse_graph import GraphWithInverses, MetricGraph
-# from graph_map import GraphMap
-
+from inverse_graph import GraphWithInverses, MetricGraph
+from graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
 
 class MarkedGraph(GraphWithInverses):

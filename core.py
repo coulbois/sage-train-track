@@ -5,9 +5,10 @@
 #
 #*****************************************************************************
 
-# from free_group import FreeGroup
-# from inverse_graph import GraphWithInverses
-    
+from free_group import FreeGroup
+from graph_map import GraphMap
+from inverse_graph import GraphWithInverses
+
 class Core():
     """
     Core(G,H,g,h,v,w) builds the Guirardel Core for the two GraphWithInverse
@@ -34,7 +35,7 @@ class Core():
             inv_edge_map=codomain.difference_of_marking(domain).edge_map()
         self._graph_map=GraphMap(domain,codomain,edge_map,vertex_map)
         self._inv_graph_map=GraphMap(codomain,domain,inv_edge_map,inv_vertex_map)
-        
+
         self._signed_ends={} # dictionary: keys = edge labels and inverse labels of domain
                              # signed_ends[x] = +- cylinder decomoposition of image of edge_map
         self._core_slice={} # dictionary: keys = edge labels of domain
@@ -71,7 +72,7 @@ class Core():
             X=alph.inverse_letter(x)
             self._signed_ends[x]=[]
             self._signed_ends[X]=[]
-        
+
         for x in self._inv_graph_map.domain().edge_labels():
             X=inv_alph.inverse_letter(x)
             inv_image_x = self._inv_graph_map(x)
@@ -126,8 +127,8 @@ class Core():
                             for aa in inv_alph:
                                 if aa not in tails: self._signed_ends[a].append(p_opp+aa)
                             for e in removed_ends: self._signed_ends[a].remove(e)
-                            self._signed_ends[a].remove(p_opp)   
-                            
+                            self._signed_ends[a].remove(p_opp)
+
     def _build_core(self):
         """
         Builds the core.  Called when Core is initialized.
@@ -138,7 +139,7 @@ class Core():
             for e in self._signed_ends[x]:
                 ends[x].append(e[1:] if e[0]=='-' else e)
         inv_alph=self._inv_graph_map.domain()._alphabet
-        
+
         for x in self._graph_map.domain().edge_labels():
             slice_x=GraphWithInverses(alphabet=inv_alph)
             # find common prefix
@@ -172,7 +173,7 @@ class Core():
             return self._signed_ends
         else:
             return self._signed_ends[e]
-  
+
     def core_slice(self,e=None):
         """
         The slice of core above e if specified.  Else returns the dictionary
@@ -183,7 +184,7 @@ class Core():
         else:
             return self._core_slice[e]
 
-        
+
 
     def volume(self,e=None):
         """
@@ -206,4 +207,4 @@ class Core():
         graph=GraphWithInverses.rose_graph(automorphism._domain._alphabet.copy())
         inv_automorphism=automorphism.inverse()
         return Core(graph,graph,automorphism,inv_automorphism)
-    
+

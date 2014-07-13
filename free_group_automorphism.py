@@ -5,11 +5,10 @@
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-
+from inverse_alphabet import AlphabetWithInverses
 from sage.combinat.words.morphism import WordMorphism
+from free_group import FreeGroup
 
-# from inverse_alphabet import AlphabetWithInverses
-# from free_group import FreeGroup
 
 class FreeGroupMorphism(WordMorphism):
     def __init__(self,data,group=None):
@@ -103,13 +102,27 @@ class FreeGroupMorphism(WordMorphism):
         result=result+"%s" %str(self)
         return result
 
+    def __cmp__(self, other):
+        if not isinstance(other, FreeGroupMorphism):
+            return cmp(self.__class__, other.__class__)
+        if self.domain() != other.domain():
+            return cmp(self.domain(), other.domain())
+        if self.codomain() != other.codomain():
+            return cmp(self.codomain(), other.codomain())
+
+        for a in self.domain().alphabet().positive_letters():
+            test = cmp(self.image(a), other.image(a))
+            if test:
+                return test
+        return 0
+
     def to_automorphism(self):
         if not self.is_invertible():
             raise ValueError("the morphism is not invertible")
         return FreeGroupAutomorphism(dict((a,self.image(a)) for a in self.domain().alphabet().positive_letters()),
             domain=self.domain())
 
-    def to_word_morphism(self):
+    def to_word_morphism(self, forget_inverse=False):
         r"""
         Return a word morphism.
 
@@ -130,6 +143,13 @@ class FreeGroupMorphism(WordMorphism):
              [word: CCADaCCADacADDBdaCCCADaCCADacADDBdaCAdac...,
               word: DBDBdaCADDBDBdaCADbddaCCCADacADDBDBDBdaC...]]
         """
+        if forget_inverse:
+            A = self.domain().alphabet()
+            f = {}
+            for a in A.positive_letters():
+                f[a] = map(A.to_positive_letter, self.image(a))
+            return WordMorphism(f)
+
         return WordMorphism(dict((a,list(self.image(a))) for a in self.domain().alphabet()))
 
     def size(self):
@@ -381,9 +401,8 @@ class FreeGroupMorphism(WordMorphism):
 
     def is_orientable(self):
         r"""
-        Check whether the attracting lamination of ``self`` is orientable.
-
-        The result makes no sense is ``self`` is not irreducible.
+        Check whether the attracting language of ``self`` is orientable or
+        equivalently if the attracting lamination is orientable.
 
         EXAMPLES::
 
@@ -447,6 +466,10 @@ class FreeGroupMorphism(WordMorphism):
     def complete_return_words(self, letter):
         r"""
         Compute the set of return words on ``letter``.
+
+        The complete return word on ``letter`` are the set of words of the
+        attracting language of ``self`` that have exactly two occurrences of
+        ``letter`` or its inverse at the begining and at the end.
 
         The morphism must be train-track and irreducible.
 
@@ -629,8 +652,9 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         base graph of the ``TopologicalRepresentative`` is a
         ``GraphWithInverses`` instead of a ``MarkedGraph``.
         """
-        #from topological_representative import TopologicalRepresentative
-        #from inverse_graph import GraphWithInverses
+        from topological_representative import TopologicalRepresentative
+        from inverse_graph import GraphWithInverses
+
         return TopologicalRepresentative(GraphWithInverses.rose_graph(self._domain.alphabet()),self)
 
 
@@ -638,8 +662,9 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         Topological representative on the rose on the alphabet.
         """
-        #from topological_representative import TopologicalRepresentative
-        #from marked_graph import MarkedGraph
+        from topological_representative import TopologicalRepresentative
+        from marked_graph import MarkedGraph
+
         return TopologicalRepresentative(MarkedGraph.rose_marked_graph(self._domain.alphabet()),self)
 
     def train_track(self,stable=True,relative=True,verbose=False):

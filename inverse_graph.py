@@ -7,7 +7,6 @@
 
 from sage.graphs.graph import DiGraph
 from sage.combinat.words.word import Word
-from sage.graphs.graph import DiGraph
 
 
 class GraphWithInverses(DiGraph):
@@ -73,7 +72,8 @@ class GraphWithInverses(DiGraph):
 
 
           if alphabet is None:
-               alphabet = AlphabetWithInverses(self._initial.keys())
+              from inverse_alphabet import AlphabetWithInverses
+              alphabet = AlphabetWithInverses(self._initial.keys())
 
           self._alphabet=alphabet
 

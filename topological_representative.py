@@ -5,14 +5,14 @@
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
+from graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.rings.qqbar import AA
-
-# from graph_map import GraphMap
-# from inverse_alphabet import AlphabetWithInverses
-# from free_group import FreeGroup
-# from free_group_automorphism import FreeGroupAutomorphism
+from inverse_alphabet import AlphabetWithInverses
+from free_group import FreeGroup
+from free_group_automorphism import FreeGroupAutomorphism
+from sage.graphs.graph import DiGraph
 
 class TopologicalRepresentative(GraphMap):
     """
@@ -367,7 +367,7 @@ class TopologicalRepresentative(GraphMap):
 
         return subdivide_morph
 
-    def subdivide_edge(self,edge,position,verbose):
+    def subdivide_edge(self,edge,position,verbose=True):
         """
         Subdivides ``edge`` in two edges a and b. The image of a is
         the prefix of length ``position`` of the image of ``edge``.
@@ -3429,3 +3429,169 @@ class TopologicalRepresentative(GraphMap):
 
 
         return result_morph
+
+    def gates(self,v=0):
+        '''
+        Returns a list of equivalence classes of edges out of a vertex v.
+        Author: Brian Mann
+        '''
+        if (v not in self.domain().vertices()):
+            v = self.domain().vertices()[0]
+            print "Not a valid vertex. Computing the gates at",v
+
+        directions = []
+        for e in self.domain().alphabet():
+            if self.domain().initial_vertex(e) == v:
+                directions.append(e)
+        for e in directions:
+            for f in directions:
+                if (e,f) in self.illegal_turns():
+                    directions.remove(f)
+        return directions
+
+    def number_of_gates(self,v=0):
+        '''
+        Returns the number of gates at v.
+        '''
+        return len(self.gates(v))
+
+    def local_whitehead_graph(self,v=0,verbose=False,show_plot=False):
+        '''
+        Returns the local whitegraph at a vertex v. Vertices are directions 
+        of v, and two directions are joined by an edge if some iterate of
+        and edge by self crosses that turn.
+
+        ASSUMES self IS FULLY IRREDUCIBLE!!!!!
+
+        Author: Brian Mann
+        '''
+        if not self.is_train_track():
+            print "You didn't input a train track. Making it a train track..."
+            #return self.train_track().local_whitehead_graph(v)
+        if (v not in self.domain().vertices()):
+            v = self.domain().vertices()[0]
+            print "Not a valid vertex. Picking vertex",v,"for you."
+            
+        directions = []
+        for e in self.domain().alphabet():
+            if self.domain().initial_vertex(e) == v:
+                directions.append(e)
+        
+        G = DiGraph([directions,lambda d1,d2: (d1,d2) in self.edge_turns()])
+        if verbose:
+            print G.to_undirected()
+        if show_plot:
+            G.to_undirected().plot()
+        return G.to_undirected()
+
+    def endpoints_of_inp(self,path):
+        '''
+        Determines the fixed points of an indivisible nielsen path, using the
+        format in the pnp function.
+
+        Author: Brian Mann
+        '''
+
+        p1 = self.domain().terminal_vertex(path[0][len(path[0])-1])
+        p2 = self.domain().terminal_vertex(path[1][len(path[1])-1])
+        if (p1 == p2):
+            return [p1]
+        else:    
+            return [p1,p2]
+
+    def nielsen_classes(self,verbose=True):
+        '''
+        WARNING: ONLY WORKS IF ALL ENDPOINTS OF INPs ARE VERTICES.
+
+        For vertices v,w we define v~w if there exists a indivisible nielsen path
+        from v to w. An equivlance class is called a nielsen class.
+
+        Returns a list of nielsen classes for self.
+
+        ASSUMES self IS FULLY IRREDUCIBLE!!!!!
+
+        Author: Brian Mann
+        '''
+        print "Currently only works if you subdivide the graph by hand"
+        print "to include endpoints of nielsen paths as vertices."
+        classes = []
+        for path in self.indivisible_nielsen_paths():
+            endpts = self.endpoints_of_inp(path)
+            classes.append(endpts)
+            for p in endpts:
+                for ncls in classes:
+                    if p in ncls:
+                        ncls = list(set(ncls + endpts))
+                    else:
+                        classes.append(endpts)
+        
+        def union(lists):
+            if len(lists) == 0:
+                return lists
+            elif len(lists) == 1:
+                return lists[0]
+            else:
+                return list(set(lists[0] + union(lists[1:])))
+
+        def merge(lists):
+            i=0
+            while i < len(lists):
+                temp = [lists[i]]
+                for ls in lists[i+1:]:
+                    for x in lists[i]:
+                        if x in ls:
+                            temp.append(ls)
+                            lists.remove(ls)
+                if temp == [lists[i]]:
+                    i += 1
+                else:
+                    lists[i] = union(temp)
+            return lists
+
+        return merge(classes)
+
+
+    def index_list(self,verbose=True):
+        '''
+        Computes Catherine Pfaff's index list. 
+        ASSUMES self IS FULLY IRREDUCIBLE!!!!!
+        Assumes self is a train track.
+
+        WARNING: subdivide the graph by hand so endpoints of inps are vertices
+
+        Author: Brian Mann
+        '''
+        if not self.is_train_track():
+            print "You didn't input a train track."
+            #return self.train_track().index_list()
+        ind = []
+        if len(self.periodic_nielsen_paths()) == 0:
+            for v in self.domain().vertices():
+                ind.append(1-(self.number_of_gates(v))/2.0)
+                
+            return ind
+        else:
+            for ncls in self.nielsen_classes():
+                n = 0
+                for v in ncls:
+                    n += self.number_of_gates(v)
+                for path in self.indivisible_nielsen_paths():
+                    if self.endpoints_of_inp(path)[0] in ncls:
+                        n -= 1
+                ind.append(n)
+
+            ind = map(lambda x: 1 - x/2.0,ind)
+
+            return ind
+
+
+    
+
+
+
+
+
+
+        
+
+
