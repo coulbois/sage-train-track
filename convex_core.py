@@ -1,3 +1,16 @@
+#*****************************************************************************
+#       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
+#
+#  Distributed under the terms of the GNU General Public License (GPL)
+#                  http://www.gnu.org/licenses/
+#*****************************************************************************
+
+# from inverse_graph import GraphWithInverses
+# from core import Core
+# from sage.combinat.words.word import Word
+# from inverse_graph import MetricGraph
+
+
 class ConvexCore():
     """
     Guirardel's Convex core of two simplicial trees with an action of
@@ -36,6 +49,16 @@ class ConvexCore():
     The convex core of the universal covers T1 and T2 of G1 and G2,
     with the fundamental group F of G1 acting on G2 through f. Edges
     of length 0 are quotient out.
+
+    TODO:
+
+    This uses the slice construction of Core and thus does not detect
+    edges which do not bound a square.
+
+    WARNING:
+
+    The one squeleton may fail to be connected due to absence of some
+    isolated edges
 
     """
 
@@ -263,7 +286,7 @@ class ConvexCore():
         vertex ``v`` of ``e``.
         """
         
-        return self._boudary_1[e]
+        return self._boundary_1[e]
 
     def label_2(self,c):
         """
@@ -343,3 +366,281 @@ class ConvexCore():
                 result.add_edge(b[0],b[1],self.label_1(i)[0])
 
         return result
+
+    def ideal_curve_diagram(self,radius=1,orientation=1,boundary_word=None):
+        """
+        
+        An ideal curve diagram on the once punctured surface S of
+        genus g which is transverse to the core.
+
+        Only works if T0 was the tree transverse to the original set
+        of ideal curves and T1 is the image of T0 by a maaping class
+        of S (not a general outer automorphism).
+
+        INPUT:
+
+        - ``orientation``: ``1`` or ``-1`` (default 1) whether the first 2-cell of
+          ``self`` is positively oriented or not.
+        
+
+        - ``radius``: (default 1) the radius of the regular n-gone
+          which is the fondamental domain of the surface.
+        """
+
+        from sage.plot.line import Line
+        from sage.plot.arrow import Arrow
+        
+        #        boundary_word=Word("AbaBDCdc")
+        #        boundary_word=Word("bABaCDcd")
+        #        boundary_word=Word("baBDCdcA")
+        #    boundary_word=Word("ABabDcdC")
+        #    boundary_word=Word("abABdCDc")
+        #    boundary_word=Word("BAbacDCd")
+        
+        A=self.tree(0).alphabet()
+        N=len(A)
+        
+
+        # orientation of 2-cells
+            
+        orient=orientation
+        orientation=dict()
+
+        orientation[self.two_cells()[0]]=orient
+        queue=[self.two_cells()[0]]
+        while len(queue)>0:
+            c0=queue.pop()
+            e10,e20,f10,f20=self.boundary_2(c0)
+            for c in self.two_cells():
+                if c not in orientation:
+                    e1,e2,f1,f2=self.boundary_2(c)
+                    if e1==e10 or e2==e20 or f1==f10 or f2==f20:
+                        orientation[c]=-orientation[c0]
+                        queue.append(c)
+                    elif e1==e20 or e2==e10 or f1==f20 or f2==f10:
+                        orientation[c]=orientation[c0]
+                        queue.append(c)
+
+
+        initial_vertex=dict()
+        terminal_vertex=dict()
+
+        boundary_edges_orientation=dict()
+
+        for a in A.positive_letters():
+            aa=A.inverse_letter(a)
+            s=self.slice(a,0)
+            es=s.edges()
+            size=len(es)+1
+
+            if size==1:
+                continue
+
+            # sort the edges of the slice
+            i=1
+            start0=es[0][(1-orientation[es[0][2]])/2]
+            endi=es[i-1][(1+orientation[es[i-1][2]])/2]    
+
+            while i<len(es):
+                j=i
+                while j<len(es):
+                    startj=es[j][(1-orientation[es[j][2]])/2]
+                    endj=es[j][(1+orientation[es[j][2]])/2]    
+                    
+                    if endi==startj: # next(es[i-1])==es[j]:
+                        es[j],es[i]=es[i],es[j]
+                        i+=1
+                        endi=endj
+                        if i<j:
+                            j=j-1
+                    elif endj==start0: #next(es[j])==es[0]:
+                        es=[es[j]]+es
+                        es[j+1:j+2]=[]
+                        i+=1
+                        start0=startj
+                        if i<j:
+                            j=j-1
+                    j+=1
+
+
+            # put a curve for each edge of the slice
+            for i,e in enumerate(es):
+                if orientation[e[2]]==1:
+                    initial_vertex[self.boundary_2(e[2])[2]]=(a,(i+1.0)/size)
+                    terminal_vertex[self.boundary_2(e[2])[3]]=(aa,(size-i-1.0)/size)
+                else:
+                    terminal_vertex[self.boundary_2(e[2])[2]]=(a,(i+1.0)/size)
+                    initial_vertex[self.boundary_2(e[2])[3]]=(aa,(size-i-1.0)/size)
+
+            e=es[0]
+            boundary_edges_orientation[e[(1-orientation[e[2]])/2]]=-1
+            e=es[-1]
+            boundary_edges_orientation[e[(1+orientation[e[2]])/2]]=1
+            
+        for e in initial_vertex:
+            if e not in terminal_vertex:
+                boundary_edges_orientation[e]=1
+        for e in terminal_vertex:
+            if e not in initial_vertex:
+                boundary_edges_orientation[e]=-1
+                
+
+        # order the boundary
+
+        incomplete_boundary=False
+
+        boundary=boundary_edges_orientation.keys()
+        i=1
+        e0=boundary[0]
+        if boundary_edges_orientation[e0]==1:
+            start0,endi=self.boundary_1(e0)
+        else:
+            endi,start0=self.boundary_1(e0)
+        while i<len(boundary):
+            j=i
+            skip=True
+            while j<len(boundary):
+                e=boundary[j]
+                if boundary_edges_orientation[e]==1:
+                    startj,endj=self.boundary_1(e)
+                else:
+                    endj,startj=self.boundary_1(e)
+                if endi==startj:
+                    boundary[i],boundary[j]=boundary[j],boundary[i]
+                    endi=endj
+                    i=i+1
+                    if i<j:
+                        j=j-1
+                    skip=False
+                elif start0==endj:
+                    boundary=[boundary[j]]+boundary
+                    boundary[j+1:j+2]=[]
+                    start0=startj
+                    i+=1
+                    if i<j:
+                        j=j-1
+                    skip=False
+                j+=1
+            if skip:
+                i+=1
+                
+                incomplete_boundary=True
+
+        # disc bounded by ideal curves
+        disc_0=[A[0]]
+
+
+        while len(disc_0)<2*N:
+            a=disc_0[-1]
+            done=False
+            j=len(boundary)-1
+            while j>=0 and not done:
+                if self.label_1(boundary[j])[1]==0:
+                    e=boundary[j]
+                    b=self.label_1(e)[0]
+                    if boundary_edges_orientation[e]==-1:
+                        b=A.inverse_letter(b)
+                    if a==b:
+                        done=True
+                j-=1
+
+            if j<0: j=len(boundary)-1
+            while self.label_1(boundary[j])[1]==1:
+                j-=1
+                if j<0: j=len(boundary)-1
+            e=boundary[j]
+            b=self.label_1(e)[0]
+            if boundary_edges_orientation[e]==1:
+                b=A.inverse_letter(b)
+            disc_0.append(b)
+
+        print "disc",
+        for a in disc_0:
+            print a,
+        print
+        print "boundary",
+        for e in boundary:
+            a,i=self.label_1(e)
+            if boundary_edges_orientation[e]==-1:
+                a=A.inverse_letter(a)
+            print "{0}_{1}".format(a,i),
+
+        # we now fix the ideal curves starting from corners
+            
+        i=0
+        while self.label_1(boundary[i])[1]==1:
+            i+=1
+
+        previous_letter=self.label_1(boundary[i])[0]
+        if boundary_edges_orientation[boundary[i]]==-1:
+            previous_letter=A.inverse_letter(previous_letter)
+        
+        j=i-1
+        if j<0: j=len(boundary)-1
+        while j!=i:
+            e=boundary[j]
+            if self.label_1(e)[1]==0:
+                previous_letter=self.label_1(e)[0]
+                if boundary_edges_orientation[e]==-1:
+                    previous_letter=A.inverse_letter(previous_letter)
+            else:
+                if boundary_edges_orientation[e]==1:
+                    terminal_vertex[e]=(previous_letter,1)
+                else:
+                    initial_vertex[e]=(previous_letter,1)
+            j-=1
+            if j<0:
+                j=len(boundary)-1
+
+        g=Graphics()
+
+        boundary_initial_vertex=dict()
+        boundary_terminal_vertex=dict()
+
+        for i,a in enumerate(disc_0):
+            boundary_initial_vertex[a]=(RR(radius*cos(i*pi/N)),RR(radius*sin(i*pi/N)))
+            boundary_terminal_vertex[a]=(RR(radius*cos((i+1)*pi/N)),RR(radius*sin((i+1)*pi/N)))
+
+
+        # Regular polygon
+        text_decalage=1.05
+        for a in disc_0:
+            x,y=boundary_initial_vertex[a]
+            xx,yy=boundary_terminal_vertex[a]
+            g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=5.0/6)
+            g+=text(a,((x+xx)/2*text_decalage**2,(y+yy)/2*text_decalage**2),hue=5.0/6)
+
+            #Line([boundary_initial_vertex[a][0],boundary_terminal_vertex[a][0]],\
+            #   [boundary_initial_vertex[a][1],boundary_terminal_vertex[a][1]],\
+            #  {'alpha':1,'thickness':2,'rgbcolor':(0,1,1),'legend_label':''})
+ 
+
+        for e in initial_vertex:
+            if e in terminal_vertex:
+                a,p=initial_vertex[e]
+                aa,pp=terminal_vertex[e]
+                b=self.label_1(e)[0]
+                x=boundary_initial_vertex[a][0]+p*(boundary_terminal_vertex[a][0]-boundary_initial_vertex[a][0])
+                y=boundary_initial_vertex[a][1]+p*(boundary_terminal_vertex[a][1]-boundary_initial_vertex[a][1])
+                xx=boundary_initial_vertex[aa][0]+pp*(boundary_terminal_vertex[aa][0]-boundary_initial_vertex[aa][0])
+                yy=boundary_initial_vertex[aa][1]+pp*(boundary_terminal_vertex[aa][1]-boundary_initial_vertex[aa][1])
+                if p==1:
+                    g+=text(b,(text_decalage*xx,text_decalage*yy),hue=RR(A.rank(b))/N)
+                
+                g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A.rank(b))/N)
+                
+
+#ar=Line([x,xx],[y,yy],{'alpha':1,'thickness':2,'rgbcolor':color[b],'legend_label':''}) #{'width':3,'head':1,'rgbcolor':(1,0,0),'linestyle':'dashed','zorder':8,'legend_label':''})
+#                g.add_primitive(ar)
+        
+        g.axes(False)
+
+        return g
+
+        
+
+
+        
+
+        
+        
