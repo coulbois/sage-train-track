@@ -2015,9 +2015,11 @@ class TopologicalRepresentative(GraphMap):
                 if verbose: print "Partial fold"
                 full_edges=[]
                 partial_edges=[]
+                full_done=False
                 for i in xrange(2):
-                    if len(self.image(inp[i][0]))==prefix_length+1:
-                        full_edges.append(inp[i][0])
+                    if not full_done and len(self.image(inp[i][0]))==prefix_length+1: #DEBUG there is a problem if both edges satisfies this
+                        full_edges.append(inp[i][0])                             # Added the done condition. Fixed ? TODO: check
+                        full_done=True
                     else:
                         partial_edges.append(inp[i][0])
 
@@ -3524,11 +3526,14 @@ class TopologicalRepresentative(GraphMap):
         directions=lwg.vertices()
         images=directions
 
+        #Looking for a period for the vertex v
+        
         reached_vertices=set([v])
+        w=v
         done=False
         while not done:
-            w=self(v)
-            images=[self(e)[0] for e in images]
+            w=self(w)
+            images=[self.image(e)[0] for e in images]
             if w in reached_vertices:
                 done=True
             else:
@@ -3581,8 +3586,11 @@ class TopologicalRepresentative(GraphMap):
         #the end of an inp is either a vertex of self or a point inside an edge which is denoted by (e,iter,portion)
         
         for i,((u,v),iter) in enumerate(pnps):
-            uu=self.image(u,iter)
-            vv=self.image(v,iter)
+            uu=u
+            vv=v
+            for i in xrange(iter):
+                uu=self(uu)
+                vv=self(vv)
             p=G.common_prefix_length(uu,vv)
             v1=(u[-1],iter,len(uu)-p-len(u)) # TODO: ambiguity if the same point appears with different iter
             v2=(v[-1],iter,len(vv)-p-len(v))
@@ -3693,8 +3701,8 @@ class TopologicalRepresentative(GraphMap):
         geometric (without closed Nielsen path).
         """
 
-        return [len(c) for c in self.ideal_whitehead_graph().connected_components()]
-    
+        l=[len(c)-2 for c in self.ideal_whitehead_graph().connected_components()]
+        return [i for i in l if i>0]
 
 
 
