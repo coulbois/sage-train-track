@@ -4,6 +4,9 @@
 # modified by Thierry
 #
 #*****************************************************************************
+
+# from free_group import FreeGroup
+# from inverse_graph import GraphWithInverses
     
 class Core():
     """
@@ -22,7 +25,7 @@ class Core():
 
     def __init__(self,domain,codomain,edge_map=None,inv_edge_map=None,vertex_map=None,\
                  inv_vertex_map=None,consolidate=False):
-        
+
         self._domain=domain
         self._codomain=codomain
         if edge_map is None:
