@@ -1539,7 +1539,7 @@ class TopologicalRepresentative(GraphMap):
         while (not done or i>0) and len(possible_np)>0:
             if i==0:
                 done=True
-            t=possible_np.pop(i)
+            t=possible_np[i] #will need to compare t with its image
             n=next.pop(i)
             image=images.pop(i)
 
@@ -1554,30 +1554,25 @@ class TopologicalRepresentative(GraphMap):
             vv=vv[p:]
 
             if verbose:
-                print "possible Nielsen path:",u,v
-                print "reduced image:",uu,",",vv
+                print "possible Nielsen path:",u,v,
+                print " reduced image:",uu,",",vv,
 
             if len(uu)==0:
+                if verbose: print "extend"
                 done=False
-                if verbose:
-                    print "extensions:",
+                possible_np.pop(i)
                 for a in extension[u[-1]]:
                     possible_np.insert(i,(u,v))
                     images.insert(i,(uu,vv))
                     next.insert(i,(a,Word()))
-                    if verbose:
-                        print a[0],
-                if verbose:
-                    print ","
             elif len(vv)==0:
+                if verbose: print "extend"
                 done=False
-                if verbose: print "extensions: ,",
+                possible_np.pop(i)
                 for a in extension[v[-1]]:
                     possible_np.insert(i,(u,v))
                     images.insert(i,(uu,vv))
                     next.insert(i,(Word(),a))
-                    if verbose: print a[0],
-                if verbose: print 
             else:
                 compatible=False
                 for tt in possible_np:
@@ -1586,6 +1581,7 @@ class TopologicalRepresentative(GraphMap):
                         q=G.common_prefix_length(tt[1-j],vv)
                         if (len(uu)==p or len(tt[j])==p) and (len(vv)==q or len(tt[1-j])==q): # (uu,vv) is compatible with (tt[j],tt[1-j])
                             compatible=True
+                            possible_np.pop(i) # we will add it back immediatly
                             if verbose:
                                 print "compatible with:",tt[j],tt[1-j]
                             if p<len(tt[j]): #uu is a strict prefix of tt[j]: we have to extend u
@@ -1611,6 +1607,9 @@ class TopologicalRepresentative(GraphMap):
                     if compatible:
                         break
                 else:
+                    if verbose:
+                        print "not compatible with possible Nielsen paths"
+                    possible_np.pop(i)
                     done=False
             if i>=len(possible_np):
                 i=0
@@ -1624,7 +1623,7 @@ class TopologicalRepresentative(GraphMap):
         # We build a map on indices
 
         if verbose:
-            print "Building the list of stable possible Nielsen paths (given by their index)"
+            print "Building the list of stable possible Nielsen paths (given by their index):",
 
         found=False
         m=dict()
@@ -1670,147 +1669,6 @@ class TopologicalRepresentative(GraphMap):
 
         return pnp
                         
-
-    def periodic_nielsen_paths_alt(self,verbose=False):
-        """
-        The list of periodic Nielsen paths.
-
-        ``self`` is assumed to be an irreducible train-track representative.
-
-        OUTPUT:
-
-        A list of tuples ``(word1,word2,period)``. The fixed points lie in the last edge
-        of the two words.
-
-        SEE ALSO::
-        
-        TopologicalRepresentative.indivisible_nielsen_paths()
-        """
-
-        G=self.domain()
-        A=G.alphabet()
-
-        result=[]
-        image=[]
-        next=[]
-        iteration=[]
-
-        extension=dict((a,[]) for a in A)
-
-        edge_turns=self.edge_turns()
-        for t in edge_turns:
-            extension[A.inverse_letter(t[0])].append(t[1])
-            extension[A.inverse_letter(t[1])].append(t[0])
-
-
-        for t in self.illegal_turns(iteration=True):
-            result.append((Word(),Word()))
-            image.append((Word(),Word())) #tigthen image of result
-            next.append(t[0]) #letters to add to result
-            iteration.append(t[1])
-
-        illegal_turns=next[:]
-        illegal_iter=iteration[:]
-
-        u=[None,None]
-        uu=[None,None]
-
-        i=0
-        while i<len(result):
-            ot=result.pop(i)
-            iter=iteration.pop(i)
-            ott=image.pop(0)
-            ext=next.pop(0)
-
-            for j in xrange(2):
-                if ext[j]!=None:
-                    u[j]=ot[j]*Word([ext[j]])
-                    uu[j]=ott[j]*self.image(ext[j],iter)
-                else:
-                    u[j]=ot[j]
-                    uu[j]=ott[j]
-
-            t=(u[0],u[1])
-            p=G.common_prefix_length(uu[0],uu[1])
-            tt=(uu[0][p:],uu[1][p:])
-
-            if verbose: print t[0],",",t[1],"iteration:",iter,"image:", tt[0],",",tt[1]
-
-            if len(tt[0])==0:
-                for a in extension[t[0][-1]]:
-                    result.insert(i,t)
-                    image.insert(0,tt)
-                    next.insert(0,(a,None))
-                    iteration.insert(i,iter)
-
-            elif len(tt[1])==0:
-                for a in extension[t[1][-1]]:
-                    result.insert(i,t)
-                    image.insert(0,tt)
-                    next.insert(0,(None,a))
-                    iteration.insert(i,iter)
-
-
-            elif (G.is_prefix(t[0],tt[0]) and G.is_prefix(t[1],tt[1])):
-                    result.insert(i,t)
-                    iteration.insert(i,iter)
-
-                    if verbose: print "inp"
-                    i+=1
-
-            elif G.is_prefix(tt[0],t[0]) and (G.is_prefix(t[1],tt[1]) or G.is_prefix(tt[1],t[1])):
-                for a in extension[t[0][-1]]:
-                    result.insert(i,t)
-                    image.insert(0,tt)
-                    next.insert(0,(a,None))
-                    iteration.insert(i,iter)
-
-            elif G.is_prefix(tt[1],t[1]) and G.is_prefix(t[0],tt[0]):
-                for a in extension[t[1][-1]]:
-                    result.insert(i,t)
-                    image.insert(0,tt)
-                    next.insert(0,(None,a))
-                    iteration.insert(i,iter)
-
-            else:
-                ttt=(tt[0][0],tt[1][0])
-                if A.less_letter(ttt[1],ttt[0]):
-                    ttt=(ttt[1],ttt[0])
-                    tt=(tt[0],tt[1])
-                j=0
-                found=False
-                while not found and j<len(illegal_turns):
-                    if ttt!=illegal_turns[j]:
-                        j+=1
-                    else: found=True
-                if found:
-                    l=0
-                    found=False
-                    while not found and l<i:
-                        if G.is_prefix(result[l][0],tt[0]) and G.is_prefix(result[l][1],tt[1]):
-                            found=True
-                        else:
-                            l+=1
-                    if not found:
-                        result.append(ot)
-                        k=illegal_iter[j]
-                        if len(ott[0])>0:
-                            u[0]=self._edge_map(ott[0],k)
-                        else: u[0]=Word()
-                        if len(ott[1])>0:
-                            u[1]=self._edge_map(ott[1],k)
-                        else: u[1]=Word()
-                        p=G.common_prefix_length(u[0],u[1])
-                        image.append((u[0][p:],u[1][p:]))
-                        next.append(ext)
-                        iteration.append(iter+illegal_iter[j])
-
-
-        return [(t,iter) for t,iter in zip(result,iteration)]
-
-
-
-
 
 
     def relative_indivisible_nielsen_paths(self,stratum=None,verbose=False):
@@ -3742,13 +3600,26 @@ class TopologicalRepresentative(GraphMap):
         conjugacy class of the outer automorphism represented by
         ``self``.
 
-        Vertices are equivalence classes of germs of the graph of
+        Vertices are equivalence classes of stable germs of the graph of
         ``self``. Two germs are equivalent if they are the end of a
-        periodic Nielsen path. There is an edge betwee two such germs
-        if the corresponding turn is used pass the iterated images of
+        periodic Nielsen path. There is an edge between two such germs
+        if the corresponding turn is used by the iterated images of
         edges. Of course only connected components with >2 vertices
         are considered.
 
+        The germ of the edge 'a' is designated by 'a'. 
+
+        For the two germs out of a periodic point inside an edge we
+        use the notation:
+
+        ``(e,iter,portion)``
+
+        where the source of the germ is the fix point of f^iter
+        corresponding to the occurence of the edge e in the path
+        f^iter(e)=uev with portion=len(v). ``iter`` is chosen as small as
+        possible to denote that periodic point. The germ is the one
+        with the same orientation as 'a'.
+        
         WARNING:
         
         ``self`` is assumed to be train-track and fully irreducible
@@ -3773,35 +3644,77 @@ class TopologicalRepresentative(GraphMap):
                 uu=self(uu)
                 vv=self(vv)
             p=G.common_prefix_length(uu,vv)
-            v1=(u[-1],iter,len(uu)-p-len(u)) # TODO: ambiguity if the same point appears with different iter
+
+            v1=(u[-1],iter,len(uu)-p-len(u)) 
             v2=(v[-1],iter,len(vv)-p-len(v))
 
+            #there might be ambiguity in this denomination of germs we
+            #lift it by taking iter as small as possible
+
+            diviseur=1
+            a=v1[0]
+            while v1[1]>diviseur:
+                if v1[1]%diviseur==0:
+                    portion=0
+                    w=self.image(a,diviseur)
+                    for j in xrange(len(w)):
+                        jj=len(w)-j-1
+                        next=len(self.image(w[jj],v1[1]/diviseur))
+                        if next+portion>v1[2]: # we went over the occurrence
+                            if w[jj]==a and j==v1[2]-portion:
+                                if verbose: print v1,"optimized tp",
+                                v1=(a,diviseur,j)
+                                if verbose: print v1
+                                diviseur=0
+                        break
+                diviseur+=1
+                
+            diviseur=1
+            a=v2[0]
+            while v2[1]>diviseur:
+                if v2[1]%diviseur==0:
+                    portion=0
+                    w=self.image(a,diviseur)
+                    for j in xrange(len(w)):
+                        jj=len(w)-j-1
+                        next=len(self.image(w[jj],v2[1]/diviseur))
+                        if next+portion>v2[2]: # we went over the occurrence
+                            if w[jj]==a and j==v2[2]-portion:
+                                if verbose: print v2,"optimized to",
+                                v2=(a,diviseur,j)
+                                if verbose: print v2
+                                diviseur=0
+                        break
+                diviseur+=1
+                
+
             if v1[2]!=0: # vertex in the middle of an edge
-                vv1=len(self.image(v1[0],iter))-v1[2]-1 # always>0
-                iwg.add_edge((v1,(A.inverse_letter(v1[0]),v1[1],vv1)))
+                vv1=(A.inverse_letter(v1[0]),v1[1],len(self.image(v1[0],v1[1]))-v1[2]-1) # always>0
+                iwg.add_edge((v1,vv1))
             else:
-                v1=A.inverse_letter(v1[0])
+                vv1=A.inverse_letter(v1[0])
+
             if v2[2]!=0: # vertex in the middle of an edge
-                vv2=len(self.image(v2[0],iter))-v2[2]-1 # always>0
-                iwg.add_edge((v2,(A.inverse_letter(v2[0]),v2[1],vv2)))
+                vv2=(A.inverse_letter(v2[0]),v2[1],len(self.image(v2[0],v2[1]))-v2[2]-1) # always>0
+                iwg.add_edge((v2,vv2))
             else:
-                v2=A.inverse_letter(v2[0])
+                vv2=A.inverse_letter(v2[0])
 
             # build the germ classes of germs ending pnps
 
             if verbose:
-                print "germs",v1,"and",v2,"are equivalent (ends of a pnp)"
+                print "germs",vv1,"and",vv2,"are equivalent (ends of a pnp)"
 
             for (j,c) in enumerate(germ_classes): 
-                if v1 in c:
+                if vv1 in c:
                     i1=j
                     break
             else:
                 i1=len(germ_classes)
-                germ_classes.append([v1])
+                germ_classes.append([vv1])
 
             for (j,c) in enumerate(germ_classes):
-                 if v2 in c:
+                 if vv2 in c:
                      if j==i1:
                          break
                      else:
@@ -3809,7 +3722,7 @@ class TopologicalRepresentative(GraphMap):
                          germ_classes.pop(j)
                          break
             else:
-                germ_classes[i1].append(v2)
+                germ_classes[i1].append(vv2)
 
         if verbose:
             print "Classes of germ at the end of pnp:",germ_classes
@@ -3820,7 +3733,7 @@ class TopologicalRepresentative(GraphMap):
         if verbose:
             print "Graph before identification of equivalent germs:", iwg.edges()
 
-        # NOW mod out the graph by inps
+        # Now mod out the graph by inps
 
         for c in germ_classes:
             if len(c)>0:
@@ -3863,6 +3776,11 @@ class TopologicalRepresentative(GraphMap):
         WARNING: 
 
         ``self`` is assumed to be train-track and fully irreducible.
+
+        Some authors (Mosher, Pfaff), use -1/2 our index definition.
+
+        Some authors (Gaboriau, Levitt), use 1/2 out index definition
+
         """
 
         return sum(self.index_list())
@@ -3873,9 +3791,9 @@ class TopologicalRepresentative(GraphMap):
 
         This index list is defined in [pfaff], this is the list of
         number of vertices of connected components of the ideal
-        whitehead graph.
+        whitehead graph minus two.
 
-        This is also the list of indices of non-isogredient
+        This is also the list of indices of singular non-isogredient
         automorphisms in the outer class of the outer automorphism
         represente by ``self``.
 
@@ -3883,6 +3801,10 @@ class TopologicalRepresentative(GraphMap):
 
         Only works if ``self`` is a fully irreducible train-track not
         geometric (without closed Nielsen path).
+
+        Some authors (Mosher, Pfaff), use -1/2 our index definition.
+
+        Some authors (Gaboriau, Levitt), use 1/2 out index definition
         """
 
         l=[len(c)-2 for c in self.ideal_whitehead_graph().connected_components()]
