@@ -1381,7 +1381,7 @@ class TopologicalRepresentative(GraphMap):
                 else:
                     tt=self.image_turn(t)
                     if tt in illegal_turns[-1]:
-                        new.append(tt)
+                        new.append(t)
                         done=False
                         turns.pop(i)
                     else:
@@ -1504,10 +1504,191 @@ class TopologicalRepresentative(GraphMap):
 
         A list of tuples ``(word1,word2,period)``. The fixed points lie in the last edge
         of the two words.
+
+        SEE ALSO::
+        
+        TopologicalRepresentative.indivisible_nielsen_paths()
         """
 
-        G=self._domain
-        A=G._alphabet
+        G=self.domain()
+        A=G.alphabet()
+
+        possible_np=[] #long illegal turns that have not yet been ruled out
+        images=[] #images of the possible inp
+        next=[]  # edges to add to the corresponding possible_np
+
+        extension=dict((a,[]) for a in A) # Possible extensions a a legal path ending by a
+
+        edge_turns=self.edge_turns()
+        for t in edge_turns:
+            extension[A.inverse_letter(t[0])].append(Word(t[1]))
+            extension[A.inverse_letter(t[1])].append(Word(t[0]))
+
+        for t in self.illegal_turns():
+            possible_np.append((Word(t[0]),Word(t[1])))
+            uu=self(t[0])
+            vv=self(t[1])
+            p=G.common_prefix_length(uu,vv)            
+            images.append((uu[p:],vv[p:])) #tigthen image of possible_np
+            next.append((Word(),Word())) #letters to add to possible_np
+
+
+                    
+        i=0
+        done=False
+        while (not done or i>0) and len(possible_np)>0:
+            if i==0:
+                done=True
+            t=possible_np.pop(i)
+            n=next.pop(i)
+            image=images.pop(i)
+
+            if len(n[0])>0 or len(n[1])>0:
+                done=False
+            u=t[0]*n[0]
+            v=t[1]*n[1]
+            uu=image[0]*self(n[0])
+            vv=image[1]*self(n[1])
+            p=G.common_prefix_length(uu,vv)
+            uu=uu[p:]
+            vv=vv[p:]
+
+            if verbose:
+                print "possible Nielsen path:",u,v
+                print "reduced image:",uu,",",vv
+
+            if len(uu)==0:
+                done=False
+                if verbose:
+                    print "extensions:",
+                for a in extension[u[-1]]:
+                    possible_np.insert(i,(u,v))
+                    images.insert(i,(uu,vv))
+                    next.insert(i,(a,Word()))
+                    if verbose:
+                        print a[0],
+                if verbose:
+                    print ","
+            elif len(vv)==0:
+                done=False
+                if verbose: print "extensions: ,",
+                for a in extension[v[-1]]:
+                    possible_np.insert(i,(u,v))
+                    images.insert(i,(uu,vv))
+                    next.insert(i,(Word(),a))
+                    if verbose: print a[0],
+                if verbose: print 
+            else:
+                compatible=False
+                for tt in possible_np:
+                    for j in xrange(2):
+                        p=G.common_prefix_length(tt[j],uu)
+                        q=G.common_prefix_length(tt[1-j],vv)
+                        if (len(uu)==p or len(tt[j])==p) and (len(vv)==q or len(tt[1-j])==q): # (uu,vv) is compatible with (tt[j],tt[1-j])
+                            compatible=True
+                            if verbose:
+                                print "compatible with:",tt[j],tt[1-j]
+                            if p<len(tt[j]): #uu is a strict prefix of tt[j]: we have to extend u
+                                done=False
+                                for a in extension[u[-1]]:
+                                    possible_np.insert(i,(u,v))
+                                    images.insert(i,(uu,vv))
+                                    next.insert(i,(a,Word()))
+                                break
+                            elif q<len(tt[1-j]):  #vv is a strict prefix of tt[1-j]: we have to extend v
+                                done=False
+                                for a in extension[v[-1]]:
+                                    possible_np.insert(i,(u,v))
+                                    images.insert(i,(uu,vv))
+                                    next.insert(i,(Word(),a))    
+                                break
+                            else:  #we do not know yet what to extend
+                                possible_np.insert(i,(u,v))
+                                images.insert(i,(uu,vv))
+                                next.insert(i,(Word(),Word()))
+                                i=i+1
+                                break
+                    if compatible:
+                        break
+                else:
+                    done=False
+            if i>=len(possible_np):
+                i=0
+
+        if verbose:
+            print "List of possible Nielsen paths:"
+            print possible_np
+
+        # Now we look for periodic points among possible_np
+
+        # We build a map on indices
+
+        if verbose:
+            print "Building the list of stable possible Nielsen paths (given by their index)"
+
+        found=False
+        m=dict()
+        for i,t in enumerate(images):
+            found=False
+            for j,tt in enumerate(possible_np):
+                for k in xrange(2):
+                    p=G.common_prefix_length(t[0],tt[k])
+                    q=G.common_prefix_length(t[1],tt[1-k])
+                    if p==len(tt[k]) and q==len(tt[1-k]): # tt is a subturn of t
+                        m[i]=(j,1-2*k)
+                        found=True
+                        break
+                if found: break
+        
+        stable=m.keys()
+        old_stable=len(stable)+1
+        while len(stable)<old_stable:
+            stable, old_stable= set(m[i][0] for i in stable), len(stable)
+        
+        if verbose:
+            print stable
+
+        pnp=[]
+
+        while 0<len(stable):
+            iter=1
+            i=stable.pop()
+            j=i
+            k=1
+            while m[j][0]!=i:
+                j,k=(m[j][0],m[j][1]*k)
+                iter+=1
+            if k*m[j][1]==-1:
+                iter=2*iter
+            pnp.append((possible_np[i],iter))
+            j=i
+            while m[j][0]!=i:
+                j=m[j][0]
+                pnp.append((possible_np[j],iter))
+                stable.remove(j)
+            
+
+        return pnp
+                        
+
+    def periodic_nielsen_paths_alt(self,verbose=False):
+        """
+        The list of periodic Nielsen paths.
+
+        ``self`` is assumed to be an irreducible train-track representative.
+
+        OUTPUT:
+
+        A list of tuples ``(word1,word2,period)``. The fixed points lie in the last edge
+        of the two words.
+
+        SEE ALSO::
+        
+        TopologicalRepresentative.indivisible_nielsen_paths()
+        """
+
+        G=self.domain()
+        A=G.alphabet()
 
         result=[]
         image=[]
@@ -2017,7 +2198,7 @@ class TopologicalRepresentative(GraphMap):
                 partial_edges=[]
                 full_done=False
                 for i in xrange(2):
-                    if not full_done and len(self.image(inp[i][0]))==prefix_length+1: #DEBUG there is a problem if both edges satisfies this
+                    if not full_done and len(self.image(inp[i][0]))==prefix_length+1: #TODO there is a problem if both edges satisfies this
                         full_edges.append(inp[i][0])                             # Added the done condition. Fixed ? TODO: check
                         full_done=True
                     else:
@@ -3588,7 +3769,7 @@ class TopologicalRepresentative(GraphMap):
         for i,((u,v),iter) in enumerate(pnps):
             uu=u
             vv=v
-            for i in xrange(iter):
+            for j in xrange(iter):
                 uu=self(uu)
                 vv=self(vv)
             p=G.common_prefix_length(uu,vv)
@@ -3608,21 +3789,24 @@ class TopologicalRepresentative(GraphMap):
 
             # build the germ classes of germs ending pnps
 
-            for (i,c) in enumerate(germ_classes): 
+            if verbose:
+                print "germs",v1,"and",v2,"are equivalent (ends of a pnp)"
+
+            for (j,c) in enumerate(germ_classes): 
                 if v1 in c:
-                    i1=i
-                break
+                    i1=j
+                    break
             else:
                 i1=len(germ_classes)
                 germ_classes.append([v1])
 
-            for (i,c) in enumerate(germ_classes):
+            for (j,c) in enumerate(germ_classes):
                  if v2 in c:
-                     if i==i1:
+                     if j==i1:
                          break
                      else:
                          germ_classes[i1]=germ_classes[i1]+c
-                         germ_classes.pop(i)
+                         germ_classes.pop(j)
                          break
             else:
                 germ_classes[i1].append(v2)
