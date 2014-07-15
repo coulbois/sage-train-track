@@ -293,7 +293,9 @@ class GraphWithInverses(DiGraph):
 
      def reduce_path(self,path):
           """
-          Reduced path homotopic (relative to endpoints) to ``path``.
+          Reduced path homotopic (relative to endpoints) to ``path``.`
+
+          This is the reduced word equal to ``path``.
           """
           result = list(path)
 
@@ -434,7 +436,10 @@ class GraphWithInverses(DiGraph):
 
      def extensions(self,u,turns):
           """
-          List of edges a such that the turn between ``u`` and a is in ``turns``.
+          List of edges a such that the turn between ``u`` and a is in ``turns``. 
+
+          This is the list of edges outgoing from the terminal vertex
+          of ``u`` minus the inverse of the last letter of ``u``.
           """
           uu=self._alphabet.inverse_letter(u[-1])
           result=[]
@@ -447,7 +452,7 @@ class GraphWithInverses(DiGraph):
 
      def subdivide(self,edge_list):
           """
-          Subdvides the edges in ``edge_list`` into two edges.
+          Subdvides each of the edges in ``edge_list`` into two edges.
 
           WARNING:
 
@@ -484,10 +489,15 @@ class GraphWithInverses(DiGraph):
 
           Some edges are fully folded and some are only partially
           folded. All edges are assumed to start form the same vertex.
-          Edges are given by their label.
+          Edges are given by their label. In the terminology of
+          Stallings folds the partially fold edges are subdivided and
+          then fold.
 
-          The first element of ``edges_full`` is allowed to be a tuple ``(path,'path')`` and
-          not an ``edge_label``.
+          The first element of ``edges_full`` is allowed to be a tuple
+          ``(path,'path')`` and not an ``edge_label``. Then the other
+          edges will be folded to the whole ``path``. In Stallings
+          terminology, this is a sequence of folds of the successive
+          edges of ``path``.
 
           OUTPUT:
 

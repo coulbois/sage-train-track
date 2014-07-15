@@ -8,11 +8,15 @@
 from inverse_graph import GraphWithInverses, MetricGraph
 from graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
+from inverse_alphabet import AlphabetWithInverses
+from sage.combinat.words.word import Word
 
 class MarkedGraph(GraphWithInverses):
      """
-     A MarkedGraph is a GraphWithInverses together with a GraphMap
-     which is a map from the rose to the graph.
+     A ``MarkedGraph`` is a ``GraphWithInverses`` together with a marking.
+
+     A marking is a homotopy equivalence (here a ``GraphMap``)
+     from the rose to the graph.
 
      A ``MarkedGraph`` can be created from a ``GraphWithInverses`` by
      computing (randomly) a rose equivalent to the graph.
@@ -113,7 +117,7 @@ class MarkedGraph(GraphWithInverses):
 
      def subdivide(self,edge_list):
           """
-          Subdivides edges in the edge_list into two edges.
+          Subdivides each edge in the edge_list into two edges.
 
           WARNING:
 
@@ -131,7 +135,25 @@ class MarkedGraph(GraphWithInverses):
 
      def fold(self,edges_full,edges_partial):
           """
-          Folds the edges.
+          Folds the list of edges.
+
+          Some edges are fully folded and some are only partially
+          folded. All edges are assumed to start form the same vertex.
+          Edges are given by their label. In the terminology of
+          Stallings folds the partially fold edges are subdivided and
+          then fold.
+
+          The first element of ``edges_full`` is allowed to be a tuple
+          ``(path,'path')`` and not an ``edge_label``. Then the other
+          edges will be folded to the whole ``path``. In Stallings
+          terminology, this is a sequence of folds of the successive
+          edges of ``path``.
+
+          INPUT:
+          
+          ``edges_full``, ``edges_partial`` are list of edges (each
+          possibly empty, but the union must have at least two edges).
+
 
           OUTPUT:
 
@@ -150,6 +172,14 @@ class MarkedGraph(GraphWithInverses):
      def contract_forest(self,forest):
           """
           Contract the forest.
+
+          Each tree of the forest is contracted to the initial vertex of its first
+          edge.
+
+          INPUT:
+
+          ``forest`` is a list of disjoint subtrees each given as
+          lists of edges.
 
           OUTPUT:
 
