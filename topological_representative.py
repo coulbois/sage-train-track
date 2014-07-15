@@ -14,6 +14,8 @@ from free_group import FreeGroup
 from free_group_automorphism import FreeGroupAutomorphism
 from sage.graphs.graph import DiGraph
 from sage.graphs.graph import Graph
+from inverse_graph import GraphWithInverses
+from marked_graph import MarkedGraph
 
 class TopologicalRepresentative(GraphMap):
     """
@@ -110,6 +112,7 @@ class TopologicalRepresentative(GraphMap):
 
 
         """
+
         edge_morph=WordMorphism(edge_map)
         if alphabet is None:
             alphabet=AlphabetWithInverses(edge_morph.domain().alphabet())
@@ -870,6 +873,9 @@ class TopologicalRepresentative(GraphMap):
         for a in A.positive_letters():
             span[a].add(a)
 
+        # By induction construct span: span[a] is the set of edges
+        # which are in iterated images self^n(a)
+
         done=False
         while not done:
             done=True
@@ -879,6 +885,9 @@ class TopologicalRepresentative(GraphMap):
                     if len(q)>len(span[a]):
                         span[a]=q
                         done=False
+
+        #Use span to compute the filtration.
+
         done=False
         while not done:
             done=True
@@ -3591,14 +3600,71 @@ class TopologicalRepresentative(GraphMap):
                     done=False
         
         return lwg.subgraph(vertices=directions)
-            
+          
+
+    def periodic_germ_normal_form(self,germ,verbose=False):
+        """
+        A periodic germ of ``self`` is denoted by
+        ``(e,period,portion)`` where ``e` is an edge, the germ has its
+        initial point x inside ```e``, and has the same direction as
+        ``e``. x is the unique point such that ``self^period(x)=x``
+        and ``x``lies in the occurences of ``e`` inside
+        ``self^period(e)`` such that ``self^period(e)=uev`` with
+        len(v)=portion.
+
+        The normal formal is the one that minimizes the period.
+
+        OUTPUT
+
+        ``(e,period,portion)`` denoting the same periodic germ, but
+        with the smallest period possible.
+        """
+  
+        (e,period,portion)=germ
+
+        if verbose: print "Normal form of germ",germ
+
+        diviseur=1
+        while period>diviseur:
+            if period%diviseur==0:
+                right=[0 for i in xrange(period/diviseur-1)]
+                w=self.image(e,diviseur)
+                previous_e=len(w)
+                for i in xrange(len(w)):
+                    ii=len(w)-i-1
+                    if w[ii]==e:
+                        u=w[ii+1:previous_e]
+                        previous_e=ii
+                        add=len(u)
+                        for j in xrange(period-diviseur):
+                            u=self(u)
+                            if (j+1)%diviseur==0:
+                                add+=len(u)
+                                right[j/diviseur]+=add
+                        if right[-1]==portion:
+                            if verbose: print "simplified to (",e,",",diviseur,",",i,")"
+                            period=diviseur
+                            portion=i
+                            break
+                        elif right[-1]>portion:
+                            if verbose: print "no simplification with period=",diviseur
+                            break
+                else:
+                    if verbose: print "no simplification with period=",diviseur
+                    
+            diviseur+=1
+                        
+                        
+        return (e,period,portion)
+
+
     def ideal_whitehead_graph(self,verbose=False):
         """
         The ideal Whitehead graph of ``self``.
 
-        This is defined in [Pfaff] and is an invariant of the
-        conjugacy class of the outer automorphism represented by
-        ``self``.
+        This is defined in [Handel-Mosher], see also [Pfaff] and is an
+        invariant of the conjugacy class of the outer automorphism
+        represented by ``self``.
 
         Vertices are equivalence classes of stable germs of the graph of
         ``self``. Two germs are equivalent if they are the end of a
@@ -3648,53 +3714,15 @@ class TopologicalRepresentative(GraphMap):
             v1=(u[-1],iter,len(uu)-p-len(u)) 
             v2=(v[-1],iter,len(vv)-p-len(v))
 
-            #there might be ambiguity in this denomination of germs we
-            #lift it by taking iter as small as possible
-
-            diviseur=1
-            a=v1[0]
-            while v1[1]>diviseur:
-                if v1[1]%diviseur==0:
-                    portion=0
-                    w=self.image(a,diviseur)
-                    for j in xrange(len(w)):
-                        jj=len(w)-j-1
-                        next=len(self.image(w[jj],v1[1]/diviseur))
-                        if next+portion>v1[2]: # we went over the occurrence
-                            if w[jj]==a and j==v1[2]-portion:
-                                if verbose: print v1,"optimized tp",
-                                v1=(a,diviseur,j)
-                                if verbose: print v1
-                                diviseur=0
-                        break
-                diviseur+=1
-                
-            diviseur=1
-            a=v2[0]
-            while v2[1]>diviseur:
-                if v2[1]%diviseur==0:
-                    portion=0
-                    w=self.image(a,diviseur)
-                    for j in xrange(len(w)):
-                        jj=len(w)-j-1
-                        next=len(self.image(w[jj],v2[1]/diviseur))
-                        if next+portion>v2[2]: # we went over the occurrence
-                            if w[jj]==a and j==v2[2]-portion:
-                                if verbose: print v2,"optimized to",
-                                v2=(a,diviseur,j)
-                                if verbose: print v2
-                                diviseur=0
-                        break
-                diviseur+=1
-                
-
             if v1[2]!=0: # vertex in the middle of an edge
+                v1=self.periodic_germ_normal_form(v1,verbose=(verbose and verbose>1 and verbose-1))
                 vv1=(A.inverse_letter(v1[0]),v1[1],len(self.image(v1[0],v1[1]))-v1[2]-1) # always>0
                 iwg.add_edge((v1,vv1))
             else:
                 vv1=A.inverse_letter(v1[0])
 
             if v2[2]!=0: # vertex in the middle of an edge
+                v2=self.periodic_germ_normal_form(v2,verbose=(verbose and verbose>1 and verbose-1))
                 vv2=(A.inverse_letter(v2[0]),v2[1],len(self.image(v2[0],v2[1]))-v2[2]-1) # always>0
                 iwg.add_edge((v2,vv2))
             else:
