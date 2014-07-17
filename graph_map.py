@@ -255,7 +255,114 @@ class GraphMap():
 
         return self
 
-    @staticmethod
+
+    ## To implement Stalling's folding to get an immersion.
+    def subdivide_domain(self, e):
+        """
+        Subdivide an edge in the domain graph according to length of image and update the edge_map of graph_map
+        """
+        A = self._domain._alphabet
+        result_map=dict((a,Word([a])) for a in A)
+        new_edges=A.add_new_letters(len(self.image(e))-1)
+        new_vertices=self._domain.new_vertices(len(self.image(e))-1)
+        d={}
+        w = self.image(e)
+        for i,a in enumerate(new_edges):
+            v=new_vertices[i]
+            if i==0:
+                vi=self._domain.initial_vertex(e)
+                vt=self._domain.terminal_vertex(e)
+                f=new_edges[i][0]
+                ee=A.inverse_letter(e)
+                ff=new_edges[i][1]
+                self._domain.set_terminal_vertex(e,v)
+                self._domain.add_edge(v,vt,[f,ff])
+                result_map[e]=result_map[e]*Word([f])
+                result_map[ee]=Word([ff])*result_map[ee]
+                d[a[0]] = w[i+1]
+            else:
+                vi=self._domain.initial_vertex(new_edges[i-1][0])
+                vt=self._domain.terminal_vertex(new_edges[i-1][0])
+                f=new_edges[i][0]
+                ee=A.inverse_letter(e)
+                ff=new_edges[i][1]
+                self._domain.set_terminal_vertex(new_edges[i-1][0],v)
+                self._domain.add_edge(v,vt,[f,ff])
+                result_map[e]=result_map[e]*Word([f])
+                result_map[ee]=Word([ff])*result_map[ee]
+                d[a[0]] = w[i+1]
+                    
+        # updating self.edge_map after subdivision
+        d[e] = self.image(e)[0]
+
+        for a in A.positive_letters():
+            counter = 0
+            for g in new_edges:
+                if a == g[0] or a==g[1]:
+                    counter +=1  
+            if counter==0:
+                if a != e :
+                    d[a] = self.image(a)
+        wm = WordMorphism(d)
+        self.set_edge_map(wm)
+                                   
+        return result_map
+        
+    def illegal_turns(self,turns):
+        """
+        Finding illegal turns in the domain graph    
+        """
+        result = []
+        for turn in turns:
+            if self.image(turn[0])[0]==self.image(turn[1])[0]:
+                result.append(turn)
+        return result
+        
+    
+    def folding(self):
+        """
+        Given a graph_map, implement Stalling's folding to get an immersion. This is implementation of the algorithm in the paper 
+        'Topology of Finite Graphs' by John R. Stallings. 
+        Given the graph_map we first subdivide edges according to length of image. 
+        Then fold one gate at one vertex and update the edge map and illegal turns list. Repeat the process till no illegal turns remain.   
+        """
+        for a in A:
+            if len(self.image(a)) >1:
+                self.subdivide_domain(a)
+                
+        Turns = self._domain.turns() #list of all turns in domain after subdivision
+        Il_turns = self.illegal_turns(Turns) # list of illegal turns in domain after subdivision    
+        counter = 0
+        while len(Il_turns)>0:
+            counter = counter +1
+            
+            # find edge_list (list of edges in the gate correspoding to e1) to fold at exactly one vertex
+            e1=Il_turns[0][0]
+            edge_list = [e1]
+            for a in A:
+                if self._domain.initial_vertex(a) == self._domain.initial_vertex(e1) and e1!=a:
+                    if (e1,a) in Il_turns or (a,e1) in Il_turns:
+                        edge_list.append(a) 
+                        
+            edge_list = list(set(edge_list)) # remove duplicates 
+            # fold at initial_vertex of e1 ( this function updates the domain and edge_map)         
+            self._domain.fold(edge_list,[])
+                
+            #update edge_map again 
+            d={}
+            d[edge_list[0]] = self.image(edge_list[0])
+            for a in A:
+                if a not in edge_list:
+                    d[a] = self.image(a)
+            wm = WordMorphism(d)
+            self.set_edge_map(wm)    
+            Turns = self._domain.turns() #update list of all turns in domain 
+            Il_turns = self.illegal_turns(Turns) # update list of illegal turns in domain 
+                 
+        
+        return self
+        
+@staticmethod
     def rose_map(automorphism):
         """
         The graph map of the rose representing the automorphism.
