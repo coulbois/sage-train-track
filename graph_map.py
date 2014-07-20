@@ -383,6 +383,7 @@ class GraphMap():
         
         f1.pullback(f2,G3,A)
         """
+        import itertools
         #First convert self and f2 into immersions
         self.folding()
         f2.folding()
