@@ -325,6 +325,7 @@ class GraphMap():
     Then fold one gate at one vertex and update the edge map and illegal turns list. 
     Repeat the process till no illegal turns remain. 
     """
+        A = self.domain().alphabet()
         for a in A:
             if len(self.image(a)) >1:
                 self.subdivide_domain(a)
@@ -360,6 +361,59 @@ class GraphMap():
                  
         
         return self
+    
+    def pullback(self,f2,G3,A):
+        """
+        INPUT : Two Graph maps f1:G1->G, f2:G2->G, an empty GraphWithInverses G3 and an empty AlphabetWithInverses A
+        OPERATION : Find the pullback G3 and a graph map f:G3->G
+        OUTPUT : Graphmap f 
+        
+        The pullback method can be used to find intersection of two subgroups of a Free Group. 
+        
+        Example : 
+        G1 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='x0')) 
+        G2 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='a0')) 
+        G =  GraphWithInverses.rose_graph(AlphabetWithInverses(2)) 
+        n1 = WordMorphism({'x0':['a','a'],'x1':['b','a']})
+        n2 = WordMorphism({'a0':['b','a'],'a1':['b','b','b','a','B','a']})
+        f1 = GraphMap(G1,G,n1)
+        f2 = GraphMap(G2,G,n2)
+        G3 = GraphWithInverses()
+        A = AlphabetWithInverses(0,type='a0')
+        
+        f1.pullback(f2,G3,A)
+        """
+        #First convert self and f2 into immersions
+        self.folding()
+        f2.folding()
+        
+        # G3 = GraphWithInverses()
+        #A = AlphabetWithInverses(0,type='a0')
+        d={}
+        #get set of vertices 
+        V = []
+        for i in itertools.product(self.domain().vertices(),f2.domain().vertices()):
+            V.append(i)
+
+        #add edges 
+        for v in V:
+            for w in V:
+                for e1 in self.domain().alphabet().positive_letters():
+                    if self.domain().initial_vertex(e1) == v[0] and self.domain().terminal_vertex(e1) == w[0]:
+                        for e2 in f2.domain().alphabet().positive_letters():
+                            if f2.domain().initial_vertex(e2) == v[1] and f2.domain().terminal_vertex(e2) == w[1]:
+                                if self.image(e1)==f2.image(e2):                                
+                                    e = A.add_new_letter()
+                                    G3.add_edge(v,w,e )
+                                    #update dictionary to define map on G3
+                                    d[e[0]] = self.image(e1) 
+                                    
+        G3._alphabet = A
+        n3 = WordMorphism(d)
+        G = self.codomain() #same as f2.codomain()
+        
+        return GraphMap(G3,G,n3)
+
         
     @staticmethod
     def rose_map(automorphism):
