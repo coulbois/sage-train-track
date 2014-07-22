@@ -930,3 +930,25 @@ class free_group_automorphisms:
 
         """
         return FreeGroupAutomorphism("a->dac,b->CADac,c->CABac,d->CAbc",FreeGroup(4))
+
+    @staticmethod
+    def Bestvina_Handel_surface_homeo():
+        """
+        Automorphism of F_4 given in [BH] see also [Kapovich].
+
+        This is a pseudo-Anosov mapping class of the 5-punctured
+        sphere. Thus this is not an iwip. However, its representative
+        on the rose in train-track.
+
+        REFERENCES:
+        
+        [BH] M. Bestvina, and M. Handel, Train-tracks for surface
+        homeomorphisms. Topology 34 (1995), no. 1, 109-140
+
+        [Kapovich] Ilya Kapovich, Algorithmic detectability of iwip
+        automorphisms, arXiv:1209.3732
+
+        """
+
+        return FreeGroupAutomorphism("a->b,b->c,c->dA,d->DC",FreeGroup(4))
+    

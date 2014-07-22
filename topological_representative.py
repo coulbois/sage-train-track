@@ -1530,13 +1530,13 @@ class TopologicalRepresentative(GraphMap):
 
         edge_turns=self.edge_turns()
         for t in edge_turns:
-            extension[A.inverse_letter(t[0])].append(Word(t[1]))
-            extension[A.inverse_letter(t[1])].append(Word(t[0]))
+            extension[A.inverse_letter(t[0])].append(Word([t[1]]))
+            extension[A.inverse_letter(t[1])].append(Word([t[0]]))
 
         for t in self.illegal_turns():
-            possible_np.append((Word(t[0]),Word(t[1])))
-            uu=self(t[0])
-            vv=self(t[1])
+            possible_np.append((Word([t[0]]),Word([t[1]])))
+            uu=self.image(t[0])
+            vv=self.image(t[1])
             p=G.common_prefix_length(uu,vv)            
             images.append((uu[p:],vv[p:])) #tigthen image of possible_np
             next.append((Word(),Word())) #letters to add to possible_np
@@ -1836,7 +1836,7 @@ class TopologicalRepresentative(GraphMap):
             ext=next.pop(0)
             for j in xrange(2):
                 if ext[j]!=None:
-                    u[j]=t[j]*Word(ext[j])
+                    u[j]=t[j]*Word([ext[j]])
                     uu[j]=tt[j]*Word([a for a in self.image(ext[j]) if a in extension])
                 else:
                     u[j]=t[j]
@@ -3602,27 +3602,36 @@ class TopologicalRepresentative(GraphMap):
         return lwg.subgraph(vertices=directions)
           
 
-    def periodic_germ_normal_form(self,germ,verbose=False):
+    def periodic_point_normal_form(self,point,keep_orientation=False,verbose=False):
         """
-        A periodic germ of ``self`` is denoted by
-        ``(e,period,portion)`` where ``e` is an edge, the germ has its
-        initial point x inside ```e``, and has the same direction as
-        ``e``. x is the unique point such that ``self^period(x)=x``
-        and ``x``lies in the occurences of ``e`` inside
-        ``self^period(e)`` such that ``self^period(e)=uev`` with
-        len(v)=portion.
+        Normal form to denote periodic points of ``self`` inside
+        edges.
+        
+        A periodic point of ``self`` inside an edge is denoted by
+        ``(e,period,portion)``. The point ``x`` is the unique point
+        such that ``self^period(x)=x`` and ``x``lies in the occurences
+        of ``e`` inside ``self^period(e)`` such that
+        ``self^period(e)=uev`` with len(v)=portion.
 
         The normal formal is the one that minimizes the period.
 
-        OUTPUT
+        OUTPUT:
 
-        ``(e,period,portion)`` denoting the same periodic germ, but
+        ``(e,period,portion)`` denoting the same periodic point, but
         with the smallest period possible.
+
+        WARNING:
+
+        This is not eactly a normal form as each such periodic point has two normal forms:
+
+        ``(e,period,portion)`` and ``(ee,peirod,l-portion-1)`` where
+        ``ee`` is the inverse letter of ``e`` and ``l`` is the length
+        of ``self^iter(e)``.
         """
   
-        (e,period,portion)=germ
+        (e,period,portion)=point
 
-        if verbose: print "Normal form of germ",germ
+        if verbose: print "Normal form of point",point
 
         diviseur=1
         while period>diviseur:
@@ -3651,14 +3660,20 @@ class TopologicalRepresentative(GraphMap):
                             break
                 else:
                     if verbose: print "no simplification with period=",diviseur
-                    
+               
             diviseur+=1
-                        
-                        
+         
+        A=self.domain().alphabet()
+        if not keep_orientation and not A.is_positive_letter(e):
+            e=A.inverse_letter(e)
+            u=self.image(e,period)
+            portion=len(u)-portion-1
+            
+                
         return (e,period,portion)
 
 
-    def ideal_whitehead_graph(self,verbose=False):
+    def ideal_whitehead_graph(self,pnps=None,verbose=False):
         """
         The ideal Whitehead graph of ``self``.
 
@@ -3699,7 +3714,8 @@ class TopologicalRepresentative(GraphMap):
 
         germ_classes=[]
  
-        pnps=self.periodic_nielsen_paths()
+        if pnps is None:
+            pnps=self.periodic_nielsen_paths()
 
         #the end of an inp is either a vertex of self or a point inside an edge which is denoted by (e,iter,portion)
         
@@ -3715,14 +3731,14 @@ class TopologicalRepresentative(GraphMap):
             v2=(v[-1],iter,len(vv)-p-len(v))
 
             if v1[2]!=0: # vertex in the middle of an edge
-                v1=self.periodic_germ_normal_form(v1,verbose=(verbose and verbose>1 and verbose-1))
+                v1=self.periodic_point_normal_form(v1,keep_orientation=True,verbose=(verbose and verbose>1 and verbose-1))
                 vv1=(A.inverse_letter(v1[0]),v1[1],len(self.image(v1[0],v1[1]))-v1[2]-1) # always>0
                 iwg.add_edge((v1,vv1))
             else:
                 vv1=A.inverse_letter(v1[0])
 
             if v2[2]!=0: # vertex in the middle of an edge
-                v2=self.periodic_germ_normal_form(v2,verbose=(verbose and verbose>1 and verbose-1))
+                v2=self.periodic_point_normal_form(v2,keep_orientation=True,verbose=(verbose and verbose>1 and verbose-1))
                 vv2=(A.inverse_letter(v2[0]),v2[1],len(self.image(v2[0],v2[1]))-v2[2]-1) # always>0
                 iwg.add_edge((v2,vv2))
             else:
@@ -3839,10 +3855,201 @@ class TopologicalRepresentative(GraphMap):
         return [i for i in l if i>0]
 
 
+    def blow_up_vertices(self,germ_components):
+        """
+        Blow-up ``self`` according to classes of germs given in
+        ``germ_components``.
+
+        It is assumed that in the iterated images of an edge, two
+        consecutive edges lie in the same class of germs.
+
+        INPUT:
+
+        ``germ_components`` a list of classes of germs outgoing from a
+        vertex.
+
+        OUTPUT:
+
+        A WordMorphism that maps old edges to their fold image.
+
+        """
+        G=self.domain()
+        A=G.alphabet()
+
+        edge_map=dict((a,self.image(a)) for a in A.positive_letters())
+
+        blow_up_map=G.blow_up_vertices(germ_components)
+
+        for c in germ_components:
+            if A.is_positive_letter(c[0]):
+                ec=blow_up_map[c[0]][0]
+            else:
+                ec=A.inverse_letter(blow_up_map[A.inverse_letter(c[0])][-1])
+            f=self.image(c[0])[0]
+            if A.is_positive_letter(f):
+                fc=blow_up_map[f][0]
+            else:
+                fc=A.inverse_letter(blow_up_map[A.inverse_letter(f)][-1])
+            edge_map[ec]=Word([fc])
+                
+        self.set_edge_map(edge_map)
+
+        return WordMorphism(blow_up_map)
 
 
+    def whitehead_connected_components(self):
+        """
+        List of connected components of local Whitehead graphs.
 
+        The local Whitehead graph at a vertex ``v`` is the graph with
+        vertices the germs of edges outgoing from ``v``. To such germs
+        are linked by an edge if they appeart as a transition in the
+        iterated image of an edge.
 
+        OUTPUT:
+
+        A list of list of edges. Each list is a connected
+        component. Each edge stands for its starting germ.
+
+        SEE ALSO:
+
+        TopologicalRepresentative.local_whitehead_graph()
+        """
+        G=self.domain()
+        A=G.alphabet()
+        
+        component=dict((a,a) for a in A)
+
+        for t in self.edge_turns():
+            k=component[t[0]]
+            kk=component[t[1]]
+            if k!=kk:
+                for b in A:
+                    if component[b]==kk:
+                        component[b]=k
+
+        components=[]
+
+        while len(component)>0:
+            a,b=component.popitem()
+            components.append([a])
+            for c in component:
+                if component[c]==b:
+                    components[-1].append(c)
+            for i in xrange(len(components[-1])-1):
+                component.pop(components[-1][i+1])
+
+        return components
+
+    def has_connected_local_whitehead_graphs(self):
+        """
+        ``True`` if all local Whitehead graphs are connected.
+
+        SEE ALSO:
+        
+        TopologicalRepresentative.local_whitehead_graph()
+        TopologicalRepresentative.whitehead_connected_components()
+        """
+        
+        return len(self.whitehead_connected_components())==len(self.domain().vertices())
         
 
+    def nielsen_loops(self,pnps=None,verbose=False):
+        """
+        List of loops made of periodic Nielsen paths.
 
+        Such a loop is a periodic element of ``self``.
+
+        WARNING:
+        
+        Assumes that ``self`` is train-track and expanding.
+        """
+        G=self.domain()
+
+        if pnps==None:
+            pnps=self.periodic_nielsen_paths(verbose and verbose>1 and verbose-1)
+
+        components_tree=dict([]) # maps a vertex v to (vv,w) where w is Nielsen path from v to vv
+        loops=[]
+
+        for i,((u,v),iter) in enumerate(pnps):
+            uu=u
+            vv=v
+            for j in xrange(iter):
+                uu=self(uu)
+                vv=self(vv)
+            p=G.common_prefix_length(uu,vv)
+
+            portion1=len(uu)-p-len(u)
+            portion2=len(vv)-p-len(v)
+            v1=(u[-1],iter,portion1) 
+            v2=(v[-1],iter,portion2)
+
+            if v1[2]!=0: # vertex in the middle of an edge
+                v1=self.periodic_point_normal_form(v1,verbose=(verbose and verbose>1 and verbose-1))
+            else:
+                v1=G.terminal_vertex(u[-1])
+
+            if v2[2]!=0: # vertex in the middle of an edge
+                v2=self.periodic_point_normal_form(v2,verbose=(verbose and verbose>1 and verbose-1))
+            else:
+                v2=G.terminal_vertex(v[-1])
+
+            if verbose:
+                print "periodic Nielsen path (",u,",",v,") linking vertices",v1,v2
+
+            if v1==v2:
+                if portion1>0:
+                    loops.append(G.reduce_path(G.reverse_path(u)*v[:-1]))
+                else:
+                    loops.append(G.reverse_path(u)*v)
+            elif v1 in components_tree and v2 in components_tree:
+                vv1,w1=components_tree[v1]
+                vv2,w2=components_tree[v2]
+                if portion1>0 and len(w1)>0 and w1[-1]!=u[-1]: #The Nielsen paths w1 and pnp form a reduce path
+                    link1=w1*G.reverse_path(u[:-1]) #Nielsen path from vv1 to the tip of the pnp
+                else:
+                    link1=w1*G.reverse_path(u)              
+                if portion2==0 or (len(w2)>0 and w2[-1]==v[-1]):
+                    link2=v*G.reverse_path(w2)  #Nielsen path from the tip of the pnp to vv2
+                else:
+                    link2=v[:-1]*G.reverse_path(w2)
+                link=G.reduce_path(link1*link2)  #Nielsen path from vv1 to vv2
+                if vv1==vv2:
+                    if len(link)>0:
+                        if type(vv1) is tuple and len(link)>0 and link[0]==link[-1]:
+                            link=link[:-1]
+                    if verbose:
+                        print "loop at vertex",vv1
+                    loops.append(link)
+                else:  #we fusion the two components
+                    for (v,(vv,w)) in components_tree.iteritems():
+                        if vv==vv2:
+                            if type(vv2) is tuple and len(link)>0 and len(w)>0 and w[0]==link[-1]:
+                                components_tree[v]=(vv1,G.reduce_path(link[:-1]*w))
+                            else:
+                                components_tree[v]=(vv1,G.reduce_path(link*w))
+
+            elif v1 in components_tree:
+                vv1,w1=components_tree[v1]
+                if portion1>0 and len(w1)>0 and w1[-1]!=u[-1]:
+                    components_tree[v2]=(vv1,G.reduce_path(w1[:-1]*G.reverse_path(u)*v))
+                else:
+                    components_tree[v2]=(vv1,G.reduce_path(w1*G.reverse_path(u)*v))
+
+            elif v2 in components_tree:
+                vv2,w2=components_tree[v2]
+                if portion2>0 and len(w2)>0 and w2[-1]!=v[-1]: 
+                    components_tree[v1]=(vv2,G.reduce_path(w2[-1]*G.reverse_path(v)*u))
+                else:
+                    components_tree[v1]=(vv2,G.reduce_path(w2*G.reverse_path(v)*u))
+            else:
+                components_tree[v1]=(v1,Word([]))
+                components_tree[v2]=(v1,G.reverse_path(u)*v)
+
+
+        return loops
+                    
+    
+        
+            

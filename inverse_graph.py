@@ -768,6 +768,47 @@ class GraphWithInverses(DiGraph):
      def plot(self,edge_labels=True,graph_border=True,**kwds):
           return DiGraph.plot(DiGraph(self),edge_labels=edge_labels,graph_border=graph_border,**kwds)
 
+
+     def blow_up_vertices(self,germ_components):
+        """
+        Blow-up ``self`` according to classes of germs given in
+        ``germ_components``.
+
+        INPUT:
+
+        ``germ_components`` a list of classes of germs outgoing from a
+        vertex.
+
+        OUTPUT:
+        
+        A dictionnay that maps an old edge to the path in the new
+        graph.
+        """
+
+        A=self.alphabet()
+
+        new_vertices=self.new_vertices(len(germ_components))
+        new_edges=A.add_new_letters(len(germ_components))
+
+        result_map=dict((a,Word([a])) for a in A.positive_letters())
+
+        for i,c in enumerate(germ_components):
+            v0=self.initial_vertex(c[0])
+            vc=new_vertices[i]
+            ec=new_edges[i]
+            self.add_new_edge(v0,vc,ec)
+            for a in c:
+                self.set_initial_vertex(a,vc)
+                if A.is_positive_letter(a):
+                     result_map[a]=Word([ec[0]])*result_map[a]
+                else:
+                     aa=A.inverse_letter(a)
+                     result_map[aa]=result_map[aa]*Word([ec[1]])
+
+        return result_map
+
+
+
      @staticmethod
      def valence_3(rank):
           """
@@ -802,6 +843,7 @@ class GraphWithInverses(DiGraph):
           for a in alphabet.positive_letters():
                graph.add_edge(0,0,[a,alphabet.inverse_letter(a)])
           return graph
+
 
 
 

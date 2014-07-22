@@ -195,6 +195,27 @@ class MarkedGraph(GraphWithInverses):
           self._marking.set_edge_map(contract_morph*self._marking._edge_map)
           return contract_map
 
+     def blow_up_vertices(self,germ_components):
+        """
+        Blow-up ``self`` according to classes of germs given in
+        ``germ_components``.
+
+        INPUT:
+
+        ``germ_components`` a list of classes of germs outgoing from a
+        vertex.
+
+        OUTPUT:
+        
+        A dictionnay that maps an old edge to the path in the new
+        graph.
+        """
+        
+        blow_up_map=GraphWithInverses.blow_up_vertices(self,germ_components)
+        blow_up_morph=WordMorphism(blow_up_map)
+        self._marking.set_edge_map(blow_up_morph*self._marking._edge_map)
+        return blow_up_map
+
      @staticmethod
      def rose_marked_graph(alphabet):
           """

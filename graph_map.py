@@ -9,7 +9,7 @@ from sage.combinat.words.morphism import WordMorphism
 
 class GraphMap():
     """
-    A GraphMap is a map from a Graph to another .  It maps a vertex to
+    A GraphMap is a map from a Graph to another.  It maps a vertex to
     a vertex and an edge to an edge-path. It respects incidence
     relation. The inverse of an edge is send to the reverse path.
 
@@ -259,24 +259,30 @@ class GraphMap():
     ## To implement Stalling's folding to get an immersion.
     def subdivide_domain(self, e):
         """
-        Subdivide an edge in the domain graph according to length of image and update the edge_map of graph_map
+        Subdivide an edge in the domain graph. 
+
+        The edge ``e`` is subdivided into ``l`` edges where ``l`` is
+        the length of the image of ``e`` by ``self``.
+
+        Update the edge_map of ``self``.
         """
-        A = self._domain._alphabet
+        G=self.domain()
+        A = G.alphabet()
         result_map=dict((a,Word([a])) for a in A)
-        new_edges=A.add_new_letters(len(self.image(e))-1)
-        new_vertices=self._domain.new_vertices(len(self.image(e))-1)
-        d={}
         w = self.image(e)
+        new_edges=A.add_new_letters(len(w)-1)
+        new_vertices=G.new_vertices(len(w)-1)
+        d={(a,self.image(a)) for a in A.positive_letters()}
         for i,a in enumerate(new_edges):
             v=new_vertices[i]
             if i==0:
-                vi=self._domain.initial_vertex(e)
-                vt=self._domain.terminal_vertex(e)
+                vi=G.initial_vertex(e)
+                vt=G.terminal_vertex(e)
                 f=new_edges[i][0]
                 ee=A.inverse_letter(e)
                 ff=new_edges[i][1]
-                self._domain.set_terminal_vertex(e,v)
-                self._domain.add_edge(v,vt,[f,ff])
+                G.set_terminal_vertex(e,v)
+                G.add_edge(v,vt,[f,ff])
                 result_map[e]=result_map[e]*Word([f])
                 result_map[ee]=Word([ff])*result_map[ee]
                 d[a[0]] = w[i+1]
@@ -284,7 +290,7 @@ class GraphMap():
                 vi=self._domain.initial_vertex(new_edges[i-1][0])
                 vt=self._domain.terminal_vertex(new_edges[i-1][0])
                 f=new_edges[i][0]
-                ee=A.inverse_letter(e)
+                #ee=A.inverse_letter(e) #already done
                 ff=new_edges[i][1]
                 self._domain.set_terminal_vertex(new_edges[i-1][0],v)
                 self._domain.add_edge(v,vt,[f,ff])
@@ -293,38 +299,52 @@ class GraphMap():
                 d[a[0]] = w[i+1]
                     
         # updating self.edge_map after subdivision
-        d[e] = self.image(e)[0]
+        if A.is_positive_letter(e):
+            d[e] = Word([self.image(e)[0]])
+        else:
+            d[ee]=Word([self.image(ee)[-1]])
 
-        for a in A.positive_letters():
-            counter = 0
-            for g in new_edges:
-                if a == g[0] or a==g[1]:
-                    counter +=1  
-            if counter==0:
-                if a != e :
-                    d[a] = self.image(a)
-        wm = WordMorphism(d)
-        self.set_edge_map(wm)
+        self.set_edge_map(d)
                                    
         return result_map
         
-    def illegal_turns(self,turns):
+    def illegal_turns(self,turns=None):
         """
-        Finding illegal turns in the domain graph    
+        List of illegal turns in the domain graph.
+
+        A turn is illegal if it is mapped by ``self`` to a degenerate
+        turn.
+
+        INPUT:
+
+        ``turns`` a list of turns of the domain graph. Default is None
+        meaning all the turns of the graph. I not ``None`` return the
+        sublist of ``turns`` consisting of illegal turns.
         """
         result = []
+
+        if turns is None:
+            turns=self.domain().turns()
+
         for turn in turns:
-            if self.image(turn[0])[0]==self.image(turn[1])[0]:
+            u=self.image(turn[0])
+            v=self.image(turn[1])
+            if len(u)==0 or len(v)==0 or u[0]==v[0]:
                 result.append(turn)
         return result
         
-    
+
     def folding(self):
         """
-        Given a graph_map, implement Stalling's folding to get an immersion. This is implementation of the algorithm in the paper 
-        'Topology of Finite Graphs' by John R. Stallings. 
-        Given the graph_map we first subdivide edges according to length of image. 
-        Then fold one gate at one vertex and update the edge map and illegal turns list. Repeat the process till no illegal turns remain.   
+        Implement Stalling's folding to get an immersion from ``self``. 
+
+        This is an implementation of the algorithm in the paper 'Topology
+        of Finite Graphs' by John R. Stallings.  
+
+        Given ``self`` we first subdivide edges according to length of
+        image.  Then fold one gate at one vertex and update the edge
+        map and illegal turns list. Repeat the process till no illegal
+        turns remain.
         """
         for a in A:
             if len(self.image(a)) >1:
@@ -362,7 +382,7 @@ class GraphMap():
         
         return self
         
-@staticmethod
+    @staticmethod
     def rose_map(automorphism):
         """
         The graph map of the rose representing the automorphism.
