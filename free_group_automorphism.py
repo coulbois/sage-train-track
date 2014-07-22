@@ -669,7 +669,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     def train_track(self,stable=True,relative=True,verbose=False):
         """
-        Computes a train-track representative of self.
+        Computes a train-track representative of ``self``.
 
         According to the options computes a relative (or ends when
         finding a reduction) and/or stable (with at most one INP
@@ -684,18 +684,22 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         an absolute train-track or fixes a subgraph (with a non
         contractible connected component).
 
-        - If ``relative=True``, the output is a relative train-track
+        - If ``relative=True``, the output is either an absolute
+          train-track or a relative train-track
 
         - If ``stable=True``, the output is either a stable absolute
           train-track or stable relative train-track or (if
-          relative=False) fixes a subgraph (with a non contractible
-          connected component).
+          relative=False). 
 
         """
+        from train_track_map import TrainTrackMap
+
         f=self.rose_representative()
         f.train_track(verbose)
+        if len(f._strata)==1:
+            f=TrainTrackMap(f)
         if stable and len(f._strata)==1:
-            f._stabilize(verbose)
+            f.stabilize(verbose)
         if relative and len(f._strata)>1:
             if stable:
                 f.stable_relative_train_track(verbose)

@@ -18,11 +18,34 @@ class GraphMap():
     - Thierry Coulbois (2013-05-16): beta.0 version
     """
 
-    def __init__(self,domain,codomain,edge_map,vertex_map=None):
-        self._domain=domain
-        self._codomain=codomain
-        self.set_edge_map(edge_map)
-        self._vertex_map=vertex_map
+    def __init__(self,*args):
+        """
+        The following forms are accepted:
+
+        - ``GraphMap(f)`` where ``f`` is a ``GraphMap``.
+
+        - ``GraphMap(domain,codomain,edge_map,vertex_map=None)`` where
+          ``domain`` and ``codomain`` are ``GraphWithInverses`` and
+          ``edge_map`` is anything accepted by
+          ``WordMorphism(edge_map)`` with domain alphabet an
+          AlphabetWithInverses (note that only one image of the pair
+          (a,inverse_letter(a)) needs to be defined for each letter).
+        """
+        print args
+        print type(args[0])
+        print isinstance(args[0],GraphMap)
+        if isinstance(args[0],GraphMap):
+            self._domain=args[0]._domain
+            self._codomain=args[0]._codomain
+            self._edge_map=args[0]._edge_map
+            self._vertex_map=args[0]._vertex_map
+        else:
+            self._domain=args[0]
+            self._codomain=args[1]
+            self.set_edge_map(args[2])
+            if len(args)>3:
+                self._vertex_map=args[3]
+        
 
     def __call__(self,argument):
         """
