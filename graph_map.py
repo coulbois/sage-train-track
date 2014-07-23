@@ -31,9 +31,6 @@ class GraphMap():
           AlphabetWithInverses (note that only one image of the pair
           (a,inverse_letter(a)) needs to be defined for each letter).
         """
-        print args
-        print type(args[0])
-        print isinstance(args[0],GraphMap)
         if isinstance(args[0],GraphMap):
             self._domain=args[0]._domain
             self._codomain=args[0]._codomain

@@ -129,10 +129,12 @@ class TrainTrackMap(TopologicalRepresentative):
 
         A train-track is expanding of for each edge e, the iterated
         images of e get infinitely long: lim_{n\to\infty}
-        f^n(e)=+\infty
+        f^n(e)=+\infty. Equivalently for any edge e, there exists n
+        such that the length of f^n(e) is larger or equal to 2.
         """
+
         done=True
-        edges=self.domain().alphabet().positive_letters()
+        edges=self.domain().alphabet().positive_letters()[:]
         i=0
         while i<len(edges):
             e=edges[i]
@@ -143,16 +145,16 @@ class TrainTrackMap(TopologicalRepresentative):
                 i+=1
                 
         #only not expanded edges are left in edges
-        i=0
-        while not done and i<len(edges):
-            e=edges[i]
-            if self.image(e)[0] not in edges: #e is eventually expanded
-                done=False
-                edges.pop(i)
-            else:
-                i+=1
-            if i>=len(edges):
-                i=0
+        while not done:
+            done=True
+            i=0
+            while i<len(edges):
+                e=edges[i]
+                if self.image(e)[0] not in edges: #e is eventually expanded
+                    done=False
+                    edges.pop(i)
+                else:
+                    i+=1
         return len(edges)==0   # edges contains all the never expanded edges
 
     def is_perron_frobenius(self):
@@ -170,18 +172,55 @@ class TrainTrackMap(TopologicalRepresentative):
 
         TrainTrackMap.has_connected_local_whitehead_graphs()
         """
+        if len(self.stratify())>1:
+            return False
+        #Now, we know that self is irreducible
+        
         A=self.domain().alphabet()
         image=dict([]) #set of edges that appears in the image of an edge
         
         for a in A.positive_letters():
             image[a]=set([A.to_positive_letter(b) for b in self.image(a)])
-        stable_image=image.copy() #
-        for a in A.positive_letters():
-            while a not in stable_image[a]:
-                stable_image[a]=set([b for c in stable_image[a] for b in image[c]])
+        stable_image=image.copy() 
+
+        a=A[0]
+        while a not in stable_image[a]: #this loop will terminate because self is irreducible
+            for b in A.positive_letters():
+                stable_image[b]=set([d for c in stable_image[b] for d in image[c]])
+
+        image=stable_image #we now work with the power of self for which a occurs in self^n(a)
+
+        done=False
+        while not done:
+            done=True
+            next=dict()
+            for b in A.positive_letters():
+                next[b]=set([d for c in stable_image[b] for d in image[c]])
+                if len(next[b])>len(stable_image[b]):
+                    done=False
+            stable_image=next
+
+        image=stable_image #now the image of self^n(a) is maximal
+
+        if len(image[a])<len(A):
+            return False
+
+        #we now look for letters from which we can reach a
+
+        good_letters=set([b for b in A.positive_letters() if a in image[b]])
+        bad_letters=set([b for b in A.positive_letters() if b not in good_letters])
+
+        done=False
+        while not done:
+            done=True
+            for b in bad_letters:
+                if len(image[b].intersection(good_letters))>0:
+                    good_letters.add(b)
+                    done=False
+            bad_letters=set([b for b in A.positive_letters() if b not in good_letters])
+
+        return len(bad_letters)==0
         
-        # TODO: finish this method
-    
 
 
     def gates(self,v):
@@ -563,51 +602,6 @@ class TrainTrackMap(TopologicalRepresentative):
 
         return pnp
                         
-    def inessential_inp(self,inps,s,verbose):
-        """
-        From the list ``inps`` returns either an inessential inp in the
-        stratum ``s`` or ``False``.
-
-        INPUT:
-
-        - ``inps`` : a list of inps each of the form ``(word1,word2)``.
-
-        - ``s`` : the index of the exponential stratum of ``self``
-          that meets these inps.
-
-        """
-
-        A=self.domain().alphabet()
-
-        M=self.relative_matrix(s)
-        vectors=M.eigenvectors_left()
-        pf=0
-        for (e,v,n) in vectors:
-            if e in AA and e>pf:
-                pfv=v[0]
-                pf=e
-
-        critic=0 #the length of the common prefix of an issential inp
-        i=0
-        pfvl=dict()
-        for a in self._strata[s]:
-            critic+=pfv[i]
-            pfvl[a]=pfv[i]
-            i+=1
-
-        critic=critic*(pf-1)
-
-        for inp in inps:
-            prefix=self(inp[0])[:self._domain.common_prefix_length(self(inp[0]),self(inp[1]))]
-
-            prefix_length=0
-            for a in prefix:
-                aa=A.to_positive_letter(a)
-                if aa in self._strata[s]:
-                    prefix_length+=pfvl[aa]
-            if prefix_length!=critic:
-                return inp
-        return None
 
     def fold_inp(self,inp,verbose=False):
         """
@@ -848,7 +842,7 @@ class TrainTrackMap(TopologicalRepresentative):
                 v2=G.terminal_vertex(v[-1])
 
             if verbose:
-                print "periodic Nielsen path (",u,",",v,") linking vertices",v1,v2
+                print "periodic Nielsen path (",u,",",v,") linking vertices",v1,"and",v2
 
             if v1==v2:
                 if portion1>0:
@@ -871,9 +865,12 @@ class TrainTrackMap(TopologicalRepresentative):
                     if len(link)>0:
                         if type(vv1) is tuple and len(link)>0 and link[0]==link[-1]:
                             link=link[:-1]
-                    if verbose:
-                        print "loop at vertex",vv1
-                    loops.append(link)
+                    if len(link)>0:
+                        if verbose:
+                            print "loop at vertex",vv1,":",link
+                        loops.append(link)
+                    elif verbose:
+                        print "contractable loop at vertex",vv1
                 else:  #we fusion the two components
                     for (v,(vv,w)) in components_tree.iteritems():
                         if vv==vv2:

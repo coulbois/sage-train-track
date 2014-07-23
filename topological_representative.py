@@ -1569,6 +1569,51 @@ class TopologicalRepresentative(GraphMap):
         return result
 
 
+    def inessential_inp(self,inps,s,verbose):
+        """
+        From the list ``inps`` returns either an inessential inp in the
+        stratum ``s`` or ``False``.
+
+        INPUT:
+
+        - ``inps`` : a list of inps each of the form ``(word1,word2)``.
+
+        - ``s`` : the index of the exponential stratum of ``self``
+          that meets these inps.
+
+        """
+
+        A=self.domain().alphabet()
+
+        M=self.relative_matrix(s)
+        vectors=M.eigenvectors_left()
+        pf=0
+        for (e,v,n) in vectors:
+            if e in AA and e>pf:
+                pfv=v[0]
+                pf=e
+
+        critic=0 #the length of the common prefix of an issential inp
+        i=0
+        pfvl=dict()
+        for a in self._strata[s]:
+            critic+=pfv[i]
+            pfvl[a]=pfv[i]
+            i+=1
+
+        critic=critic*(pf-1)
+
+        for inp in inps:
+            prefix=self(inp[0])[:self._domain.common_prefix_length(self(inp[0]),self(inp[1]))]
+
+            prefix_length=0
+            for a in prefix:
+                aa=A.to_positive_letter(a)
+                if aa in self._strata[s]:
+                    prefix_length+=pfvl[aa]
+            if prefix_length!=critic:
+                return inp
+        return None
 
 
 
