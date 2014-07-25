@@ -739,9 +739,13 @@ class free_group_automorphisms:
 
 
     @staticmethod
-    def Bestvina_Handel_example_1_1():
+    def Bestvina_Handel_train_track_1_1():
         """
-        Automorphism given as Example 1.1 in [BH-train-track]
+        Automorphism given as Example 1.1 in [BH-train-track]. 
+
+        This automorphism is iwip and not geometric nor
+        parageometric. Its representative on the rose is
+        train-track. Its inverse is also train-track on the rose.
 
         REFERENCES:
 
@@ -751,7 +755,7 @@ class free_group_automorphisms:
         return FreeGroupAutomorphism("a->b,b->c,c->d,d->ADBC",FreeGroup(4))
 
     @staticmethod
-    def Bestvina_Handel_example_1_9():
+    def Bestvina_Handel_train_track_1_9():
         """
         Automorphism given as Example 1.9 in [BH-train-track]
 
@@ -766,13 +770,12 @@ class free_group_automorphisms:
         return FreeGroupAutomorphism("a->ba,b->bba,c->cAbaB",FreeGroup(3))
 
     @staticmethod
-    def Bestvina_Handel_example_3_6():
+    def Bestvina_Handel_train_track_3_6():
         """
-        Automorphism given as Example 3.6 in Bestvina, Handel, Train tracks and
-        automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
+        Automorphism given as Example 3.6 in [BH-train-track].
 
         This automorphism is train-track on the rose and has an indivisble
-        Nielsen path in A.b which is inessential.
+        Nielsen path in A.b which is essential.
 
         REFERENCES:
 
@@ -783,14 +786,12 @@ class free_group_automorphisms:
         return FreeGroupAutomorphism("a->ba,b->bba",FreeGroup(2))
 
     @staticmethod
-    def Bestvina_Handel_example_5_16():
+    def Bestvina_Handel_train_track_5_16():
         """
-        Automorphism given as Example 5.16 in Bestvina, Handel, Train
-        tracks and automorphisms of free groups, Annals of Math, 135,
-        1-51, 1992.
+        Automorphism given as Example 5.16 in [BH-train-track].
 
         This automorphism occurs as a pseudo-Anosov homeomorphism of
-        the four-times punctured phere.
+        the four-times punctured phere. Thus is it reducible.
 
         REFERENCES:
 
@@ -846,7 +847,8 @@ class free_group_automorphisms:
 
         REFERENCES:
 
-        [Hilion] A. Hilion
+        [Hilion] A. Hilion, Dynamique des automorphismes des groupes
+        libres, Thesis (Toulouse, 2004).
 
         """
         F=FreeGroup(4)
@@ -858,7 +860,7 @@ class free_group_automorphisms:
     @staticmethod
     def Handel_Mosher_parageometric_1():
         """
-        Automorphism given in the introduction of [HM-parageometric]
+        Automorphism given in the introduction of [HM-parageometric].
 
         This automorphism phi is iwip, not geometric and
         parageometric. Both phi and phi.inverse() are train-track on
@@ -880,6 +882,8 @@ class free_group_automorphisms:
 
         Automorphism given as example 1.6 in [CL-dynamics].
 
+        It is reducible.
+
         REFERENCES:
 
         [CL-dynamics] M. Cohen, M. Lustig, on the dynamics and the
@@ -894,6 +898,8 @@ class free_group_automorphisms:
         """
 
         Automorphism given as example 7.2 in [CL-dynamics].
+
+        this is an atoroidal iwip. 
 
         REFERENCES:
 
@@ -911,6 +917,8 @@ class free_group_automorphisms:
 
         Automorphism given as example 7.3 in [CL-dynamics].
 
+        This is an atoroidal iwip.
+
         REFERENCES:
 
         [CL-dynamics] M. Cohen, M. Lustig, on the dynamics and the
@@ -926,12 +934,16 @@ class free_group_automorphisms:
         Automorphism of F_4 given in [Turner].
 
         This automorphism comes from an idea of Stallings and although
-        it is very short, it has a very long fixed word.
+        it is very short, it has a very long fixed word. 
+
+        It is a reducible automorphism.
 
         REFERENCES:
 
-        [Turner] ???
-
+        [Turner] E. C. Turner, Finding indivisible Nielsen paths for a
+        train tracks map, Proc. of a work- shop held at Heriot-Watt Univ.,
+        Edinburg, 1993 (Lond. Math. Soc. Lect. Note Ser., 204), Cambridge,
+        Cambridge Univ. Press., 1995, 300-313.
         """
         return FreeGroupAutomorphism("a->dac,b->CADac,c->CABac,d->CAbc",FreeGroup(4))
 
@@ -956,3 +968,35 @@ class free_group_automorphisms:
 
         return FreeGroupAutomorphism("a->b,b->c,c->dA,d->DC",FreeGroup(4))
     
+
+    @staticmethod
+    def Levitt_Lustig_periodic():
+        """
+        Automorphism of F_3 given in Section 2 of [LL-periodic].
+
+        This is an atoroidal iwip. It is positive and thus train-track
+        on the rose.
+
+        REFERENCES:
+        
+        [LL-periodic] G. Levitt, and M. Lustig, Automorphisms of free
+        groups have asymptotically periodic dynamics,
+
+        """
+    return FreeGroupAutomorphism("a->cb,b->a,c->ba",FreeGroup(3))
+
+    @staticmethod
+    def Clay_Pettet_twisting_out():
+        """
+        Automorphism of F_3 given in Section 2 of [CP-twisting].
+
+        This is an atoroidal iwip. It is positive and thus train-track
+        on the rose.
+
+        REFERENCES:
+        
+        [CP-twisting] M. Clay, and A. Pettet, Twisting out fully
+        irreducible automorphisms, ArXiv:0906.4050
+
+        """
+    return FreeGroupAutomorphism("a->b,b->c,c->ab",FreeGroup(3))
