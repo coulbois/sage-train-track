@@ -787,26 +787,102 @@ class GraphWithInverses(DiGraph):
 
         A=self.alphabet()
 
+        result_map=dict((a,Word([a])) for a in A)
+
         new_vertices=self.new_vertices(len(germ_components))
         new_edges=A.add_new_letters(len(germ_components))
-
-        result_map=dict((a,Word([a])) for a in A.positive_letters())
 
         for i,c in enumerate(germ_components):
             v0=self.initial_vertex(c[0])
             vc=new_vertices[i]
             ec=new_edges[i]
-            self.add_new_edge(v0,vc,ec)
+            self.add_edge(v0,vc,ec)
             for a in c:
                 self.set_initial_vertex(a,vc)
-                if A.is_positive_letter(a):
-                     result_map[a]=Word([ec[0]])*result_map[a]
-                else:
-                     aa=A.inverse_letter(a)
-                     result_map[aa]=result_map[aa]*Word([ec[1]])
+                result_map[a]=Word([ec[0]])*result_map[a]
+                aa=A.inverse_letter(a)
+                result_map[aa]=result_map[aa]*Word([ec[1]])
 
         return result_map
 
+     def lies_in_a_free_factor(self,loop,verbose=False):
+          """
+          ``True`` if ``loop`` lies in a (non-trivial) free factor of
+          the fundamental group.
+
+          The fundamental group is a free group.
+
+          Intended to be used to detect whether a Nielsen loop of a
+          train-track map generates a free factor and thus the
+          represented automorphism is reducible.
+
+          ALGORITHM:
+          
+          Check whether the Whitehead graphs spanned by ``loop`` are
+          connected.          
+          """
+
+          A=self.alphabet()
+
+          reached_edges=set([A.to_positive_letter(a) for a in loop])
+          
+          if len(reached_edges)<len(A):
+               if verbose:
+                    print "The loop does not go through all edges"
+               return True
+
+          if verbose:
+               print "The loop goes through all edges."
+
+          
+          germ_class=dict([])
+
+          for i,a in enumerate(loop):
+               if i==len(loop)-1:
+                    b=loop[0]
+               else:
+                    b=loop[i+1]
+               a=A.inverse_letter(a)
+               if a in germ_class:
+                    if b in germ_class:
+                         aa=germ_class[a]
+                         bb=germ_class[b]
+                         if aa!=bb:
+                              for c in germ_class:
+                                   if germ_class[c]==bb:
+                                        germ_class[c]=aa
+                    else:
+                         germ_class[b]=germ_class[a]
+               elif b in germ_class:
+                    germ_class[a]=germ_class[b]
+               else:
+                    germ_class[a]=a
+                    germ_class[b]=a
+
+          germ_classes=[]
+          while len(germ_class)>0:
+               (a,b)=germ_class.popitem()
+               germ_classes.append([a])
+               for c,d in germ_class.iteritems():
+                    if d==b:
+                         germ_classes[-1].append(c)
+               for c in germ_classes[-1][1:]:
+                    germ_class.pop(c)
+
+          if verbose:
+               print "Whitehead equivalence classes of germs:",germ_classes
+
+          if len(germ_classes)>len(self.vertices()):
+               if verbose:
+                    print "Non connected Whitehead graphs"
+               return True
+
+          if verbose:
+               print "Connected Whitehead graphs"
+
+          return False
+
+          
 
 
      @staticmethod

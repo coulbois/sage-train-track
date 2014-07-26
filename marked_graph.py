@@ -213,7 +213,7 @@ class MarkedGraph(GraphWithInverses):
         
         blow_up_map=GraphWithInverses.blow_up_vertices(self,germ_components)
         blow_up_morph=WordMorphism(blow_up_map)
-        self._marking.set_edge_map(blow_up_morph*self._marking._edge_map)
+        self._marking.set_edge_map(blow_up_morph*self.marking().edge_map())
         return blow_up_map
 
      @staticmethod

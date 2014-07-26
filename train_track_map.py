@@ -785,17 +785,24 @@ class TrainTrackMap(TopologicalRepresentative):
 
         return result_morph
 
-    def has_connected_local_whitehead_graphs(self):
+    def has_connected_local_whitehead_graphs(self,verbose=False):
         """
         ``True`` if all local Whitehead graphs are connected.
 
-        SEE ALSO:
+        EXAMPLE::
+
+        sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+        sage: f=TrainTrackMap(phi.rose_representative())
+        sage: f.has_connected_local_whitehead_graphs()
+
+
+        SEE ALSO::
         
         TrainTrackMap.local_whitehead_graph()
         TrainTrackMap.whitehead_connected_components()
         """
         
-        return len(self.whitehead_connected_components())==len(self.domain().vertices())
+        return len(self.whitehead_connected_components(verbose))==len(self.domain().vertices())
         
 
     def nielsen_loops(self,pnps=None,verbose=False):
@@ -804,6 +811,11 @@ class TrainTrackMap(TopologicalRepresentative):
 
         Such a loop is a periodic element of ``self``.
 
+        INPUT:
+
+        ``pnps``: the list of periodic Nielsen paths. Each given as
+        ``((u,v),period)``.
+
         WARNING:
         
         If pnps are not given, computes the periodic Nielsen paths
@@ -811,6 +823,7 @@ class TrainTrackMap(TopologicalRepresentative):
         assumes that ``self`` is an expanding train-track.
         """
         G=self.domain()
+        A=G.alphabet()
 
         if pnps==None:
             pnps=self.periodic_nielsen_paths(verbose and verbose>1 and verbose-1)
@@ -889,13 +902,57 @@ class TrainTrackMap(TopologicalRepresentative):
             elif v2 in components_tree:
                 vv2,w2=components_tree[v2]
                 if portion2>0 and len(w2)>0 and w2[-1]!=v[-1]: 
-                    components_tree[v1]=(vv2,G.reduce_path(w2[-1]*G.reverse_path(v)*u))
+                    components_tree[v1]=(vv2,G.reduce_path(w2[:-1]*G.reverse_path(v)*u))
                 else:
                     components_tree[v1]=(vv2,G.reduce_path(w2*G.reverse_path(v)*u))
             else:
                 components_tree[v1]=(v1,Word([]))
                 components_tree[v2]=(v1,G.reverse_path(u)*v)
 
+        #We order loops to remove multiple occurences of the same loop
+
+        for n,loop in enumerate(loops):
+            i=0
+            j=1
+            l=len(loop)
+            while j<l:
+                k=0
+                smaller=False
+                while k<l:
+                    ki=i+k
+                    kj=j+k
+                    if ki>=l:
+                        ki=ki-l
+                    if kj>=l:
+                        kj=kj-l
+                    a=loop[ki]
+                    b=loop[kj]
+                    if A.less_letter(b,a):
+                        if b!=a:
+                            smaller=True
+                            break
+                    else:
+                        break
+                if smaller: i=j
+                j=j+1
+            if verbose:
+                print "Smallests cyclic conjugate of",loop,":",
+            loops[n]=loop[i:]+loop[:i]
+            if verbose:
+                print loops[n]
+
+        i=0
+        j=1
+        while j<len(loops):
+            if loops[i]==loops[j]:
+                if verbose:
+                    print loops[i],"occures twice"
+                loops.pop(j)
+            else:
+                j+=1
+            if j==len(loops):
+                i+=1
+                j=i+1
 
         return loops
                     
@@ -1117,6 +1174,12 @@ class TrainTrackMap(TopologicalRepresentative):
 
         A WordMorphism that maps old edges to their fold image.
 
+        EXAMPLE::
+
+        sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+        sage: f=TrainTrackMap(phi.rose_representative())
+        sage: f.blow_up_vertices([['a', 'b', 'C'], ['A', 'c', 'B']])
+
         """
         G=self.domain()
         A=G.alphabet()
@@ -1142,7 +1205,7 @@ class TrainTrackMap(TopologicalRepresentative):
         return WordMorphism(blow_up_map)
 
 
-    def whitehead_connected_components(self):
+    def whitehead_connected_components(self,verbose=False):
         """
         List of connected components of local Whitehead graphs.
 
@@ -1156,9 +1219,18 @@ class TrainTrackMap(TopologicalRepresentative):
         A list of list of edges. Each list is a connected
         component. Each edge stands for its starting germ.
 
-        SEE ALSO:
+        EXAMPLE::
+
+        sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+        sage: f=TrainTrackMap(phi.rose_representative())
+        sage: f.whitehead_connected_components()
+
+        SEE ALSO::
 
         TrainTrackMap.local_whitehead_graph()
+
+
+
         """
         G=self.domain()
         A=G.alphabet()
@@ -1272,7 +1344,75 @@ class TrainTrackMap(TopologicalRepresentative):
         return (e,period,portion)
 
 
+    def is_iwip(self,verbose=False):
+        """
+        ``True`` if ``self`` represents an iwip automorphism.
 
-    
-        
-            
+        ALGORITHM:
+
+        1/ Try to reduce ``self`` (removing valence 1 or 2 vertices, invariant forests)
+
+        2/ Check that the matrix has a power with strictly positive entries
+
+        3/ Check the connectedness of local Whitehead graphs
+
+        4/ Look for periodic Nielsen paths and periodic Nielsen loops.
+
+        5/ If there are no periodic Nielsen loop then it is an
+        atoroidal iwip [Kapo-algo]
+
+        6/ If there is more than two Nielsen loops then it is not iwip
+
+        7/ If there is one iwip check whether it is contained in a
+        non-trivial free factor.
+
+        REFERENCES
+
+        [Kapo-algo] I. Kapovich, Algorithmic detectability of iwip
+        automorphisms, 2012, arXiv:1209.3732
+        """
+        self.reduce(verbose and verbose>1 and verbose-1)
+        if verbose:
+            print "Reduced form:"
+            print self
+        if len(self._strata)>1:
+            if verbose: 
+                print "Reducible"
+        if verbose:
+            print "Irreducible train-track map"
+        if not self.is_perron_frobenius():
+            if verbose:
+                print "Not fully irreducible: the matrix of self does not have a strictly positive power"
+            return False
+        if verbose:
+            print "Fully irreducible: the matrix of self has a strictly positive power"
+        c=self.whitehead_connected_components(verbose and verbose>1 and verbose-1)
+        if len(c)>len(self.domain().vertices()):
+            if verbose:
+                print "The local Whitehead graphs are not connected. Connected components of germs:",c
+            return False
+        if verbose:
+            print "Local Whitehead graphs are connected"
+        pnps=self.periodic_nielsen_paths(verbose and verbose>1 and verbose-1)
+        nielsen_loops=self.nielsen_loops(pnps,verbose and verbose>1 and verbose-1)
+        if len(nielsen_loops)>0:
+            if len(nielsen_loops)>1:
+                if verbose:
+                    print "There are more than two Nielsen loops:",nielsen_loops
+                return False
+            else:
+                if verbose:
+                    print "One Nielsen loop:",nielsen_loops[0]
+                if self.domain().lies_in_a_free_factor(nielsen_loops[0],verbose and verbose>1 and verbose-1):
+                    if verbose:
+                        print "The Nielsen loops is primitive"
+                    return False
+                else:
+                    if verbose:
+                        print "Geometric iwip"
+                    return True
+        else:
+            if verbose:
+                print "No Nielsen loops"
+                print "Atoroidal iwip"
+            return True

@@ -707,6 +707,63 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
                 f.relative_train_track(verbose)
         return f
 
+    def is_iwip(self,verbose=False):
+        """
+        ``True`` if ``self`` is an iwip automorphism.
+
+        ALGORITHM:
+
+        0/ Look for a train-track representaive ``f`` for ``self``.
+
+        1/ Try to reduce ``f`` (removing valence 1 or 2 vertices, invariant forests)
+
+        2/ Check that the matrix has a power with strictly positive entries
+
+        3/ Check the connectedness of local Whitehead graphs
+
+        4/ Look for periodic Nielsen paths and periodic Nielsen loops.
+
+        5/ If there are no periodic Nielsen loop then it is an
+        atoroidal iwip [Kapo-algo]
+
+        6/ If there is more than two Nielsen loops then it is not iwip
+
+        7/ If there is one iwip check whether it is contained in a
+        non-trivial free factor.
+
+        SEE ALSO::
+        
+        TrainTrackMap.is_iwip()
+
+        REFERENCES
+
+        [Kapo-algo] I. Kapovich, Algorithmic detectability of iwip
+        automorphisms, 2012, arXiv:1209.3732
+        """
+        from train_track_map import TrainTrackMap
+        
+
+        f=self.train_track(stable=True,relative=False,verbose=verbose and verbose<1 and verbose-1)
+
+
+        if verbose:
+            print f
+        
+
+        if len(f._strata)>1:
+            if verbose:
+                print "Reducible"
+            return False
+        
+        f=TrainTrackMap(f)
+
+
+        return f.is_iwip(verbose)
+
+            
+        
+    
+
 class free_group_automorphisms:
     r"""
     Many examples of free group automorphisms.
@@ -983,7 +1040,7 @@ class free_group_automorphisms:
         groups have asymptotically periodic dynamics,
 
         """
-    return FreeGroupAutomorphism("a->cb,b->a,c->ba",FreeGroup(3))
+        return FreeGroupAutomorphism("a->cb,b->a,c->ba",FreeGroup(3))
 
     @staticmethod
     def Clay_Pettet_twisting_out():
@@ -999,4 +1056,4 @@ class free_group_automorphisms:
         irreducible automorphisms, ArXiv:0906.4050
 
         """
-    return FreeGroupAutomorphism("a->b,b->c,c->ab",FreeGroup(3))
+        return FreeGroupAutomorphism("a->b,b->c,c->ab",FreeGroup(3))
