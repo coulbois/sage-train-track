@@ -366,6 +366,7 @@ class GraphMap():
         map and illegal turns list. Repeat the process till no illegal
         turns remain.
         """
+        A = self.domain().alphabet()
         for a in A:
             if len(self.image(a)) >1:
                 self.subdivide_domain(a)
