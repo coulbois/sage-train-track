@@ -805,7 +805,7 @@ class TrainTrackMap(TopologicalRepresentative):
         return len(self.whitehead_connected_components(verbose))==len(self.domain().vertices())
         
 
-    def nielsen_loops(self,pnps=None,verbose=False):
+    def periodic_nielsen_loops(self,pnps=None,verbose=False):
         """
         List of loops made of periodic Nielsen paths.
 
@@ -816,12 +816,20 @@ class TrainTrackMap(TopologicalRepresentative):
         ``pnps``: the list of periodic Nielsen paths. Each given as
         ``((u,v),period)``.
 
+        OUTPUT:
+
+        A list of ``(loop,vertex,period)`` where ``loop`` is a
+        periodic Nielsen loop, ``vertex`` is a periodic point which is
+        a based point of the loop.
+
         WARNING:
         
-        If pnps are not given, computes the periodic Nielsen paths
+        If ``pnps`` are not given, computes the periodic Nielsen paths
         using ``TrainTrackMap.periodic_nielsen_paths(self)``.  Thus
         assumes that ``self`` is an expanding train-track.
         """
+        from sage.rings.arith import lcm
+
         G=self.domain()
         A=G.alphabet()
 
@@ -831,90 +839,95 @@ class TrainTrackMap(TopologicalRepresentative):
         components_tree=dict([]) # maps a vertex v to (vv,w) where w is Nielsen path from v to vv
         loops=[]
 
-        for i,((u,v),iter) in enumerate(pnps):
+        for i,((u,v),period) in enumerate(pnps):
             uu=u
             vv=v
-            for j in xrange(iter):
+            for j in xrange(period):
                 uu=self(uu)
                 vv=self(vv)
             p=G.common_prefix_length(uu,vv)
 
-            portion1=len(uu)-p-len(u)
-            portion2=len(vv)-p-len(v)
-            v1=(u[-1],iter,portion1) 
-            v2=(v[-1],iter,portion2)
+            right1=len(uu)-p-len(u)
+            right2=len(vv)-p-len(v)
+            uu=self.image(u[-1],period)
+            vv=self.image(v[-1],period)
+            left1=len(uu)-right1-1
+            left2=len(vv)-right2-1
+            v1=(u[-1],period,left1,right1) 
+            v2=(v[-1],period,left2,right2)
 
-            if v1[2]!=0: # vertex in the middle of an edge
+            if v1[3]!=0: # vertex in the middle of an edge
                 v1=self.periodic_point_normal_form(v1,verbose=(verbose and verbose>1 and verbose-1))
             else:
-                v1=G.terminal_vertex(u[-1])
+                v1=(G.terminal_vertex(u[-1]),)
 
-            if v2[2]!=0: # vertex in the middle of an edge
+            if v2[3]!=0: # vertex in the middle of an edge
                 v2=self.periodic_point_normal_form(v2,verbose=(verbose and verbose>1 and verbose-1))
             else:
-                v2=G.terminal_vertex(v[-1])
+                v2=(G.terminal_vertex(v[-1]),)
 
             if verbose:
                 print "periodic Nielsen path (",u,",",v,") linking vertices",v1,"and",v2
 
-            if v1==v2:
-                if portion1>0:
-                    loops.append(G.reduce_path(G.reverse_path(u)*v[:-1]))
+            if v1==v2: # this pNp is a loop
+                if right1>0:
+                    loops.append((G.reduce_path(G.reverse_path(u)*v[:-1]),v1,period))
                 else:
-                    loops.append(G.reverse_path(u)*v)
+                    loops.append((G.reverse_path(u)*v,v1,period))
             elif v1 in components_tree and v2 in components_tree:
-                vv1,w1=components_tree[v1]
-                vv2,w2=components_tree[v2]
-                if portion1>0 and len(w1)>0 and w1[-1]!=u[-1]: #The Nielsen paths w1 and pnp form a reduce path
+                vv1,w1,period1=components_tree[v1]
+                vv2,w2,period2=components_tree[v2]
+                period=lcm([period,period1,period2])
+                if right1>0 and len(w1)>0 and w1[-1]!=u[-1]: #The Nielsen paths w1 and pnp form a reduce path
                     link1=w1*G.reverse_path(u[:-1]) #Nielsen path from vv1 to the tip of the pnp
                 else:
                     link1=w1*G.reverse_path(u)              
-                if portion2==0 or (len(w2)>0 and w2[-1]==v[-1]):
+                if right2==0 or (len(w2)>0 and w2[-1]==v[-1]):
                     link2=v*G.reverse_path(w2)  #Nielsen path from the tip of the pnp to vv2
                 else:
                     link2=v[:-1]*G.reverse_path(w2)
                 link=G.reduce_path(link1*link2)  #Nielsen path from vv1 to vv2
                 if vv1==vv2:
                     if len(link)>0:
-                        if type(vv1) is tuple and len(link)>0 and link[0]==link[-1]:
+                        if len(vv1)==4 and len(link)>0 and link[0]==link[-1]:
                             link=link[:-1]
                     if len(link)>0:
                         if verbose:
                             print "loop at vertex",vv1,":",link
-                        loops.append(link)
+                        loops.append((link,vv1,period))
                     elif verbose:
                         print "contractable loop at vertex",vv1
                 else:  #we fusion the two components
-                    for (v,(vv,w)) in components_tree.iteritems():
+                    for (v,(vv,w,p)) in components_tree.iteritems():
                         if vv==vv2:
-                            if type(vv2) is tuple and len(link)>0 and len(w)>0 and w[0]==link[-1]:
-                                components_tree[v]=(vv1,G.reduce_path(link[:-1]*w))
+                            if len(vv2)==4 and len(link)>0 and len(w)>0 and w[0]==link[-1]:
+                                components_tree[v]=(vv1,G.reduce_path(link[:-1]*w),lcm(p,period))
                             else:
-                                components_tree[v]=(vv1,G.reduce_path(link*w))
+                                components_tree[v]=(vv1,G.reduce_path(link*w),lcm(p,period))
 
             elif v1 in components_tree:
-                vv1,w1=components_tree[v1]
-                if portion1>0 and len(w1)>0 and w1[-1]!=u[-1]:
-                    components_tree[v2]=(vv1,G.reduce_path(w1[:-1]*G.reverse_path(u)*v))
+                vv1,w1,p1=components_tree[v1]
+                if right1>0 and len(w1)>0 and w1[-1]!=u[-1]:
+                    components_tree[v2]=(vv1,G.reduce_path(w1[:-1]*G.reverse_path(u)*v),lcm(p1,period))
                 else:
-                    components_tree[v2]=(vv1,G.reduce_path(w1*G.reverse_path(u)*v))
+                    components_tree[v2]=(vv1,G.reduce_path(w1*G.reverse_path(u)*v),lcm(p1,period))
 
             elif v2 in components_tree:
-                vv2,w2=components_tree[v2]
-                if portion2>0 and len(w2)>0 and w2[-1]!=v[-1]: 
-                    components_tree[v1]=(vv2,G.reduce_path(w2[:-1]*G.reverse_path(v)*u))
+                vv2,w2,p2=components_tree[v2]
+                if right2>0 and len(w2)>0 and w2[-1]!=v[-1]: 
+                    components_tree[v1]=(vv2,G.reduce_path(w2[:-1]*G.reverse_path(v)*u),lcm(p2,period))
                 else:
-                    components_tree[v1]=(vv2,G.reduce_path(w2*G.reverse_path(v)*u))
+                    components_tree[v1]=(vv2,G.reduce_path(w2*G.reverse_path(v)*u),lcm(p2,period))
             else:
-                components_tree[v1]=(v1,Word([]))
-                components_tree[v2]=(v1,G.reverse_path(u)*v)
+                components_tree[v1]=(v1,Word([]),1)
+                components_tree[v2]=(v1,G.reverse_path(u)*v,period)
 
         #We order loops to remove multiple occurences of the same loop
 
         for n,loop in enumerate(loops):
             i=0
             j=1
-            l=len(loop)
+            l=len(loop[0])
             while j<l:
                 k=0
                 smaller=False
@@ -925,8 +938,8 @@ class TrainTrackMap(TopologicalRepresentative):
                         ki=ki-l
                     if kj>=l:
                         kj=kj-l
-                    a=loop[ki]
-                    b=loop[kj]
+                    a=loop[0][ki]
+                    b=loop[0][kj]
                     if A.less_letter(b,a):
                         if b!=a:
                             smaller=True
@@ -937,14 +950,14 @@ class TrainTrackMap(TopologicalRepresentative):
                 j=j+1
             if verbose:
                 print "Smallests cyclic conjugate of",loop,":",
-            loops[n]=loop[i:]+loop[:i]
+            loops[n]=(loop[0][i:]+loop[0][:i],loop[1],loop[2])
             if verbose:
                 print loops[n]
 
         i=0
         j=1
         while j<len(loops):
-            if loops[i]==loops[j]:
+            if loops[i][0]==loops[j][0]:
                 if verbose:
                     print loops[i],"occures twice"
                 loops.pop(j)
@@ -964,8 +977,15 @@ class TrainTrackMap(TopologicalRepresentative):
         invariant of the conjugacy class of the outer automorphism
         represented by ``self``.
 
-        Vertices are equivalence classes of stable germs of the graph of
-        ``self``. Two germs are equivalent if they are the end of a
+        As an artefact we add 2xrank(Stab) vertices to connected
+        components of the ideal Whitehead graphs with a non trivial
+        stabilizer. This allows to compute the index as the some of
+        the number of vertices of connected components minus two (see
+        also ``TrainTrackMap.index_lis()`` and
+        ``TrainTrackMap.index()``).
+
+        Vertices are equivalence classes of stable germs of the graph
+        of ``self``. Two germs are equivalent if they are the end of a
         periodic Nielsen path. There is an edge between two such germs
         if the corresponding turn is used by the iterated images of
         edges. Of course only connected components with >2 vertices
@@ -976,27 +996,27 @@ class TrainTrackMap(TopologicalRepresentative):
         For the two germs out of a periodic point inside an edge we
         use the notation:
 
-        ``(e,iter,portion)``
+        ``(e,period,left,right)``
 
-        where the source of the germ is the fix point of f^iter
+        where the source of the germ is the fix point of f^period
         corresponding to the occurence of the edge e in the path
-        f^iter(e)=uev with portion=len(v). ``iter`` is chosen as small as
-        possible to denote that periodic point. The germ is the one
-        with the same orientation as 'a'.
+        f^period(e)=uev with left=len(u) and right=len(v). ``period``
+        is chosen as small as possible to denote that periodic
+        point. The germ is the one with the same orientation as ``e``.
         
         WARNING:
         
         If pnps is not given computes them by calling
-        ``self.periodic_nielsen_paths()`` thus assumes that ``self``
-        is an expanding train-track. 
+        ``self.periodic_nielsen_paths()``. Thus it is assumed that
+        ``self`` is an expanding train-track.
 
-        Moreover the computation is not correct if there are fixed
-        subgroups (eg: ``self`` is not irreducible or has closed
-        Nielsen paths).
+        Moreover the computation is not correct if there are periodic
+        (infinite index) subgroups (eg: ``self`` is not irreducible or
+        has closed Nielsen paths).
 
         SEE ALSO::
 
-        TrainTrackMap.nielsen_loops()        
+        TrainTrackMap.periodic_nielsen_loops()        
         """
         G=self.domain()
         A=G.alphabet()
@@ -1008,37 +1028,48 @@ class TrainTrackMap(TopologicalRepresentative):
         if pnps is None:
             pnps=self.periodic_nielsen_paths()
 
-        #the end of an inp is either a vertex of self or a point inside an edge which is denoted by (e,iter,portion)
+        #the end of an inp is either a vertex of self or a point
+        #inside an edge which is denoted by (e,period,portion) or
+        #(e,period,left,right)
         
-        for i,((u,v),iter) in enumerate(pnps):
+        for i,((u,v),period) in enumerate(pnps):
             uu=u
             vv=v
-            for j in xrange(iter):
+            for j in xrange(period):
                 uu=self(uu)
                 vv=self(vv)
             p=G.common_prefix_length(uu,vv)
 
-            v1=(u[-1],iter,len(uu)-p-len(u)) 
-            v2=(v[-1],iter,len(vv)-p-len(v))
+            right1=len(uu)-p-len(u)
+            right2=len(vv)-p-len(v)
 
-            if v1[2]!=0: # vertex in the middle of an edge
+            uu=self.image(u[-1],period)
+            vv=self.image(v[-1],period)
+
+            left1=len(uu)-right1-1
+            left2=len(vv)-right2-1
+            
+            v1=(u[-1],period,left1,right1) 
+            v2=(v[-1],period,left2,right2)
+
+            if v1[3]!=0: # vertex in the middle of an edge
                 v1=self.periodic_point_normal_form(v1,keep_orientation=True,verbose=(verbose and verbose>1 and verbose-1))
-                vv1=(A.inverse_letter(v1[0]),v1[1],len(self.image(v1[0],v1[1]))-v1[2]-1) # always>0
+                vv1=(A.inverse_letter(v1[0]),v1[1],v1[3],v1[2])
                 iwg.add_edge((v1,vv1))
             else:
-                vv1=A.inverse_letter(v1[0])
+                vv1=(A.inverse_letter(v1[0]),)
 
-            if v2[2]!=0: # vertex in the middle of an edge
+            if v2[3]!=0: # vertex in the middle of an edge
                 v2=self.periodic_point_normal_form(v2,keep_orientation=True,verbose=(verbose and verbose>1 and verbose-1))
-                vv2=(A.inverse_letter(v2[0]),v2[1],len(self.image(v2[0],v2[1]))-v2[2]-1) # always>0
+                vv2=(A.inverse_letter(v2[0]),v2[1],v2[3],v2[2]) 
                 iwg.add_edge((v2,vv2))
             else:
-                vv2=A.inverse_letter(v2[0])
+                vv2=(A.inverse_letter(v2[0]),)
 
             # build the germ classes of germs ending pnps
 
             if verbose:
-                print "germs",vv1,"and",vv2,"are equivalent (ends of a pnp)"
+                print "germs",vv1,"and",vv2,"are the ends of a pnp."
 
             for (j,c) in enumerate(germ_classes): 
                 if vv1 in c:
@@ -1059,8 +1090,39 @@ class TrainTrackMap(TopologicalRepresentative):
             else:
                 germ_classes[i1].append(vv2)
 
+#         #two germs out of the same vertex are not equivalent
+                
+#         for c in germ_classes:
+#             i=0
+#             j=1
+#             while j<len(c):
+#                 ci=c[i]
+#                 if len(ci)==4:
+#                     if not A.is_positive_letter(ci[0]):
+#                         vi=(A.inverse_letter(ci[0]),ci[1],ci[3],ci[2])
+#                     else:
+#                         vi=ci
+#                 else:
+#                     vi=G.initial_vertex(ci[0])
+#                 while j<len(c):
+#                     cj=c[j]
+#                     if len(cj)==4:
+#                         if not A.is_positive_letter(cj[0]):
+#                             vj=(A.inverse_letter(cj[0]),cj[1],cj[3],cj[2])
+#                         else:
+#                             vj=cj
+#                     else:
+#                         vj=G.initial_vertex(cj[0])
+#                     if vi==vj:
+#                         c.pop(j)
+#                     else:
+#                         j+=1
+#                 i+=1
+#                 j=i+1
+                
+
         if verbose:
-            print "Classes of germ at the end of pnp:",germ_classes
+            print "Classes of germ at the end of pnps:",germ_classes
                 
         for v in G.vertices():
             iwg=iwg.union(self.stable_local_whitehead_graph(v))
@@ -1072,15 +1134,47 @@ class TrainTrackMap(TopologicalRepresentative):
 
         for c in germ_classes:
             if len(c)>0:
+                c0=c[0]
+                if not len(c0)==4:
+                    c0=c0[0]
                 for i in xrange(1,len(c)):
-                    for e in iwg.edges_incident(c[i]):
+                    ci=c[i]
+                    if not len(ci)==4:
+                        ci=ci[0]
+                    for e in iwg.edges_incident(ci):
                         iwg.delete_edge(e)
-                        if e[0]==c[i]:
-                            iwg.add_edge((c[0],e[1]))
+                        if e[0]==ci:
+                            iwg.add_edge((c0,e[1]))
                         else:
-                            iwg.add_edge((e[0],c[0]))
-                    iwg.delete_vertex(c[i])
+                            iwg.add_edge((e[0],c0))
+                    iwg.delete_vertex(ci)
 
+        # Add the loops to the corresponding connected components
+
+        loops=self.periodic_nielsen_loops(pnps,verbose=(verbose and verbose>1 and verbose-1))
+
+        for loop,vertex,period in loops:
+            added=False
+            for c in germ_classes:
+                for germ in c:
+                    if len(germ)==4:
+                        if not A.is_positive_letter(germ[0]):
+                            germ_vertex=(A.inverse_letter(germ[0]),germ[1],germ[3],germ[2])
+                        else:
+                            germ_vertex=germ
+                    else:
+                        germ_vertex=(G.initial_vertex(germ[0]),)
+                    if vertex==germ_vertex:
+                        if len(c[0])==1:
+                            iwg.add_edge(c[0][0],'loop',None)
+                            iwg.add_edge('loop',loop,None)
+                        else:
+                            iwg.add_edge(c[0],'loop',None)
+                            iwg.add_edge('loop',loop,None)
+                        added=True
+                        break
+                if added:
+                    break
 
         return iwg
         
@@ -1151,7 +1245,17 @@ class TrainTrackMap(TopologicalRepresentative):
 
         Some authors (Mosher, Pfaff), use -1/2 our index definition.
 
-        Some authors (Gaboriau, Levitt), use 1/2 out index definition
+        Some authors (Gaboriau, Jaeger, Levitt,Lustig), use 1/2 our index definition
+
+        REFERENCES:
+
+        [GJLL] D. Gaboriau, A. Jaeger, G. Levitt, M. Lustig, An index
+        for counting fixed points of automorphisms of free
+        groups. Duke Math. J., 93(3):425-452, 1998.
+
+        [HM-axes] M. Handel, L. Mosher,
+
+        [Pfaff] C. Pfaff,
         """
 
         l=[len(c)-2 for c in self.ideal_whitehead_graph().connected_components()]
@@ -1267,27 +1371,26 @@ class TrainTrackMap(TopologicalRepresentative):
         Nielsen paths.
         
         A periodic point of ``self`` inside an edge is denoted by
-        ``(e,period,portion)``. The point ``x`` is the unique point
+        ``(e,period,left,right)``. The point ``x`` is the unique point
         such that ``self^period(x)=x`` and ``x``lies in the occurences
         of ``e`` inside ``self^period(e)`` such that
-        ``self^period(e)=uev`` with len(v)=portion.
+        ``self^period(e)=uev`` with ``len(u)=left and len(v)=right``.
 
         The normal formal is the one that minimizes the period.
 
         if ``keep_orientation==False`` then returns that of
-        ``(e,period,portion)`` and ``(ee,peirod,l-portion-1)``
-        according to which of e or ee is a positive letter, where
-        ``ee`` is the inverse letter of ``e`` and ``l`` is the length
-        of ``self^iter(e)``.
+        ``(e,period,left,right)`` and ``(ee,peirod,right,left)``
+        according to which of ``e`` or ``ee`` is a positive letter, where
+        ``ee`` is the inverse letter of ``e``.
 
         OUTPUT:
 
-        ``(e,period,portion)`` denoting the same periodic point, but
+        ``(e,period,left,right)`` denoting the same periodic point, but
         with the smallest period possible.
 
         INPUT:
 
-        ``(e,period,portion)`` standing for the periodic point x in
+        ``(e,period,left,right)`` standing for the periodic point x in
         the edge ``e`` with the given period.
 
         WARNING:
@@ -1295,19 +1398,19 @@ class TrainTrackMap(TopologicalRepresentative):
         If ``keep_orientation==True``, this is not exactly a normal
         form as each such periodic point has two normal forms:
 
-        ``(e,period,portion)`` and ``(ee,peirod,l-portion-1)`` where
-        ``ee`` is the inverse letter of ``e`` and ``l`` is the length
-        of ``self^iter(e)``.
+        ``(e,period,left,right)`` and ``(ee,period,right,left)`` where
+        ``ee`` is the inverse letter of ``e``.
         """
   
-        (e,period,portion)=point
+        (e,period,left,right)=point
 
         if verbose: print "Normal form of point",point
 
+        simplified=False
         diviseur=1
         while period>diviseur:
             if period%diviseur==0:
-                right=[0 for i in xrange(period/diviseur-1)]
+                rights=[0 for i in xrange(period/diviseur-1)]
                 w=self.image(e,diviseur)
                 previous_e=len(w)
                 for i in xrange(len(w)):
@@ -1320,13 +1423,14 @@ class TrainTrackMap(TopologicalRepresentative):
                             u=self(u)
                             if (j+1)%diviseur==0:
                                 add+=len(u)
-                                right[j/diviseur]+=add
-                        if right[-1]==portion:
+                                rights[j/diviseur]+=add
+                        if rights[-1]==right:
                             if verbose: print "simplified to (",e,",",diviseur,",",i,")"
                             period=diviseur
-                            portion=i
+                            right=i
+                            simplified=True
                             break
-                        elif right[-1]>portion:
+                        elif rights[-1]>right:
                             if verbose: print "no simplification with period=",diviseur
                             break
                 else:
@@ -1334,14 +1438,17 @@ class TrainTrackMap(TopologicalRepresentative):
                
             diviseur+=1
          
+        if simplified: #we need to compute left
+            u=self.image(e,period)
+            left=len(u)-right-1
+
         A=self.domain().alphabet()
         if not keep_orientation and not A.is_positive_letter(e):
             e=A.inverse_letter(e)
-            u=self.image(e,period)
-            portion=len(u)-portion-1
+            left,right=right,left
             
                 
-        return (e,period,portion)
+        return (e,period,left,right)
 
 
     def is_iwip(self,verbose=False):
@@ -1352,9 +1459,9 @@ class TrainTrackMap(TopologicalRepresentative):
 
         1/ Try to reduce ``self`` (removing valence 1 or 2 vertices, invariant forests)
 
-        2/ Check that the matrix has a power with strictly positive entries
+        3/ Check that the matrix has a power with strictly positive entries
 
-        3/ Check the connectedness of local Whitehead graphs
+        4/ Check the connectedness of local Whitehead graphs
 
         4/ Look for periodic Nielsen paths and periodic Nielsen loops.
 
@@ -1394,16 +1501,16 @@ class TrainTrackMap(TopologicalRepresentative):
         if verbose:
             print "Local Whitehead graphs are connected"
         pnps=self.periodic_nielsen_paths(verbose and verbose>1 and verbose-1)
-        nielsen_loops=self.nielsen_loops(pnps,verbose and verbose>1 and verbose-1)
+        nielsen_loops=self.periodic_nielsen_loops(pnps,verbose and verbose>1 and verbose-1)
         if len(nielsen_loops)>0:
             if len(nielsen_loops)>1:
                 if verbose:
-                    print "There are more than two Nielsen loops:",nielsen_loops
+                    print "There are more than two periodic Nielsen loops:",nielsen_loops
                 return False
             else:
                 if verbose:
-                    print "One Nielsen loop:",nielsen_loops[0]
-                if self.domain().lies_in_a_free_factor(nielsen_loops[0],verbose and verbose>1 and verbose-1):
+                    print "One Nielsen loop:",nielsen_loops[0][0]
+                if self.domain().lies_in_a_free_factor(nielsen_loops[0][0],verbose and verbose>1 and verbose-1):
                     if verbose:
                         print "The Nielsen loops is primitive"
                     return False
