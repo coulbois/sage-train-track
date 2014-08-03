@@ -276,7 +276,6 @@ class GraphMap():
         return self
 
 
-    ## To implement Stalling's folding to get an immersion.
     def subdivide_domain(self, e):
         """
         Subdivide an edge in the domain graph. 
@@ -284,7 +283,15 @@ class GraphMap():
         The edge ``e`` is subdivided into ``l`` edges where ``l`` is
         the length of the image of ``e`` by ``self``.
 
-        Update the edge_map of ``self``.
+        Update the edge map of ``self``.
+
+        Intended to be used by Stalling's folding algorithm to get an
+        immersion.
+
+        SEE ALSO::
+
+        GraphWithInverses.subdivide_edge()
+
         """
         G=self.domain()
         A = G.alphabet()
@@ -354,17 +361,25 @@ class GraphMap():
         return result
         
 
-    def folding(self):
+    def stallings_folding(self):
         """
-        Implement Stalling's folding to get an immersion from ``self``. 
+        Implement Stallings' folding to get an immersion from ``self``. 
 
-        This is an implementation of the algorithm in the paper 'Topology
-        of Finite Graphs' by John R. Stallings.  
+        The domain of ``self`` is fold until we get an immersion. 
 
-        Given ``self`` we first subdivide edges according to length of
-        image.  Then fold one gate at one vertex and update the edge
-        map and illegal turns list. Repeat the process till no illegal
-        turns remain.
+        ALGORITHM:
+
+        We first subdivide edges of the domain according to length of
+        their image.  
+
+        Then fold one gate at one vertex and update the edge map and
+        illegal turns list. 
+
+        Repeat the process till no illegal turns remain.
+
+        REFERENCES:
+
+        [Stallings] J. Stallings, Topology of Finite Graphs,
         """
         A = self.domain().alphabet()
         for a in A:
@@ -427,8 +442,8 @@ class GraphMap():
         """
         import itertools
         #First convert self and f2 into immersions
-        self.folding()
-        f2.folding()
+        self.stallings_folding()
+        f2.stallings_folding()
         
         # G3 = GraphWithInverses()
         #A = AlphabetWithInverses(0,type='a0')

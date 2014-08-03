@@ -123,9 +123,9 @@ class MarkedGraph(GraphWithInverses):
 
           each edge in ``edge_list`` must appear only once.
 
-          SEE ALSO:
+          SEE ALSO::
 
-          ``GraphWithInverses.subdivide()``
+          GraphWithInverses.subdivide()
           """
 
           subdivide_map=GraphWithInverses.subdivide(self,edge_list)

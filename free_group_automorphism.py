@@ -673,7 +673,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         According to the options computes a relative (or ends when
         finding a reduction) and/or stable (with at most one INP
-        crossing each exponential stratum). verbose can be either True
+        crossing each exponential stratum). ``verbose`` can be either True
         or a positive number giving details on the computations.
 
         OUTPUT:
@@ -688,8 +688,8 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
           train-track or a relative train-track
 
         - If ``stable=True``, the output is either a stable absolute
-          train-track or stable relative train-track or (if
-          relative=False). 
+          train-track or a stable relative train-track (if
+          relative=False).
 
         """
         from train_track_map import TrainTrackMap
