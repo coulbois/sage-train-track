@@ -222,7 +222,7 @@ class MarkedGraph(GraphWithInverses):
           The rose on ``alphabet`` marked with the identity.
           """
 
-          marking=dict((a,a) for a in alphabet.positive_letters())
+          marking=dict((a,Word([a])) for a in alphabet.positive_letters())
           return MarkedGraph(graph=GraphWithInverses.rose_graph(alphabet),marking=marking,marking_alphabet=alphabet)
 
 

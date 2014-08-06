@@ -6,6 +6,8 @@
 #*****************************************************************************
 
 from sage.combinat.words.morphism import WordMorphism
+from sage.combinat.words.word import Word
+from inverse_alphabet import AlphabetWithInverses
 
 class GraphMap():
     """
@@ -167,6 +169,8 @@ class GraphMap():
         ``self`` is assumed to be a homotopy equivalence.
         """
 
+        from free_group import FreeGroup
+        from free_group_automorphism import FreeGroupAutomorphism
 
         G1=self.domain()
         A1=G1.alphabet()
