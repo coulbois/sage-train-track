@@ -1,23 +1,24 @@
 #*****************************************************************************
-#       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
+#       Copyright (C) 2013 Matt Clay and Thierry Coulbois
+#       <thierry.coulbois@univ-amu.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-# from inverse_graph import GraphWithInverses
-# from core import Core
-# from sage.combinat.words.word import Word
-# from inverse_graph import MetricGraph
+from sage.combinat.words.word import Word
+from sage.graphs.graph import DiGraph
+from inverse_graph import GraphWithInverses
+from inverse_graph import MetricGraph
 
 
 class ConvexCore():
     """
-    Guirardel's Convex core of two simplicial trees with an action of
+    Guirardel's convex core of two simplicial trees with an action of
     a free group.
 
     Let T1 and T2 be trees with actions of the free group FN. G1=T1/FN
-    and G2=T2/FN are MarkedGraph or MarkedMetricGraph.
+    and G2=T2/FN are MarkedGraph. 
 
     A ConvexCore is a CW-complex of dimension 2. 2-cells are
     squares. 1 cells are edges labeled by edges of G1 or G2. A square
@@ -25,7 +26,6 @@ class ConvexCore():
 
           e
         ----->
-       |      |
        |      |
      f |      | f
        |      |
@@ -35,30 +35,38 @@ class ConvexCore():
 
     where e is an edge of G1 and f an edge of G2.
 
-    ConvexCore(phi): where phi is an automorphism of the free group
-    F. The convex core of the Cayley tree TA of the free group F with
-    respect to its alphabet A, and of the tree TA.Phi, where Phi is
-    the outer class of phi.
+    MetricGraph with edges of length 0 can be used for trees with a
+    non-free action of FN. 
 
-    ConvexCore(G1,G2): where G1 and G2 are two marked graphs (or two
-    marked metric graphs): The convex core of the universal covers T1
-    and T2 of G1 and G2 respectively. Edges of length 0 are quotient
-    out.
+    ``ConvexCore(phi)``: where ``phi`` is an automorphism of the free
+    group F. The convex core of the Cayley tree TA of the free group F
+    with respect to its alphabet A, and of the tree TA.Phi, where Phi
+    is the outer class of ``phi``.
 
-    ConvexCore(f): where f is a homotopy equivalence between graphs G1 and G2:
-    The convex core of the universal covers T1 and T2 of G1 and G2,
-    with the fundamental group F of G1 acting on G2 through f. Edges
-    of length 0 are quotient out.
+    ``ConvexCore(G1,G2)``: where ``G1`` and ``G2`` are two marked
+    graphs (or two marked metric graphs): The convex core of the
+    universal covers T1 and T2 of ``G1`` and ``G2``
+    respectively. Edges of length 0 are quotient out.
+
+    ``ConvexCore(f)``: where ``f`` is a homotopy equivalence between
+    graphs G1 and G2: The convex core of the universal covers T1 and
+    T2 of G1 and G2, with the fundamental group F of G1 acting on G2
+    through ``f``. Edges of length 0 are quotient out.
 
     TODO:
 
-    This uses the slice construction of Core and thus does not detect
-    edges which do not bound a square.
+    Does not detect edges which do not bound a square.
 
     WARNING:
 
     The one squeleton may fail to be connected due to absence of some
     isolated edges
+
+    AUTHORS:
+
+    - Matt Clay
+    
+    Modified by Thierry Coulbois
 
     """
 
@@ -97,40 +105,70 @@ class ConvexCore():
         self._T0=G
         self._T1=H
 
-        C=Core(G,H,fe,ge)
-
         A=G.alphabet()
         B=H.alphabet()
 
-        two_cells=[]
+        #We construct the core slices
 
+        slice=dict((a,[]) for a in A.positive_letters())
+
+        for b in B.positive_letters():
+            bb=B.inverse_letter(b)
+            inv_image_b=g.image(b)
+            w=Word([])
+            for a in inv_image_b:
+                aa=A.inverse_letter(a)
+                a_is_positive=A.is_positive_letter(a)
+                if a_is_positive:
+                    if len(w)==0 or w[-1]!=bb:
+                        slice[a].append(w*Word([b]))
+                    else:
+                        slice[a].append(w)
+                w=G.reduce_path(f.image(aa)*w)
+                if not a_is_positive:
+                    if len(w)==0 or w[-1]!=bb:
+                        slice[aa].append(w*Word([b]))
+                    else:
+                        slice[aa].append(w)
+
+        two_cells=set([]) # A 2-cell is a triple (path,a,b) with a,b
+                          # positive letters of A and B and path a
+                          # reduced path in H
+                        
+        # Now close the slices by convexity
         for a in A.positive_letters():
-            slice_a=C.core_slice(a)
-            for e in slice_a.edges():
-                if B.is_positive_letter(e[2]):
-                    two_cells.append((Word(e[0]),a,e[2]))
-                else:
-                    two_cells.append((Word(e[1]),a,B.inverse_letter(e[2])))
-
-        one_cells_G=set()
+            if len(slice[a])>0:
+                common=slice[a][0]
+            for w in slice[a]:
+                common_len=H.common_prefix_length(common,w)
+                if common_len<len(common):
+                    common=common[:common_len]
+            for w in slice[a]:
+                for i in xrange(common_len,len(w)-1):
+                    b=w[i]
+                    if B.is_positive_letter(b):
+                        two_cells.add((w[:i],a,b))
+                    else:
+                        two_cells.add((w[:i+1],a,B.inverse_letter(b)))
+        
+        # Now create the convex core as a square complex
+        
+        one_cells_G=set()  # there are two kinds of edges: those from G and those from H
         one_cells_H=set()
-        two_cell_boundary=dict()
-        zero_cells=set()
+        two_cell_boundary=dict() # The boundary operator that map a 2-cell to the 4 edges of its boundary
+        zero_cells=set() # vertices
         one_cell_G_boundary=dict()
         one_cell_H_boundary=dict()
 
 
-        for c in two_cells:
-            v=c[0]
-            a=c[1]
-            b=c[2]
+        for (v,a,b) in two_cells:
             vb=H.reduce_path(v*Word([b]))
-            Av=H.reduce_path(f.image(A.inverse_letter(c[1]))*c[0])
+            Av=H.reduce_path(f.image(A.inverse_letter(a))*v)
             one_cells_H.add((v,b))
             one_cells_H.add((Av,b))
             one_cells_G.add((v,a))
             one_cells_G.add((vb,a))
-            two_cell_boundary[c]=(((v,a),(vb,a),(v,b),(Av,b)))
+            two_cell_boundary[(v,a,b)]=(((v,a),(vb,a),(v,b),(Av,b)))
             zero_cells.add(v)
             zero_cells.add(vb)
             zero_cells.add(Av)
@@ -143,7 +181,6 @@ class ConvexCore():
 
         one_cell_G_class=dict((e,i) for i,e in enumerate(one_cells_G))
         one_cell_H_class=dict((e,i) for i,e in enumerate(one_cells_H))
-        numbered_two_cells=[]
 
         for c in two_cells:
             if isinstance(G,MetricGraph) and G.length(c[1])==0:
@@ -366,6 +403,34 @@ class ConvexCore():
                 result.add_edge(b[0],b[1],self.label_1(i)[0])
 
         return result
+
+    def volume(self):
+        """
+        Volume of ``self``.
+
+        If the trees are not metric trees then this is the simplicial
+        volume: the number of squares in the 2-squeleton. 
+        
+        If the trees are metric trees, then this is the volume.
+        """
+
+        if isinstance(self.tree(0),MetricGraph) and isinstance(self.tree(1),MetricGraph): 
+            result=0
+            for  (a,b) in self._label_2.itervalues():
+                result+=self.tree(0).length(a)*self.tree(1).length(b)
+            return result
+        elif isinstance(self.tree(0),MetricGraph):
+            result=0
+            for (a,b) in self._label_2.itervalues():
+                result+=self.tree(0).length(a)
+            return result
+        elif isinstance(self.tree(1),MetricGraph):
+            result=0
+            for (a,b) in self._label_2.itervalues():
+                result+=self.tree(1).length(b)
+            return result
+        else:
+            return len(self._boundary_2)
 
     def ideal_curve_diagram(self,radius=1,orientation=1,boundary_word=None):
         """
