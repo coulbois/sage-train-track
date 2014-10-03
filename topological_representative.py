@@ -234,7 +234,7 @@ class TopologicalRepresentative(GraphMap):
             eigenvalues = self.relative_matrix(stratum).charpoly().roots(AA)
 
         result = 0
-        for x in eigenvalues:
+        for x,y in eigenvalues:
             if x > result: result=x
         return result
 
@@ -247,7 +247,7 @@ class TopologicalRepresentative(GraphMap):
         if isinstance(self._domain,MarkedGraph):
             G=self._domain
         else:
-            G=Marked_Graph(self._domain)
+            G=MarkedGraph(self._domain)
         A=G.marking().domain().alphabet()
         B=self._domain.alphabet()
 
