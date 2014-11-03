@@ -13,8 +13,7 @@ from inverse_graph import MetricGraph
 
 
 class ConvexCore():
-    """
-    Guirardel's convex core of two simplicial trees with an action of
+    """Guirardel's convex core of two simplicial trees with an action of
     a free group.
 
     Let T1 and T2 be trees with actions of the free group FN. G1=T1/FN
@@ -60,7 +59,11 @@ class ConvexCore():
     WARNING:
 
     The one squeleton may fail to be connected due to absence of some
-    isolated edges
+    isolated edges.
+
+    There might be a problem if the labels of the edges are not
+    coherently positive. Indeed there is a choice of a fundamental
+    domain around the base point in the tree.
 
     AUTHORS:
 
@@ -76,31 +79,21 @@ class ConvexCore():
             H=args[1]
             f=G.difference_of_marking(H).tighten()
             g=f.inverse()
-            fe=f.edge_map()
-            ge=g.edge_map()
-            #CC=Core(H,G,g.edge_map(),f.edge_map())
         elif len(args)==1:
             if isinstance(args[0],GraphMap): #ConvexCore(f)
                 G=f.domain()
                 H=f.codomain()
                 f=args[0]
                 g=f.inverse()
-                fe=f.edge_map()
-                ge=g.edge_map()
-                #CC=Core(f.codomain(),f.domain(),g.edge_map(),f.edge_map())
             elif isinstance(args[0],FreeGroupAutomorphism): # ConvexCore(phi)
-                phi=args[0]
-                A=phi.domain().alphabet()
+                f=args[0]
+                A=f.domain().alphabet()
                 G=GraphWithInverses.rose_graph(A)
                 H=GraphWithInverses.rose_graph(A)
-                psi=phi.inverse()
-                f=fe=phi
-                g=ge=psi
-                #CC=Core(G,H,psi,phi)
+                g=f.inverse()
         elif len(args)==4: #ConvexCore(G,H,f,g)
-            (G,H,fe,ge)=args
-            f=fe
-            g=ge
+            (G,H,f,g)=args
+
 
         self._T0=G
         self._T1=H
@@ -110,48 +103,104 @@ class ConvexCore():
 
         #We construct the core slices
 
-        slice=dict((a,[]) for a in A.positive_letters())
+        t0=G.spanning_tree()
+        t1=H.spanning_tree()
 
-        for b in B.positive_letters():
+        # the positive letter b stands for the edge (t1(b),b) where t1(b) 
+        # is the path in t1 from the root to the initial vertex of b
+        # if t1(b).b is reduced or, if not, for the edge (t1(b)b,B.inverse_letter(b))
+        
+        edge_lift=dict()
+        for b in B.positive_letter():
+            u1=t1[H.initial_vertex(b)]
             bb=B.inverse_letter(b)
-            inv_image_b=g.image(b)
-            w=Word([])
-            for a in inv_image_b:
-                aa=A.inverse_letter(a)
-                a_is_positive=A.is_positive_letter(a)
+            if len(u1)=0 or u1[-1]!=bb:
+                edge_lift[b]=(u1,b)
+            else:
+                edge_lift[b]=(u1[:-1],bb)
+ 
+
+        slice=dict((b,[]) for a in A.positive_letters())  
+        positive_ends=dict((a,[]) for a in A.positive_letters())
+        negative_ends=dict((a,[]) for a in A.positive_letters())
+
+
+        for a in A.positive_letters():
+            aa=A.inverse_letter(a)
+            image_a=f.image(a)
+            w=t0[G.initial_vertex(a)]
+            w=G.reduced_path(g(f(G.reverse_path(w)))*w)
+            for b in image_a: 
+                pb=A.to_positive_letter(b)
+                b_lift=edge_lift[pb]
+                b_is_positive=(b==b_lift[1])
+                v=t1[H.initial_vertex(b)]
+                u=G.reduced_path(g(v)*w)
+
+                # v stands for t1[H.initial_vertex(b)]
+                # f((u,a)) crosses (v,b) positively
+                # if (v,b) is not edge_lift[pb] or -edge_lift[pb] we have to translate more
+
+                if not b_is_positive and b!=pb and (len(v)==0 or v[-1]!=pb): # we have to translate more
+                    u=G.reduced_path(g(t1[H.terminal_vertex(b)]*Word([pb])*H.reverse_path(u))*u)    
+                    # f((u,a)) crosses edge_lift[pb] negatively
+
+                # Now we have to put the right orientation on (u,a)
+                
+                a_is_positive=(len(u)==0 or u[-1]!=aa)
                 if a_is_positive:
-                    if len(w)==0 or w[-1]!=bb:
-                        slice[a].append(w*Word([b]))
-                    else:
-                        slice[a].append(w)
-                w=G.reduce_path(f.image(aa)*w)
-                if not a_is_positive:
-                    if len(w)==0 or w[-1]!=bb:
-                        slice[aa].append(w*Word([b]))
-                    else:
-                        slice[aa].append(w)
+                    u=u*word([a])
+                slice[b].append(u)  # The word u stands for the edge (u[:-1],u[-1])
+                if (a_is_positive and b_is_positive) or ((not a_is_positive) and (not b_is_positive)):
+                    positive_ends[b].append(u)
+                else:
+                    negative_ends[b].append(u)
+
+                w=G.reduce_path(g.image(B.inverse_letter(b))*w)
+
 
         two_cells=set([]) # A 2-cell is a triple (path,a,b) with a,b
                           # positive letters of A and B and path a
                           # reduced path in H
-                        
-        # Now close the slices by convexity
-        for a in A.positive_letters():
-            if len(slice[a])>0:
-                common=slice[a][0]
-            for w in slice[a]:
-                common_len=H.common_prefix_length(common,w)
+
+        isolated_one_cells=set()  # Edges that are not boundaries of two-cells
+        existing_edges=dict(((a,0),False) for a in A.positive_letters())+dict(((b,1),False) for b in B.positive_letters)
+                
+        # close the slices by convexity
+        for b in B.positive_letters():
+            empty_slice=True
+            if len(slice[b])>0:
+                common=slice[b][0]
+            for w in slice[b]:
+                common_len=G.common_prefix_length(common,w)
                 if common_len<len(common):
                     common=common[:common_len]
-            for w in slice[a]:
+            for w in slice[b]:
                 for i in xrange(common_len,len(w)-1):
-                    b=w[i]
-                    if B.is_positive_letter(b):
+                    a=w[i]
+                    empty_slice=False
+                    if A.is_positive_letter(a):
+                        existing_edges[(a,0)]=True
                         two_cells.add((w[:i],a,b))
                     else:
-                        two_cells.add((w[:i+1],a,B.inverse_letter(b)))
-        
-        # Now create the convex core as a square complex
+                        aa=A.inverse_letter(a)
+                        existing_edges[(aa,0)]=True
+                        two_cells.add((w[:i+1],aa,b))
+            if empty_slice: # we need to check wether we add an isolated edge
+                if len(slice[b])>1:
+                    existing_edges[(b,1)]=True
+                    isolated_one_cells.add((common,b,1))  # common stands for its terminal vertex
+            else: 
+                existing_edges[(b,1)]=True
+
+        # we check for isolated edges of the form (a,0)
+        for a in A.positive_letters():
+            if not existing_edges[(a,0)]:
+                for b in B.positive_letters():
+                    pass #TODO
+
+
+        # create the convex core as a square complex
         
         one_cells_G=set()  # there are two kinds of edges: those from G and those from H
         one_cells_H=set()
@@ -160,6 +209,8 @@ class ConvexCore():
         one_cell_G_boundary=dict()
         one_cell_H_boundary=dict()
 
+
+        # TODO: il faut echanger a et b, maintenant dans (w,a,b) w est un chemin dans G.
 
         for (v,a,b) in two_cells:
             vb=H.reduce_path(v*Word([b]))
