@@ -161,12 +161,23 @@ class GraphMap():
             return self._codomain.reduce_path(self._edge_map(self._edge_map(letter),iter-1))
 
     def inverse(self):
-        """
-        A homotopy inverse of ``self``.
+        """A homotopy inverse of ``self``.
+
+        For ``t1=self.domain().spanning_tree()`` and
+        ``t2=self.codomain().spanning_tree()``. The alphabet ``A`` is
+        made of edges not in ``t1`` identified (by their order in the
+        alphabets of the domain and codomain) to letters not in
+        ``t2``. The automorphism ``phi`` of ``FreeGroup(A)`` is
+        defined using ``t1`` and ``t2``. The inverse map is given by
+        ``phi.inverse()`` using ``t1`` and edges from ``t2`` are
+        mapped to a single point (the root of ``t1``).
+
+        In particular the inverse maps all vertices to the root of ``t1``.
 
         WARNING:
 
         ``self`` is assumed to be a homotopy equivalence.
+
         """
 
         from free_group import FreeGroup
@@ -241,6 +252,12 @@ class GraphMap():
 
         ``self`` and ``self.tighten()`` are homotopic.
 
+        WARNING:
+
+        It is assumed that ``self`` is a homotopy equivalence
+
+        The result may send edges to trivial edge-paths.
+
         """
         G1=self.domain()
         A1=G1.alphabet()
@@ -251,17 +268,48 @@ class GraphMap():
         done=False
         while not done:
             done=True
-            prefix=dict()
+            prefix=dict() # the common prefix of all edges outgoing from the class of a vertex
+            ajacent_vertex=dict() # a class of vertices linked by a tree which is contracted by self to a point
             for a in A1:
                 u=edge_map[a]
                 v=G1.initial_vertex(a)
                 if len(u)>0:
-                    if v in prefix:
-                        if len(prefix[v])>0:
-                            p=G2.common_prefix_length(u,prefix[v])
-                            prefix[v]=prefix[v][:p]
+                    if v not in adjacent_vertex:
+                        adjacent_vertex[v]=set([v])
+                    for w in adjacent_vertex[v]:
+                        if w in prefix:
+                            if len(prefix[w])>0:
+                                p=G2.common_prefix_length(u,prefix[w])
+                                prefix[w]=prefix[w][:p]
+                            else:
+                                prefix[w]=u
+                else: #we need to increase the adjacent_vertex
+                    vv=G1.terminal_vertex(a) #note that v!=vv because else the loop a is contracted contrary to homotopy equivalence
+                    if v in adjacent_vertex and vv in adjacent_vertex:
+                        adjacent_vertex[v].update(adjacent_vertex[vv])
+                    elif v in adjacent_vertex:
+                        adjacent_vertex[v].add(vv)
+                    elif vv in adjacent_vertex:
+                        adjacent_vertex[v]=adjacent_vertex[vv]
+                        adjacent_vertex[v].add(v)
                     else:
-                        prefix[v]=u
+                        adjacent_vertex[v]=set([v,vv])
+                    if v in prefix:
+                        prefixv=prefix[v]
+                    else:
+                        prefixv=False
+                    for w in adjacent_vertex[v]:
+                        if v!=w:
+                            adjacent_vertex[w]=adjacent_vertex[v]
+                            if w in prefix:
+                                if prefixv:
+                                    p=G2.common_prefix_length(prefixv,prefix[w])
+                                    prefixv=prefixv[:p]
+                                else:
+                                    prefixv=prefix[w]
+                    if prefixv:
+                        for w in adjacent_vertex[v]:
+                            prefix[w]=prefixv
 
             for a in A1:
                 v=G1.initial_vertex(a)
@@ -271,9 +319,10 @@ class GraphMap():
                     if len(edge_map[a])>0:
                         edge_map[a]=edge_map[a][len(prefix[v]):]
                         edge_map[aa]=edge_map[aa][:-len(prefix[v])]
-                    else:
-                        edge_map[a]=G2.reverse_path(prefix[v])
-                        edge_map[aa]=prefix[v]
+                    # else:
+                    #     edge_map[a]=G2.reverse_path(prefix[v])
+                    #     edge_map[aa]=prefix[v]
+                    break
 
         self.set_edge_map(edge_map)
 
