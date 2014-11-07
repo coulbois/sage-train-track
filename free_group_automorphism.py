@@ -1057,3 +1057,74 @@ class free_group_automorphisms:
 
         """
         return FreeGroupAutomorphism("a->b,b->c,c->ab",FreeGroup(3))
+
+    @staticmethod
+    def Hokkaido():
+        """
+        Automorphism of F_4 suggested by X. Bressaud [personal communication]
+
+        Already studied by Thurston [reference needed]?
+
+        This is a parageometrix iwip.
+
+        REFERENCES:
+
+        [Thurston] reference needed
+        """
+        return FreeGroupAutomorphism("a->ab,b->c,c->d,d->e,e->a")
+
+    @staticmethod
+    def Akiyama():    
+        """
+        Automorphism of F_3 attributed to Shigeki Akiyama by X. Bressaud. 
+
+        This is a non-geometric, non-parageometric atoroidal iwip. It
+        is positive thus train-track on the rose.
+
+        This is a Pisot substitution.
+
+        REFERENCES:
+        
+        [Akiyama] reference needed
+
+        """
+
+        return FreeGroupAutomorphism("a->b,b->ac,c->a")
+
+    @staticmethod
+    def Bressaud():    
+        """
+        Automorphism of F_4 suggested by Xavier Bressaud [personal communication]
+
+        It is positive thus train-track on the rose. This is a
+        non-iwip automorphism. 
+
+        REFERENCES:
+        
+        reference needed
+
+        """
+
+        return FreeGroupAutomorphism("a->db,b->dc,c->d,d->a")
+
+    @staticmethod
+    def Jolivet():    
+        """
+
+        Automorphism of F_4 suggested by Timo Jolivet [personal
+        communication]
+
+        This is positive thus train-track on the rose. 
+
+        This a geometric automorphism corresponding to a non-oriented
+        pseudo-Anosov on the surface of genus 2 with 1 boundary
+        component.
+
+        
+        REFERENCES:
+        
+        reference needed
+
+        """
+
+        return FreeGroupAutomorphism("a->db,b->dc,c->d,d->a")
