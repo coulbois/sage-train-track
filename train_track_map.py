@@ -837,6 +837,8 @@ class TrainTrackMap(TopologicalRepresentative):
         if pnps==None:
             pnps=self.periodic_nielsen_paths(verbose and verbose>1 and verbose-1)
 
+        if verbose: print "Periodic Nielsen paths:",pnps
+
         components_tree=dict([]) # maps a vertex v to (vv,w) where w is Nielsen path from v to vv
         loops=[]
 
@@ -871,6 +873,7 @@ class TrainTrackMap(TopologicalRepresentative):
                 print "periodic Nielsen path (",u,",",v,") linking vertices",v1,"and",v2
 
             if v1==v2: # this pNp is a loop
+                if verbose: print "Loop at vertex",v1
                 if right1>0:
                     loops.append((G.reduce_path(G.reverse_path(u)*v[:-1]),v1,period))
                 else:
@@ -925,6 +928,8 @@ class TrainTrackMap(TopologicalRepresentative):
 
         #We order loops to remove multiple occurences of the same loop
 
+        if verbose: print "Looking for multiple loops: Ordering the loops..."
+
         for n,loop in enumerate(loops):
             i=0
             j=1
@@ -947,6 +952,7 @@ class TrainTrackMap(TopologicalRepresentative):
                             break
                     else:
                         break
+                    k+=1
                 if smaller: i=j
                 j=j+1
             if verbose:
