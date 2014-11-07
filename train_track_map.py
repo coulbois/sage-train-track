@@ -410,7 +410,8 @@ class TrainTrackMap(TopologicalRepresentative):
                     if verbose: print "inp"
                     i+=1
 
-            elif G.is_prefix(tt[0],t[0]) and (G.is_prefix(t[1],tt[1]) or G.is_prefix(tt[1],t[1])):
+
+            elif G.is_prefix(tt[0],t[0]) and len(tt[0])<len(t[0]) and (G.is_prefix(t[1],tt[1]) or G.is_prefix(tt[1],t[1])):
                 for a in extension[t[0][-1]]:
                     result.insert(i,t)
                     image.insert(0,tt)
