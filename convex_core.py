@@ -58,6 +58,9 @@ class ConvexCore():
 
     WARNING:
 
+    It is assumed that boths graphs G1 and G2 does not have vertices
+    of valence 1 or 2.
+
     The one squeleton may fail to be connected due to absence of some
     isolated edges.
 
@@ -75,126 +78,102 @@ class ConvexCore():
 
     def __init__(self,*args):
         if len(args)==2: #ConvexCore(G,H)
-            G=args[0]
-            H=args[1]
-            f=G.difference_of_marking(H).tighten()
+            G0=args[0]
+            G1=args[1]
+            f=G0.difference_of_marking(G1).tighten()
             g=f.inverse()
         elif len(args)==1:
             if isinstance(args[0],GraphMap): #ConvexCore(f)
-                G=f.domain()
-                H=f.codomain()
+                G0=f.domain()
+                G1=f.codomain()
                 f=args[0]
                 g=f.inverse()
             elif isinstance(args[0],FreeGroupAutomorphism): # ConvexCore(phi)
                 f=args[0]
                 A=f.domain().alphabet()
-                G=GraphWithInverses.rose_graph(A)
-                H=GraphWithInverses.rose_graph(A)
+                G0=GraphWithInverses.rose_graph(A)
+                G1=GraphWithInverses.rose_graph(A)
                 g=f.inverse()
         elif len(args)==4: #ConvexCore(G,H,f,g)
-            (G,H,f,g)=args
+            (G0,G1,f,g)=args
 
 
-        self._T0=G
-        self._T1=H
+        self._G0=G0
+        self._G1=G1
 
-        A=G.alphabet()
-        B=H.alphabet()
+        self._f01=f
+        self._f10=g
 
-        #We construct the core slices
+        A0=G0.alphabet()
+        A1=G1.alphabet()
 
-        t0=G.spanning_tree()
-        t1=H.spanning_tree()
-
-        # the positive letter b stands for the edge (t1(b),b) where t1(b) 
-        # is the path in t1 from the root to the initial vertex of b
-        # if t1(b).b is reduced or, if not, for the edge (t1(b)b,B.inverse_letter(b))
-        
-        edge_lift=dict()
-        for b in B.positive_letter():
-            u1=t1[H.initial_vertex(b)]
-            bb=B.inverse_letter(b)
-            if len(u1)=0 or u1[-1]!=bb:
-                edge_lift[b]=(u1,b)
-            else:
-                edge_lift[b]=(u1[:-1],bb)
- 
-
-        slice=dict((b,[]) for a in A.positive_letters())  
-        positive_ends=dict((a,[]) for a in A.positive_letters())
-        negative_ends=dict((a,[]) for a in A.positive_letters())
-
-
-        for a in A.positive_letters():
-            aa=A.inverse_letter(a)
-            image_a=f.image(a)
-            w=t0[G.initial_vertex(a)]
-            w=G.reduced_path(g(f(G.reverse_path(w)))*w)
-            for b in image_a: 
-                pb=A.to_positive_letter(b)
-                b_lift=edge_lift[pb]
-                b_is_positive=(b==b_lift[1])
-                v=t1[H.initial_vertex(b)]
-                u=G.reduced_path(g(v)*w)
-
-                # v stands for t1[H.initial_vertex(b)]
-                # f((u,a)) crosses (v,b) positively
-                # if (v,b) is not edge_lift[pb] or -edge_lift[pb] we have to translate more
-
-                if not b_is_positive and b!=pb and (len(v)==0 or v[-1]!=pb): # we have to translate more
-                    u=G.reduced_path(g(t1[H.terminal_vertex(b)]*Word([pb])*H.reverse_path(u))*u)    
-                    # f((u,a)) crosses edge_lift[pb] negatively
-
-                # Now we have to put the right orientation on (u,a)
-                
-                a_is_positive=(len(u)==0 or u[-1]!=aa)
-                if a_is_positive:
-                    u=u*word([a])
-                slice[b].append(u)  # The word u stands for the edge (u[:-1],u[-1])
-                if (a_is_positive and b_is_positive) or ((not a_is_positive) and (not b_is_positive)):
-                    positive_ends[b].append(u)
-                else:
-                    negative_ends[b].append(u)
-
-                w=G.reduce_path(g.image(B.inverse_letter(b))*w)
-
+        self._build_signed_ends()
 
         two_cells=set([]) # A 2-cell is a triple (path,a,b) with a,b
-                          # positive letters of A and B and path a
-                          # reduced path in H
+                          # positive letters of A0 and A1 and path a
+                          # reduced path in G0 from V0 to the initial
+                          # vertex of a
 
         isolated_one_cells=set()  # Edges that are not boundaries of two-cells
         existing_edges=dict(((a,0),False) for a in A.positive_letters())+dict(((b,1),False) for b in B.positive_letters)
+
+        double_light_squares=[]
                 
+        signed_ends=self._signed_ends
+
         # close the slices by convexity
-        for b in B.positive_letters():
+        for b in A1.positive_letters():
             empty_slice=True
-            if len(slice[b])>0:
-                common=slice[b][0]
-            for w in slice[b]:
-                common_len=G.common_prefix_length(common,w)
+            if len(signed_ends[b])>0:
+                common=signed_ends[b][0][0]
+            for (w,sign) in signed_ends[b]:
+                common_len=G0.common_prefix_length(common,w)
                 if common_len<len(common):
                     common=common[:common_len]
-            for w in slice[b]:
+            for (w,sign) in signed_ends[b]:
                 for i in xrange(common_len,len(w)-1):
                     a=w[i]
                     empty_slice=False
-                    if A.is_positive_letter(a):
+                    if A0.is_positive_letter(a):
                         existing_edges[(a,0)]=True
                         two_cells.add((w[:i],a,b))
                     else:
-                        aa=A.inverse_letter(a)
+                        aa=A0.inverse_letter(a)
                         existing_edges[(aa,0)]=True
                         two_cells.add((w[:i+1],aa,b))
             if empty_slice: # we need to check wether we add an isolated edge
-                if len(slice[b])>1:
-                    existing_edges[(b,1)]=True
-                    isolated_one_cells.add((common,b,1))  # common stands for its terminal vertex
+                if len(signed_ends[b])>1:
+                    isolated_b=len(common)>0
+                    if not isolated_b: # we need at least two edges out of v0 without a +
+                        v0=G0.intial_vertex[A0[0]]
+                        outgoing_from_origin=[a for a in A0 if G0.initial_vertex(a)==v0]
+                    isolated_b=isolated_b or len(signed_ends[b])+1>len(outgoing_from_origin)
+                    if isolated_b:
+                        existing_edges[(b,1)]=True
+                        isolated_one_cells.add((common,b,1))  # common stands for its terminal vertex
+                    else: #len(signed_ends[b])+1=len(outgoing_from_origin) and len(common)==0
+                        positive_outgoing_edges=[e[0][0] for e in signed_ends[b]]  
+                        for a in outgoing_from_origin:
+                            if a not in positive_outgoing_edges:
+                                break
+
+                        if A0.is_positive_letter(a):
+                            double_light_squares.append((common,a,b)) # note that common=Word([])
+                        else:
+                            aa=A0.inverse_letter(a)
+                            double_light_squares.append(Word([a]),aa,b)
+                else:
+                    a=common[-1]
+                    if A0.is_positive_letter(a):
+                        double_light_squares.append((common[:-1],a,b))
+                    else:
+                        aa=A0.inverse_letter(a)
+                        double_light_squares.append((common,aa,b))
             else: 
                 existing_edges[(b,1)]=True
 
         # we check for isolated edges of the form (a,0)
-        for a in A.positive_letters():
+        for a in A0.positive_letters():
             if not existing_edges[(a,0)]:
                 for b in B.positive_letters():
                     pass #TODO
@@ -318,6 +297,77 @@ class ConvexCore():
         self._label_1=label_1
         self._label_2=label_2
 
+    def _build_signed_ends(self):
+        """For each edge of G1 computes a list of edges in T0 assigned with a + or a - sign.
+
+        It is assumed that ``f=self._f01``: G0->G1 is 
+
+        - a continuous ``GraphMap``
+
+        - a homotopy equivalence
+
+        - that maps the root v0 of ``G0.spanning_tree()`` to the root v1 of
+        ``G1.spanning_tree()``
+        
+        - the image of each vertex has at least two gates.
+
+        Conversely ``g=self._f10``: G1->G0 is a continuous
+        ``GraphMap`` that is a homotopy inverse of ``f`` and that maps
+        v1 to v0.
+
+        The universal cover of G0 and G1 are identified with paths in
+        G0 and G1 based at v0 and v1. We choose the lifts of f and g
+        that maps v0 to v1 and conversely.
+
+        Fix an edge e1 in T1. An edge e0 in T0 is assigned a + if its
+        image f(e0) crosses e1 positively.
+
+
+        """
+        G0=self._G0
+        G1=self._G1
+
+        f=self._f01
+        g=self._f10
+
+        A0=G0.alphabet()
+        A1=G1.alphabet()
+
+
+        t0=G0.spanning_tree()
+        t1=G1.spanning_tree()
+
+        # the positive letter b in A1 stands for the edge (t1(b),b) of
+        # the universal cover of G1 (where t1(b) is the path in t1
+        # from the root to the initial vertex of b) 
+         
+        signed_ends=dict((b,[]) for b in A1.positive_letters())
+
+        for a in A0.positive_letters():
+            aa=A0.inverse_letter(a)
+            image_a=f.image(a)
+            w=t0[G0.initial_vertex(a)]
+            w=G0.reduced_path(g(f(G0.reverse_path(w)))*w)
+            for b in image_a: # the image f(a) crosses the edge prefix.b
+                pb=A1.to_positive_letter(b)
+                u0=g(t1[G1.initial_vertex(pb)])
+                if b==pb:
+                    w0=G0.reduced_path(u0*w)
+                    if len(w0)==0 or w0[-1]!=A0.inverse_letter(a):
+                        signed_ends[pb].append((w0*Word([a],'+')))
+                    else:
+                        signed_ends[pb].append((w0,'-'))
+                w=G0.reduced_path(g.image(A1.inverse_letter(b))*w))
+                if b!=pb:
+                    w0=G0.reduced_path(u0*w)
+                    if len(w0)==0 or w0[-1]!=A0.inverse_letter(a):
+                        signed_ends[pb].append((w0*Word([a]),'-'))
+                    else:
+                        signed_ends[pb].append((w0,'+'))
+
+
+        self._signed_ends=signed_ends
+        
     def tree(self,side):
         """
         ``T0`` or ``T1`` (according to ``side``) where ``self`` is the
