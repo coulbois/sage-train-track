@@ -119,7 +119,7 @@ class ConvexCore():
         isolated_one_cells=set()  # Edges that are not boundaries of two-cells
         existing_edges=dict(((a,0),False) for a in A.positive_letters())+dict(((b,1),False) for b in B.positive_letters)
 
-        double_light_squares=[]
+        twice_light_squares=[]
                 
         signed_ends=self._signed_ends
 
@@ -160,17 +160,25 @@ class ConvexCore():
                                 break
 
                         if A0.is_positive_letter(a):
-                            double_light_squares.append((common,a,b)) # note that common=Word([])
+                            twice_light_squares.append((common,a,b)) # note that common=Word([])
+                            existing_edges[(a,0)]=True
+                            existing_edges[(b,1)]=True
                         else:
                             aa=A0.inverse_letter(a)
-                            double_light_squares.append(Word([a]),aa,b)
+                            twice_light_squares.append(Word([a]),aa,b)
+                            existing_edges[(aa,0)]=True
+                            existing_edges[(b,1)]=True
                 else:
                     a=common[-1]
                     if A0.is_positive_letter(a):
-                        double_light_squares.append((common[:-1],a,b))
+                        twice_light_squares.append((common[:-1],a,b))
+                        existing_edges[(a,0)]=True
+                        existing_edges[(b,1)]=True
                     else:
                         aa=A0.inverse_letter(a)
-                        double_light_squares.append((common,aa,b))
+                        twice_light_squares.append((common,aa,b))
+                        existing_edges[(aa,0)]=True
+                        existing_edges[(b,1)]=True
             else: 
                 existing_edges[(b,1)]=True
 
