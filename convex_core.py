@@ -101,7 +101,9 @@ class ConvexCore():
         self._G0=G0
         self._G1=G1
 
-        self._f01=f
+        self._f01=f  #WARNING: it is necessary that f maps the base
+                     #point of G0 to the base point of G1 and
+                     #conversely
         self._f10=g
 
         A0=G0.alphabet()
@@ -144,7 +146,7 @@ class ConvexCore():
             if empty_slice: # we need to check wether we add an isolated edge
                 if len(signed_ends[b])>1:
                     isolated_b=len(common)>0
-                    if not isolated_b: # we need at least two edges out of v0 without a +
+                    if not isolated_b: # we need at least two edges out of v0 without +
                         v0=G0.intial_vertex[A0[0]]
                         outgoing_from_origin=[a for a in A0 if G0.initial_vertex(a)==v0]
                     isolated_b=isolated_b or len(signed_ends[b])+1>len(outgoing_from_origin)
@@ -339,7 +341,9 @@ class ConvexCore():
 
         # the positive letter b in A1 stands for the edge (t1(b),b) of
         # the universal cover of G1 (where t1(b) is the path in t1
-        # from the root to the initial vertex of b) 
+        # from the root to the initial vertex of b). WARNING: with
+        # this definition the edge b may not be oriented away from the
+        # base point v1.
          
         signed_ends=dict((b,[]) for b in A1.positive_letters())
 
