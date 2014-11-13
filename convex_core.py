@@ -111,6 +111,8 @@ class ConvexCore():
 
         self._build_signed_ends()
 
+        signed_ends=self._signed_ends
+
         two_cells=set([]) # A 2-cell is a triple (path,a,b) with a,b
                           # positive letters of A0 and A1 and path a
                           # reduced path in G0 from V0 to the initial
@@ -119,9 +121,13 @@ class ConvexCore():
         isolated_one_cells=set()  # Edges that are not boundaries of two-cells
         existing_edges=dict(((a,0),False) for a in A.positive_letters())+dict(((b,1),False) for b in B.positive_letters)
 
-        twice_light_squares=[]
+        twice_light_squares=[] # a twice light quadrant stored as
+                               # (w,a,b) where w is a path in G0
+                               # starting at v0 and ending at
+                               # G0.initial_vertex(a). b is a positive
+                               # letter in A1. The vertex at the end
+                               # of w is in the convex core.
                 
-        signed_ends=self._signed_ends
 
         # close the slices by convexity
         for b in A1.positive_letters():
@@ -155,32 +161,38 @@ class ConvexCore():
                         isolated_one_cells.add((common,b,1))  # common stands for its terminal vertex
                     else: #len(signed_ends[b])+1=len(outgoing_from_origin) and len(common)==0
                         positive_outgoing_edges=[e[0][0] for e in signed_ends[b]]  
-                        for a in outgoing_from_origin:
+                        for a in outgoing_from_origin: # we look for the only edge outgoing from the origin without a +
                             if a not in positive_outgoing_edges:
                                 break
 
+                        existing_edges[(b,1)]=True
+                        twice_light_squares.append((common,a,b)) # note that common=Word([])
                         if A0.is_positive_letter(a):
-                            twice_light_squares.append((common,a,b)) # note that common=Word([])
                             existing_edges[(a,0)]=True
-                            existing_edges[(b,1)]=True
                         else:
                             aa=A0.inverse_letter(a)
-                            twice_light_squares.append(Word([a]),aa,b)
                             existing_edges[(aa,0)]=True
-                            existing_edges[(b,1)]=True
-                else:
+                else: #len(signed_ends[b]==1)
                     a=common[-1]
+                    existing_edges[(b,1)]=True
+                    twice_light_squares.append((common[:-1],a,b))
                     if A0.is_positive_letter(a):
-                        twice_light_squares.append((common[:-1],a,b))
                         existing_edges[(a,0)]=True
-                        existing_edges[(b,1)]=True
                     else:
                         aa=A0.inverse_letter(a)
-                        twice_light_squares.append((common,aa,b))
                         existing_edges[(aa,0)]=True
-                        existing_edges[(b,1)]=True
             else: 
                 existing_edges[(b,1)]=True
+
+        # we check for isolated vertices they are the corners of twice rectangles.
+        isolated_vertices=[]
+        missing_edges=dict([])
+        for (w,a,b) in twice_light_rectangles:
+            missing_edges[G1.initial_vertex(b)].append(b)
+        for v in missing_edges.keys():
+            if len(missing_edges[v])==len(G1.outgoing_edges(v)):
+                isolated_vertex.append(w,v)
+
 
         # we check for isolated edges of the form (a,0)
         for a in A0.positive_letters():
