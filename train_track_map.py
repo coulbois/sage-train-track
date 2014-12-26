@@ -935,7 +935,7 @@ class TrainTrackMap(TopologicalRepresentative):
                 if not A.is_positive_letter(v2[0]):
                     v2=(A.inverse_letter(v2[0]),v2[1],v2[3],v2[2])
             else: # vertex at the origin of the germ: vv2=(a,)
-                v2=(G.initial_vertex(vv1[0]),)
+                v2=(G.initial_vertex(v2[0]),)
 
             if verbose:
                 print "periodic Nielsen path (",u1,",",u2,") linking vertices",v1,"and",v2
@@ -945,7 +945,7 @@ class TrainTrackMap(TopologicalRepresentative):
                 if len(v1)==4:
                     loops.append((G.reduce_path(G.reverse_path(u1)*u2[:-1]),v1,period))
                 else:
-                    loops.append((G.reverse_path(u1)*u2,vv1,period))
+                    loops.append((G.reverse_path(u1)*u2,v1,period))
 
             elif v1 in components_tree and v2 in components_tree:
                 vv1,w1,period1=components_tree[v1]
