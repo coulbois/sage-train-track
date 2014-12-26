@@ -10,7 +10,7 @@ from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.graphs.graph import Graph
 from sage.rings.qqbar import AA
-
+from sage.matrix.constructor import matrix
 
 class TrainTrackMap(TopologicalRepresentative):
     """
@@ -425,7 +425,7 @@ class TrainTrackMap(TopologicalRepresentative):
 
         return result
 
-    def periodic_nielsen_paths(self,verbose=False):
+    def periodic_nielsen_paths(self,end_points=False,verbose=False):
         """
         List of periodic Nielsen paths.
 
@@ -581,7 +581,7 @@ class TrainTrackMap(TopologicalRepresentative):
         if verbose:
             print stable
 
-        pnp=[]
+        pnps=[]
 
         while 0<len(stable):
             iter=1
@@ -593,15 +593,92 @@ class TrainTrackMap(TopologicalRepresentative):
                 iter+=1
             if k*m[j][1]==-1:
                 iter=2*iter
-            pnp.append((possible_np[i],iter))
+            pnps.append((possible_np[i],iter))
             j=i
             while m[j][0]!=i:
                 j=m[j][0]
-                pnp.append((possible_np[j],iter))
+                pnps.append((possible_np[j],iter))
                 stable.remove(j)
-            
+          
+        if end_points:
+            #the end of an inp is either a vertex of self or a point
+            #inside an edge which is denoted by (e,period,portion) or
+            #(e,period,left,right)
+        
+            if verbose:
+                print "Looking for endpoints"
 
-        return pnp
+            maxl=1
+            for ((u,v),period) in pnps:
+                maxl=max([maxl,len(u),len(v)])
+
+            M=self.matrix()
+
+            for i,((u,v),period) in enumerate(pnps):
+                if verbose:
+                    print "Periodic Nielsen path:",((u,v),period),
+                if period==1:
+                    uu=self(u)
+                    vv=self(v)
+                    p=G.common_prefix_length(uu,vv)
+                    right1=len(uu)-len(u)-p
+                    right2=len(vv)-len(v)-p
+                    left1=len(self(u[-1]))-right1-1
+                    left2=len(self(u[-1]))-right2-1
+                else:
+                    uu=u
+                    vv=v
+                    prefix_ab=matrix(len(A),1) # abelianized form of the prefix
+                    for j in xrange(period):
+                        uu=self(uu)
+                        vv=self(vv)
+                        p=G.common_prefix_length(uu,vv)
+                        new_prefix_ab=uu[:p].parikh_vector(A)
+                        new_prefix_ab=matrix(len(A),1,[new_prefix_ab[k]+new_prefix_ab[k+len(A)] for k in xrange(len(A))])
+                        prefix_ab=M*prefix_ab+new_prefix_ab
+                        uu=uu[p:p+maxl]
+                        vv=vv[p:p+maxl]
+
+                    prefix_len=sum(prefix_ab.column(0))
+
+                    Mperiod=M**period
+
+                    u_ab=u.parikh_vector(A)
+                    u_ab=matrix(len(A),1,[u_ab[k]+u_ab[k+len(A)] for k in xrange(len(A))])
+                    uu_ab=Mperiod*u_ab
+                    right1=sum(uu_ab.column(0))-prefix_len-len(u)
+
+                    v_ab=v.parikh_vector(A)
+                    v_ab=matrix(len(A),1,[v_ab[k]+v_ab[k+len(A)] for k in xrange(len(A))])
+                    vv_ab=Mperiod*v_ab
+                    right2=sum(vv_ab.column(0))-prefix_len-len(v)
+
+                    left1=sum(Mperiod.column(A.rank(A.to_positive_letter(u[-1]))))-right1-1
+                    left2=sum(Mperiod.column(A.rank(A.to_positive_letter(v[-1]))))-right2-1
+
+                v1=(u[-1],period,left1,right1) 
+                v2=(v[-1],period,left2,right2)
+
+                if v1[3]!=0: # vertex in the middle of an edge
+                    v1=self.periodic_point_normal_form(v1,keep_orientation=True,verbose=(verbose and verbose>1 and verbose-1))
+                    vv1=(A.inverse_letter(v1[0]),v1[1],v1[3],v1[2])
+                else:
+                    vv1=(A.inverse_letter(v1[0]),)
+
+                if v2[3]!=0: # vertex in the middle of an edge
+                    v2=self.periodic_point_normal_form(v2,keep_orientation=True,verbose=(verbose and verbose>1 and verbose-1))
+                    vv2=(A.inverse_letter(v2[0]),v2[1],v2[3],v2[2]) 
+                else:
+                    vv2=(A.inverse_letter(v2[0]),)
+
+                # build the germ classes of germs ending pnps
+
+                if verbose:
+                    print "Ending germs:",vv1,"and",vv2
+
+                pnps[i]=((u,v),period,(vv1,vv2))
+
+        return pnps
                         
 
     def fold_inp(self,inp,verbose=False):
@@ -815,7 +892,7 @@ class TrainTrackMap(TopologicalRepresentative):
         INPUT:
 
         ``pnps``: the list of periodic Nielsen paths. Each given as
-        ``((u,v),period)``.
+        ``((u1,u2),period,(vv1,vv2))``.
 
         OUTPUT:
 
@@ -834,62 +911,54 @@ class TrainTrackMap(TopologicalRepresentative):
         G=self.domain()
         A=G.alphabet()
 
-        if pnps==None:
-            pnps=self.periodic_nielsen_paths(verbose and verbose>1 and verbose-1)
+        if verbose:
+            print "Looking for periodic Nielsen loops"
 
-        if verbose: print "Periodic Nielsen paths:",pnps
+        if pnps==None:
+            pnps=self.periodic_nielsen_paths(end_points=True,verbose=verbose and verbose>1 and verbose-1)
+
+        if verbose:
+            print "Periodic Nielsen paths:",pnps
 
         components_tree=dict([]) # maps a vertex v to (vv,w) where w is Nielsen path from v to vv
         loops=[]
 
-        for i,((u,v),period) in enumerate(pnps):
-            uu=u
-            vv=v
-            for j in xrange(period):
-                uu=self(uu)
-                vv=self(vv)
-            p=G.common_prefix_length(uu,vv)
+        for i,((u1,u2),period,(v1,v2)) in enumerate(pnps):
 
-            right1=len(uu)-p-len(u)
-            right2=len(vv)-p-len(v)
-            uu=self.image(u[-1],period)
-            vv=self.image(v[-1],period)
-            left1=len(uu)-right1-1
-            left2=len(vv)-right2-1
-            v1=(u[-1],period,left1,right1) 
-            v2=(v[-1],period,left2,right2)
+            if len(v1)==4: # vertex in the middle of an edge of the form v1=(a,period,left,right)
+                if not A.is_positive_letter(v1[0]):
+                    v1=(A.inverse_letter(v1[0]),v1[1],v1[3],v1[2])
+            else: # vertex at the origin of the germ: v1=(a,)
+                v1=(G.initial_vertex(v1[0]),)
 
-            if v1[3]!=0: # vertex in the middle of an edge
-                v1=self.periodic_point_normal_form(v1,verbose=(verbose and verbose>1 and verbose-1))
-            else:
-                v1=(G.terminal_vertex(u[-1]),)
-
-            if v2[3]!=0: # vertex in the middle of an edge
-                v2=self.periodic_point_normal_form(v2,verbose=(verbose and verbose>1 and verbose-1))
-            else:
-                v2=(G.terminal_vertex(v[-1]),)
+            if len(v2)==4: # vertex in the middle of an edge of the form v2=(a,period,left,right)
+                if not A.is_positive_letter(v2[0]):
+                    v2=(A.inverse_letter(v2[0]),v2[1],v2[3],v2[2])
+            else: # vertex at the origin of the germ: vv2=(a,)
+                v2=(G.initial_vertex(vv1[0]),)
 
             if verbose:
-                print "periodic Nielsen path (",u,",",v,") linking vertices",v1,"and",v2
+                print "periodic Nielsen path (",u1,",",u2,") linking vertices",v1,"and",v2
 
             if v1==v2: # this pNp is a loop
                 if verbose: print "Loop at vertex",v1
-                if right1>0:
-                    loops.append((G.reduce_path(G.reverse_path(u)*v[:-1]),v1,period))
+                if len(v1)==4:
+                    loops.append((G.reduce_path(G.reverse_path(u1)*u2[:-1]),v1,period))
                 else:
-                    loops.append((G.reverse_path(u)*v,v1,period))
+                    loops.append((G.reverse_path(u1)*u2,vv1,period))
+
             elif v1 in components_tree and v2 in components_tree:
                 vv1,w1,period1=components_tree[v1]
                 vv2,w2,period2=components_tree[v2]
                 period=lcm([period,period1,period2])
-                if right1>0 and len(w1)>0 and w1[-1]!=u[-1]: #The Nielsen paths w1 and pnp form a reduce path
-                    link1=w1*G.reverse_path(u[:-1]) #Nielsen path from vv1 to the tip of the pnp
+                if len(v1)==4 and len(w1)>0 and w1[-1]!=u1[-1]: #The Nielsen paths w1 and pnp form a reduce path
+                    link1=w1*G.reverse_path(u1[:-1]) #Nielsen path from vv1 to the tip of the pnp
                 else:
-                    link1=w1*G.reverse_path(u)              
-                if right2==0 or (len(w2)>0 and w2[-1]==v[-1]):
-                    link2=v*G.reverse_path(w2)  #Nielsen path from the tip of the pnp to vv2
+                    link1=w1*G.reverse_path(u1)              
+                if len(u2)==4 or (len(w2)>0 and w2[-1]==u2[-1]):
+                    link2=u2*G.reverse_path(w2)  #Nielsen path from the tip of the pnp to vv2
                 else:
-                    link2=v[:-1]*G.reverse_path(w2)
+                    link2=u2[:-1]*G.reverse_path(w2)
                 link=G.reduce_path(link1*link2)  #Nielsen path from vv1 to vv2
                 if vv1==vv2:
                     if len(link)>0:
@@ -911,20 +980,20 @@ class TrainTrackMap(TopologicalRepresentative):
 
             elif v1 in components_tree:
                 vv1,w1,p1=components_tree[v1]
-                if right1>0 and len(w1)>0 and w1[-1]!=u[-1]:
-                    components_tree[v2]=(vv1,G.reduce_path(w1[:-1]*G.reverse_path(u)*v),lcm(p1,period))
+                if len(v1)==4 and len(w1)>0 and w1[-1]!=u1[-1]:
+                    components_tree[v2]=(vv1,G.reduce_path(w1[:-1]*G.reverse_path(u1)*u2),lcm(p1,period))
                 else:
-                    components_tree[v2]=(vv1,G.reduce_path(w1*G.reverse_path(u)*v),lcm(p1,period))
+                    components_tree[v2]=(vv1,G.reduce_path(w1*G.reverse_path(u1)*u2),lcm(p1,period))
 
             elif v2 in components_tree:
                 vv2,w2,p2=components_tree[v2]
-                if right2>0 and len(w2)>0 and w2[-1]!=v[-1]: 
-                    components_tree[v1]=(vv2,G.reduce_path(w2[:-1]*G.reverse_path(v)*u),lcm(p2,period))
+                if len(v2)==4 and len(w2)>0 and w2[-1]!=u2[-1]: 
+                    components_tree[v1]=(vv2,G.reduce_path(w2[:-1]*G.reverse_path(u2)*u1),lcm(p2,period))
                 else:
-                    components_tree[v1]=(vv2,G.reduce_path(w2*G.reverse_path(v)*u),lcm(p2,period))
+                    components_tree[v1]=(vv2,G.reduce_path(w2*G.reverse_path(u2)*u1),lcm(p2,period))
             else:
                 components_tree[v1]=(v1,Word([]),1)
-                components_tree[v2]=(v1,G.reverse_path(u)*v,period)
+                components_tree[v2]=(v1,G.reverse_path(u1)*u2,period)
 
         #We order loops to remove multiple occurences of the same loop
 
@@ -984,7 +1053,7 @@ class TrainTrackMap(TopologicalRepresentative):
         invariant of the conjugacy class of the outer automorphism
         represented by ``self``.
 
-        As an artefact we add 2xrank(Stab) vertices to connected
+        As an artefact we add 2 x rank(Stab) vertices to connected
         components of the ideal Whitehead graphs with a non trivial
         stabilizer. This allows to compute the index as the some of
         the number of vertices of connected components minus two (see
@@ -1033,45 +1102,19 @@ class TrainTrackMap(TopologicalRepresentative):
         germ_classes=[]
  
         if pnps is None:
-            pnps=self.periodic_nielsen_paths()
+            pnps=self.periodic_nielsen_paths(end_points=True,verbose=(verbose and verbose>1 and verbose-1))
 
-        #the end of an inp is either a vertex of self or a point
-        #inside an edge which is denoted by (e,period,portion) or
-        #(e,period,left,right)
+        if verbose:
+            print "Periodic Nielsen paths:"
+            print pnps
         
-        for i,((u,v),period) in enumerate(pnps):
-            uu=u
-            vv=v
-            for j in xrange(period):
-                uu=self(uu)
-                vv=self(vv)
-            p=G.common_prefix_length(uu,vv)
-
-            right1=len(uu)-p-len(u)
-            right2=len(vv)-p-len(v)
-
-            uu=self.image(u[-1],period)
-            vv=self.image(v[-1],period)
-
-            left1=len(uu)-right1-1
-            left2=len(vv)-right2-1
-            
-            v1=(u[-1],period,left1,right1) 
-            v2=(v[-1],period,left2,right2)
-
-            if v1[3]!=0: # vertex in the middle of an edge
-                v1=self.periodic_point_normal_form(v1,keep_orientation=True,verbose=(verbose and verbose>1 and verbose-1))
-                vv1=(A.inverse_letter(v1[0]),v1[1],v1[3],v1[2])
+        for ((u1,u2),period,(vv1,vv2)) in pnps:
+            if len(vv1)==4: #vv1 is a germ in the middle of an edge: (a,period,left,right)
+                v1=(A.inverse_letter(vv1[0]),vv1[1],vv1[3],vv1[2])
                 iwg.add_edge((v1,vv1))
-            else:
-                vv1=(A.inverse_letter(v1[0]),)
-
-            if v2[3]!=0: # vertex in the middle of an edge
-                v2=self.periodic_point_normal_form(v2,keep_orientation=True,verbose=(verbose and verbose>1 and verbose-1))
-                vv2=(A.inverse_letter(v2[0]),v2[1],v2[3],v2[2]) 
+            if len(vv2)==4: #vv2 is a germ in the middle of an edge: (a,period,left,right)
+                v2=(A.inverse_letter(vv2[0]),vv2[1],vv2[3],vv2[2])
                 iwg.add_edge((v2,vv2))
-            else:
-                vv2=(A.inverse_letter(v2[0]),)
 
             # build the germ classes of germs ending pnps
 
@@ -1096,37 +1139,6 @@ class TrainTrackMap(TopologicalRepresentative):
                          break
             else:
                 germ_classes[i1].append(vv2)
-
-#         #two germs out of the same vertex are not equivalent
-                
-#         for c in germ_classes:
-#             i=0
-#             j=1
-#             while j<len(c):
-#                 ci=c[i]
-#                 if len(ci)==4:
-#                     if not A.is_positive_letter(ci[0]):
-#                         vi=(A.inverse_letter(ci[0]),ci[1],ci[3],ci[2])
-#                     else:
-#                         vi=ci
-#                 else:
-#                     vi=G.initial_vertex(ci[0])
-#                 while j<len(c):
-#                     cj=c[j]
-#                     if len(cj)==4:
-#                         if not A.is_positive_letter(cj[0]):
-#                             vj=(A.inverse_letter(cj[0]),cj[1],cj[3],cj[2])
-#                         else:
-#                             vj=cj
-#                     else:
-#                         vj=G.initial_vertex(cj[0])
-#                     if vi==vj:
-#                         c.pop(j)
-#                     else:
-#                         j+=1
-#                 i+=1
-#                 j=i+1
-                
 
         if verbose:
             print "Classes of germ at the end of pnps:",germ_classes
@@ -1409,45 +1421,47 @@ class TrainTrackMap(TopologicalRepresentative):
         ``ee`` is the inverse letter of ``e``.
         """
   
+        A=self.domain().alphabet()
+
         (e,period,left,right)=point
 
         if verbose: print "Normal form of point",point
 
         simplified=False
-        diviseur=1
-        while period>diviseur:
-            if period%diviseur==0:
-                rights=[0 for i in xrange(period/diviseur-1)]
-                w=self.image(e,diviseur)
-                previous_e=len(w)
-                for i in xrange(len(w)):
-                    ii=len(w)-i-1
-                    if w[ii]==e:
-                        u=w[ii+1:previous_e]
-                        previous_e=ii
-                        add=len(u)
-                        for j in xrange(period-diviseur):
-                            u=self(u)
-                            if (j+1)%diviseur==0:
-                                add+=len(u)
-                                rights[j/diviseur]+=add
-                        if rights[-1]==right:
-                            if verbose: print "simplified to (",e,",",diviseur,",",i,")"
-                            period=diviseur
-                            right=i
-                            simplified=True
-                            break
-                        elif rights[-1]>right:
-                            if verbose: print "no simplification with period=",diviseur
-                            break
-                else:
-                    if verbose: print "no simplification with period=",diviseur
-               
-            diviseur+=1
-         
-        if simplified: #we need to compute left
-            u=self.image(e,period)
-            left=len(u)-right-1
+
+        if period>1:
+            M1=self.matrix()
+            M=[M1**(i+1) for i in xrange(period)]
+            left_ab_i=matrix(len(A),1)
+            left_ab_period=left_ab_i
+            left_length_period=0
+            a=e
+            for i in xrange(1,period):
+                u=self(a)
+                left_ab_i=M[0]*left_ab_i
+                for a in u:
+                    a_ab_i=M[0].matrix_from_columns([A.rank(A.to_positive_letter(a))])
+                    a_ab_period=M[period-i-1]*a_ab_i
+                    left_length_period=left_length_period+sum(a_ab_period)[0]
+                    if left_length_period>left:
+                        break
+                    left_lenght_period=left_length_period+sum(a_ab_period)[0]
+                    left_ab_period=left_ab_period+a_ab_period
+                    left_ab_i=left_ab_i+a_ab_i
+                if period%i==0 and a==e:
+                    left_periodic_length=left_length_period+sum(left_ab_i)[0]
+                    for k in xrange(1,period//i):
+                        left_periodic_length=left_periodic_length+sum(M[k*i]*left_ab_i)[0]
+                    if left_periodic_length==left:
+                        if verbose: print "simplified to (",e,",",diviseur,",",i,")"
+                        period=i
+                        left=sum(left_ab_i)[0]
+                        simplified=True
+                        break 
+                if verbose: print "no simplification with period=",i
+                                     
+        if simplified: #we need to compute right
+            right=sum(M[period-1].column(A.rank(A.to_positive_letter(e))))-left-1
 
         A=self.domain().alphabet()
         if not keep_orientation and not A.is_positive_letter(e):
@@ -1507,8 +1521,8 @@ class TrainTrackMap(TopologicalRepresentative):
             return False
         if verbose:
             print "Local Whitehead graphs are connected"
-        pnps=self.periodic_nielsen_paths(verbose and verbose>1 and verbose-1)
-        nielsen_loops=self.periodic_nielsen_loops(pnps,verbose and verbose>1 and verbose-1)
+        pnps=self.periodic_nielsen_paths(end_points=True,verbose=verbose and verbose>1 and verbose-1)
+        nielsen_loops=self.periodic_nielsen_loops(pnps,verbose=verbose and verbose>1 and verbose-1)
         if len(nielsen_loops)>0:
             if len(nielsen_loops)>1:
                 if verbose:
