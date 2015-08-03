@@ -20,7 +20,7 @@ class ConvexCore():
     and G2=T2/FN are MarkedGraph. 
 
     A ConvexCore is a CW-complex of dimension 2. 2-cells are
-    squares. 1 cells are edges labeled by edges of G1 or G2. A square
+    squares. 1-cells are edges labeled by edges of G1 or G2. A square
     is of the form
 
           e
@@ -61,7 +61,7 @@ class ConvexCore():
     It is assumed that boths graphs G1 and G2 does not have vertices
     of valence 1 or 2.
 
-    The one squeleton may fail to be connected due to absence of some
+    The one squeleton may fail to be connected due to the absence of some
     isolated edges.
 
     There might be a problem if the labels of the edges are not
@@ -107,7 +107,7 @@ class ConvexCore():
         self._f10=g
 
         # In the sequel t1 is G1.spanning_tree() with v1 as root
-        # (similarly v0 is the root of G0.spanning_tree). A vertex in
+        # (similarly v0 is the root of G0.spanning_tree()). A vertex in
         # T0 is designated by a path w from v0. An edge in T0 is
         # designated by (w,a) where w is path from v0 to the initial
         # vertex of a. Note that wa need not be reduced.  A vertex v

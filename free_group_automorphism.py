@@ -10,6 +10,7 @@ from sage.combinat.words.morphism import WordMorphism
 from free_group import FreeGroup
 
 
+
 class FreeGroupMorphism(WordMorphism):
     def __init__(self,data,group=None):
         """
@@ -761,11 +762,52 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         return f.is_iwip(verbose)
 
             
+    def index_list(self,verbose=False):
+        """Returns the index list of ``self`` provided it is an iwip
+        automorphism.
+
+        The index list is the list of indices of non-isogredient
+        automorphisms in the outer class of ``self``. The index of an
+        automorphism being computed from the number of attracting
+        fixed points in the boundary of the free group and the rank of
+        the fixed subgroup.
+
+        Some authors (Mosher, Pfaff), use -1/2 our index definition.
+
+        Some authors (Gaboriau, Jaeger, Levitt, Lustig), use 1/2 our index definition
+
+        REFERENCES:
+
+        [GJLL] D. Gaboriau, A. Jaeger, G. Levitt, M. Lustig, An index
+        for counting fixed points of automorphisms of free
+        groups. Duke Math. J., 93(3):425-452, 1998.
+
+        [HM-axes] M. Handel, L. Mosher, Axes in Outer Space, Memoirs
+        AMS 1004, Amer Mathematical Society, 2011.
+
+        [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
+
+
+        WARNING: ``self`` is assumed to be iwip (or at least to
+        have an expanding absolute train-track representative).
+
+        """
         
+        from train_track_map import TrainTrackMap
+
+        f=self.train_track(relative=False,stable=False,verbose=(verbose and verbose>1 and verbose-1))
+        if f.is_train_track(verbose=(verbose and verbose>1 and verbose-1)):
+            f=TrainTrackMap(f)
+            return f.index_list(verbose=(verbose and verbose>1 and verbose-1))
+        else:
+            if verbose: print "self is not iwip, not implemented yet in this case"
+        return False
     
 
 class free_group_automorphisms:
-    r"""
+    r
+
+        """
     Many examples of free group automorphisms.
     """
     @staticmethod

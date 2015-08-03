@@ -16,7 +16,7 @@ class FreeGroupWord(FiniteWord_list):
 
         sage: F=FreeGroup(3)
         sage: w=F('aba')
-        FreeGroupWord: 'aba'
+        word: 'aba'
 
     AUTHORS:
 
@@ -63,6 +63,44 @@ class FreeGroupWord(FiniteWord_list):
         while (i<len(self) and i<len(other) and A.are_inverse(self[-i-1],other[i])):
             i=i+1
         return self.parent()(list(self[:len(self)-i])+list(other[i:]))
+
+    def __pow__(self,exp):
+        """
+        Reduced power of ``self`` to ``exp``.
+
+        ``exp`` can be any integer (positive or negative).
+
+        EXAMPLES::
+
+        sage: F=FreeGroup(3)
+        sage: w=F('ababA')
+        sage: w**3
+           word: ababbabbabA
+        sage: w**-2
+           word: aBABBABA
+        """
+        F=self.parent()
+        if exp==0 or len(self)==0:
+            return F()
+
+        A=F.alphabet()
+        i=0
+        done=False
+        l=len(self)
+        while self[i]==A.inverse_letter(self[l-i-1]): i+=1
+        w=self
+        c=l-i-i #cyclically reduced length of self
+        ii=i
+        if exp<0:
+            w=self[i:l-i].inverse()
+            exp=-exp
+            ii=0
+        max=c*exp+i
+        fcn=lambda j: self[j] if j<i else (w[ii+((j-i)%c)] if j<max else self[j-max+c+i])
+        return F(fcn(j) for j in xrange(max+i))
+            
+        
+            
 
     def __invert__(self):
         """

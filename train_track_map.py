@@ -83,7 +83,7 @@ class TrainTrackMap(TopologicalRepresentative):
 
         return result
 
-    def is_train_track(self):
+    def is_train_track(self,verbose=False):
         """
         Returns ``True``.
         """
@@ -624,7 +624,7 @@ class TrainTrackMap(TopologicalRepresentative):
                     right1=len(uu)-len(u)-p
                     right2=len(vv)-len(v)-p
                     left1=len(self(u[-1]))-right1-1
-                    left2=len(self(u[-1]))-right2-1
+                    left2=len(self(v[-1]))-right2-1
                 else:
                     uu=u
                     vv=v
@@ -1241,8 +1241,7 @@ class TrainTrackMap(TopologicalRepresentative):
         return sum(self.index_list())
 
     def index_list(self,verbose=True):
-        """
-        Index list of ``self``.
+        """Index list of ``self``.
 
         This index list is defined in [pfaff], this is the list of
         number of vertices of connected components of the ideal
@@ -1258,10 +1257,6 @@ class TrainTrackMap(TopologicalRepresentative):
         ``self.periodic_nielsen_paths()`` and thus assumes that
         ``self`` is an expanding train-track map.
 
-        Moreover the computation is not correct if there are fixed
-        subgroups (eg: ``self`` is not irreducible or has closed
-        Nielsen loops).
-
         Some authors (Mosher, Pfaff), use -1/2 our index definition.
 
         Some authors (Gaboriau, Jaeger, Levitt,Lustig), use 1/2 our index definition
@@ -1272,9 +1267,11 @@ class TrainTrackMap(TopologicalRepresentative):
         for counting fixed points of automorphisms of free
         groups. Duke Math. J., 93(3):425-452, 1998.
 
-        [HM-axes] M. Handel, L. Mosher,
+        [HM-axes] M. Handel, L. Mosher, Axes in Outer Space, Memoirs
+        AMS 1004, Amer Mathematical Society, 2011.
 
-        [Pfaff] C. Pfaff,
+        [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
+
         """
 
         l=[len(c)-2 for c in self.ideal_whitehead_graph().connected_components()]
