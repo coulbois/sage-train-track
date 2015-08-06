@@ -10,7 +10,8 @@ from sage.combinat.words.word import Word
 from sage.graphs.graph import DiGraph
 from inverse_graph import GraphWithInverses
 from inverse_graph import MetricGraph
-
+from graph_map import GraphMap
+from free_group_automorphism import FreeGroupAutomorphism
 
 class ConvexCore():
     """Guirardel's convex core of two simplicial trees with an action of
@@ -76,7 +77,11 @@ class ConvexCore():
 
     """
 
-    def __init__(self,*args):
+    def __init__(self,*args,**keywords):
+        if 'verbose' in keywords:
+            verbose=keywords['verbose']
+        else:
+            verbose=False
         if len(args)==2: #ConvexCore(G,H)
             G0=args[0]
             G1=args[1]
@@ -100,7 +105,12 @@ class ConvexCore():
 
         self._G0=G0
         self._G1=G1
-
+        
+        t1=G1.spanning_tree(verbose=(verbose and verbose>1 and verbose-1))
+        t0=G0.spanning_tree(verbose=(verbose and verbose>1 and verbose-1))
+        self._t0=t0
+        self._t1=t1
+        
         self._f01=f  #WARNING: it is necessary that f maps the base
                      #point of G0 to the base point of G1 and
                      #conversely
@@ -119,34 +129,39 @@ class ConvexCore():
         A0=G0.alphabet()
         A1=G1.alphabet()
 
-        self._build_signed_ends()
+        if verbose: print "Building signed ends"
+        self._build_signed_ends(verbose=(verbose and verbose>1 and (verbose-1)))
 
         signed_ends=self._signed_ends
-
-        heavy_squares=[] # A 2-cell is a triple (path,a,b) with a,b
-                          # positive letters of A0 and A1 and path a
+        
+        heavy_squares=[] # A 2-cell is a triple (w,v,a,b) with a,b
+                          # positive letters of A0 and A1 and w a
                           # reduced path in G0 from v0 to the initial
-                          # vertex of a. The edge b stands for the
-                          # edge t1(b)b.
+                          # vertex of a. v is the initial vertex of b
+                          # in G1. The edge b stands for the edge
+                          # t1(b)b.
 
         isolated_edges=[]  # Edges that are not boundaries of
-                               # two-cells stored as (w,b,1) with w a
-                               # path in G0 starting at v0 and b a
+                               # two-cells stored as (w,v,(b,1)) with
+                               # w a path in G0 starting at v0 and b a
                                # positive letter in A1 standing for an
-                               # edge in T1 as above.
+                               # edge in T1 as above. Again v is the
+                               # initial vertex of b in G1.
 
-        existing_edges=dict(((a,0),False) for a in A.positive_letters())+dict(((b,1),False) for b in B.positive_letters)
-        
+        existing_edges=dict(((a,0),False) for a in A0.positive_letters())
+        for b in A1.positive_letters():
+            existing_edges[(b,1)]=False
+                    
         twice_light_squares=[] # a twice light square stored as
-                               # (w,a,b) where w is a path in G0
+                               # (w,v,a,b) where w is a path in G0
                                # starting at v0 and ending at
-                               # v=G0.initial_vertex(a). a is a letter
+                               # u=G0.initial_vertex(a). a is a letter
                                # in A0 (not necessarily positive). b
                                # is a positive letter in A1 standing
                                # for an edge between the vertices
-                               # vv=G1.initial_vertex(b) and vv.b in
-                               # T1 as above. The corners (v,vv) and
-                               # (v.a,vv.b) are in the convex core.
+                               # v=G1.initial_vertex(b) and v.b in
+                               # T1 as above. The corners (w,v) and
+                               # (w.a,v.b) are in the convex core.
         
         isolated_vertices=[] #An isolated vertex stored as (w,v) where
                              #w is a path in G0 starting at v0 and v
@@ -154,34 +169,45 @@ class ConvexCore():
         
         # close the slices by convexity
         for b in A1.positive_letters():
+            if verbose: print "Building the slice of",b
             empty_slice=True
             if len(signed_ends[b])>0:
+                signed_ends[b].sort()
+                if verbose>1: print "Signed ends of ",b,":",signed_ends[b]
                 common=signed_ends[b][0][0]
             for (w,sign) in signed_ends[b]:
                 common_len=G0.common_prefix_length(common,w)
                 if common_len<len(common):
                     common=common[:common_len]
+                    if common_len==0: break
+            wp=common
             for (w,sign) in signed_ends[b]:
-                for i in xrange(common_len,len(w)-1):
+                start=G0.common_prefix_length(wp,w)
+                wp=w
+                for i in xrange(start,len(w)-1):
                     a=w[i]
                     empty_slice=False
                     if A0.is_positive_letter(a):
                         existing_edges[(a,0)]=True
-                        heavy_squares.append((w[:i],a,b))
+                        heavy_squares.append((w[:i],G1.initial_vertex(b),a,b))
+                        if verbose: print "Heavy square", heavy_squares[-1]
                     else:
                         aa=A0.inverse_letter(a)
                         existing_edges[(aa,0)]=True
-                        heavy_squares.append((w[:i+1],aa,b))
+                        heavy_squares.append((w[:i+1],G1.initial_vertex(b),aa,b))
+                        if verbose: print "Heavy square", heavy_squares[-1]
             if empty_slice: # we need to check wether we add an isolated edge
+                if verbose: print "The slice of",b,"is empty, looking for an isolated edge"
                 if len(signed_ends[b])>1:
                     isolated_b=len(common)>0
                     if not isolated_b: # we need at least two edges out of v0 without +
-                        v0=G0.intial_vertex[A0[0]]
+                        v0=G0.initial_vertex(A0[0])
                         outgoing_from_origin=[a for a in A0 if G0.initial_vertex(a)==v0]
-                    isolated_b=isolated_b or len(signed_ends[b])+1>len(outgoing_from_origin)
+                        isolated_b=isolated_b or len(signed_ends[b])+1<len(outgoing_from_origin)
                     if isolated_b:
                         existing_edges[(b,1)]=True
-                        isolated_edges.append((common,b,1))  # common stands for its terminal vertex
+                        isolated_edges.append((common,G1.initial_vertex(b),(b,1)))  # common stands for its terminal vertex
+                        if verbose: print "Isolated edge",(common,b,1)
                     else: #len(signed_ends[b])+1==len(outgoing_from_origin) and len(common)==0
                         positive_outgoing_edges=[e[0][0] for e in signed_ends[b]]  
                         for a in outgoing_from_origin: # we look for the only edge outgoing from the origin without a +
@@ -190,9 +216,11 @@ class ConvexCore():
 
                         existing_edges[(b,1)]=True
                         if signed_ends[b][0][1]=='+':
-                            twice_light_squares.append((common,a,b)) # note that common=Word([])
+                            twice_light_squares.append((common,G1.initial_vertex(b),a,b)) # note that common=Word([])
+                            if verbose: print "Twice-light square",twice_light_squares[-1]
                         else:
-                            twice_light_squares.append((Word([a]),A0.inverse_letter(a),b))                            
+                            twice_light_squares.append((Word([a]),G1.initial_vertex(b),A0.inverse_letter(a),b))
+                            if verbose: print "Twice-light square",twice_light_squares[-1]
                         if A0.is_positive_letter(a):
                             existing_edges[(a,0)]=True
                         else:
@@ -202,9 +230,11 @@ class ConvexCore():
                     a=common[-1]
                     existing_edges[(b,1)]=True
                     if signed_ends[b][0][1]=='-':
-                        twice_light_squares.append((common[:-1],a,b))
+                        twice_light_squares.append((common[:-1],G1.initial_vertex(b),a,b))
+                        if verbose: print "Twice-light square",twice_light_squares[-1]
                     else:
-                        twice_light_squares.append((common,A0.inverse_letter(a),b))                        
+                        twice_light_squares.append((common,G1.initial_vertex(b),A0.inverse_letter(a),b))
+                        if verbose: print "Twice-light square",twice_light_squares[-1]
                     if A0.is_positive_letter(a):
                         existing_edges[(a,0)]=True
                     else:
@@ -218,8 +248,8 @@ class ConvexCore():
         # surrounded by twice light squares.
         semi_isolated_vertices=[]
         adjacent_twice_light_squares=dict([])
-        for (w,a,b) in twice_light_squares:
-            v=G1.initial_vertex(b)
+        if verbose: print "Looking for isolated vertices"
+        for (w,v,a,b) in twice_light_squares:
             if (v,1) in adjacent_twice_light_squares:
                 adjacent_twice_light_squares[(v,1)].append(w)
             else:
@@ -231,9 +261,9 @@ class ConvexCore():
                 adjacent_twice_light_squares[(u0,0)]=1
             w=w*Word([a]) 
             vv=G1.terminal_vertex(b)
-            u=G1.reduced_path(t1[vv]*G1.reverse_path(t1[v]*Word([b])))
+            u=G1.reduce_path(t1[vv]*G1.reverse_path(t1[v]*Word([b])))
             if len(u)>0:  #if vv does not stand for v.b
-                w=G0.reduced_path(g(u)*w)
+                w=G0.reduce_path(g(u)*w)
                 adjacent_twice_light_squares[(vv,1)].append(w)
 
         for (v,i) in adjacent_twice_light_squares.keys():
@@ -242,132 +272,109 @@ class ConvexCore():
                 u0=G0.terminal_vertex(w)
                 if adjacent_twice_light_squares[(u0,0)]==len(G0.outgoing_edges(u0)):
                     isolated_vertices.append((w,v))
+                    if verbose: print "Isolated vertex",(w,v)
                 else:
                     for w in adjacent_twice_light_squares[v]:
                         semi_isolated_vertices.append((w,v))
+                        if verbose: print "Semi-isolated vertex",(w,v)
 
-        # There are still isolated edges of the form (a,0) missing
-
-
+                        
         # create the convex core as a square complex
+
+        edges=set()
+        vertices=set()
         
-        one_cells_G=set()  # there are two kinds of edges: those from G and those from H
-        one_cells_H=set()
-        two_cell_boundary=dict() # The boundary operator that map a 2-cell to the 4 edges of its boundary
-        zero_cells=set() # vertices
-        one_cell_G_boundary=dict()
-        one_cell_H_boundary=dict()
+        # they are three kind of cells:
+        # - squares: (w,v,a,b) where a and b are positive letters
+        # - edges: (w,v,(a,0)) or (w,v,(b,1)) where a and b are positive letters
+        # - vertices: (w,v)
+
+        # where w is a path in G0 starting at v0, v is a vertex in G1
+        # standing for the vertex of T1 at the end of t1(v), a is a
+        # letter of A0 and b is a letter of A1.
+
+        # Note that len(cell)-2 is its dimension
+
+        for sq in heavy_squares:
+            (e0,e1,e2,e3)=self.boundary(sq)
+            edges.add(e0)
+            edges.add(e1)
+            edges.add((e3[0],e2[1],e0[2])) # we orient the edge for it to be labeled with a positive letter
+            edges.add((e0[0],e0[1],e1[2])) # we orient the edge for it to be labeled with a positive letter
+
+            # we now add the four corners of the square
+            
+            vertices.add((e0[0],e0[1]))
+            vertices.add((e1[0],e1[1]))
+            vertices.add((e2[0],e2[1]))
+            vertices.add((e3[0],e3[1]))
+
+        for e in isolated_edges:
+            edges.add(e)
+            vi,vt=self.boundary(e)
+            vertices.update([vi,vt])
+
+        for v in isolated_vertices:
+            vertices.add(v)
+
+        for v in semi_isolated_vertices:
+            vertices.add(v)
+            
+        # There are still isolated edges of the form (a,0) missing
+        for a in A0.positive_letters():
+            if not existing_edges[(a,0)]:
+                if verbose: print "Looking for the isolated edge",(a,0)
+                vi=G0.initial_vertex(a)
+                vt=G0.terminal_vertex(a)
+                u=G1.reduce_path(f(t0[vi]*Word([a])*G0.reverse_path(t0[vt])))
+                first_start=True
+                first_end=True
+                for (w,v) in vertices:
+                    if len(w)>0:
+                        vc=G0.terminal_vertex(w[-1])
+                    else:
+                        vc=G0.initial_vertex(A0[0])
+                    if vc==vi:
+                        pfowv=self.path_from_origin((w,v),1) # path from the initial vertex of the edge to (w,v)
+                        if first_start:
+                            start_prefix=pfowv
+                            first_start=False
+                        else:
+                            l=G1.common_prefix_length(start_prefix,pfowv)
+                            if l<len(start_prefix):
+                                start_prefix=start_prefix[:l]
+                    if vc==vt:
+                        pfttowv=G1.reduce_path(u*self.path_from_origin((w,v),1)) # path from the terminal vertex of the edge to (w,v)
+                        if first_end:
+                            end_prefix=pfttowv
+                            first_end=False
+                        else:
+                            l=G1.common_prefix_length(end_prefix,pfttowv)
+                            if l<len(end_prefix):
+                                end_prefix=end_prefix[:l]
+                if verbose: print "On side 1",(a,0),"is separated from self by",start_prefix,"and",end_prefix
+
+                if len(start_prefix)>len(end_prefix):
+                    prefix=start_prefix
+                else:
+                    prefix=end_prefix
+                if len(prefix)==0:
+                    e=(t0[G0.initial_vertex(a)],G1.inital_vertex([A1[0]]),(a,0))
+                    edges.add(e)
+                    if verbose: print "Isolated edge:",e
+                else:
+                    v1=G1.terminal_vertex(prefix[-1])
+                    u=G0.reduce_path(g(t1[v1]*G1.reverse_path(prefix))*t0[G0.initial_vertex(a)])
+                    edges.add((u,v1,(a,0)))
+                    if verbose: print "Isolated edge:",(u,v1,(a,0))
+            
+        self._squares=heavy_squares
+        self._edges=edges
+        self._vertices=vertices
+        self._twice_light_squares=twice_light_squares
 
 
-        # TODO: il faut echanger a et b, maintenant dans (w,a,b) w est un chemin dans G.
-
-        for (v,a,b) in heavy_squares:
-            vb=H.reduce_path(v*Word([b]))
-            Av=H.reduce_path(f.image(A.inverse_letter(a))*v)
-            one_cells_H.add((v,b))
-            one_cells_H.add((Av,b))
-            one_cells_G.add((v,a))
-            one_cells_G.add((vb,a))
-            two_cell_boundary[(v,a,b)]=(((v,a),(vb,a),(v,b),(Av,b)))
-            zero_cells.add(v)
-            zero_cells.add(vb)
-            zero_cells.add(Av)
-            Avb=H.reduce_path(Av*Word([b]))
-            zero_cells.add(Avb)
-            one_cell_H_boundary[(v,b)]=(v,vb)
-            one_cell_H_boundary[(Av,b)]=(Av,Avb)
-            one_cell_G_boundary[(v,a)]=(v,Av)
-            one_cell_G_boundary[(vb,a)]=(vb,Avb)
-
-        one_cell_G_class=dict((e,i) for i,e in enumerate(one_cells_G))
-        one_cell_H_class=dict((e,i) for i,e in enumerate(one_cells_H))
-
-        for c in two_cells:
-            if isinstance(G,MetricGraph) and G.length(c[1])==0:
-                j=one_cell_H_class[two_cell_boundary[c][2]]
-                k=one_cell_H_class[two_cell_boundary[c][3]]
-                if j!=k:
-                    for e in one_cell_H_class:
-                        if one_cell_H_class[e]==k:
-                            one_cell_H_class[e]=j
-            if isinstance(H,MetricGraph) and H.length(c[2])==0:
-                j=one_cell_G_class[two_cell_boundary[c][0]]
-                k=one_cell_G_class[two_cell_boundary[c][1]]
-                if j!=k:
-                    for e in one_cell_G_class:
-                        if one_cell_G_class[e]==k:
-                            one_cell_G_class[e]=j
-
-        zero_cell_class=dict((v,i) for i,v in enumerate(zero_cells))
-        if isinstance(G,MetricGraph):
-            for e in one_cells_G:
-                if G.length(e[1])==0:
-                    j=zero_cell_class[one_cell_G_boundary[e][0]]
-                    k=zero_cell_class[one_cell_G_boundary[e][1]]
-                    if j!=k:
-                        for v in zero_cells:
-                            if zero_cell_class[v]==k:
-                                zero_cell_class[v]=j
-
-        if isinstance(H,MetricGraph):
-            for e in one_cells_H:
-                if H.length(e[1])==0:
-                    j=zero_cell_class[one_cell_H_boundary[e][0]]
-                    k=zero_cell_class[one_cell_H_boundary[e][1]]
-                    if j!=k:
-                        for v in zero_cells:
-                            if zero_cell_class[v]==k:
-                                zero_cell_class[v]=j
-        i=0
-        map_G=dict()
-        for e in one_cells_G:
-            j=one_cell_G_class[e]
-            if j not in map_G:
-                map_G[j]=i
-                i+=1
-        map_H=dict()
-        for e in one_cells_H:
-            j=one_cell_H_class[e]
-            if j not in map_H:
-                map_H[j]=i
-                i+=1
-
-
-        i=0
-        boundary_2=dict()
-        label_2=dict()
-        for c in two_cells:
-            if ((not isinstance(G,MetricGraph)) or G.length(c[1])>0) \
-                    and ((not isinstance(H,MetricGraph)) or H.length(c[2])>0):
-                (a,b,bb,d)=two_cell_boundary[c]
-                boundary_2[i]=(map_G[one_cell_G_class[a]],map_G[one_cell_G_class[b]],map_H[one_cell_H_class[bb]],map_H[one_cell_H_class[d]])
-                label_2[i]=(c[1],c[2])
-                i+=1
-
-        boundary_1=dict()
-        label_1=dict()
-        for e in one_cells_G:
-             if (not isinstance(G,MetricGraph)) or G.length(e[1])>0:
-                 i=map_G[one_cell_G_class[e]]
-                 (v,vv)=one_cell_G_boundary[e]
-                 boundary_1[i]=(zero_cell_class[v],zero_cell_class[vv])
-                 label_1[i]=(e[1],0)
-        for e in one_cells_H:
-             if (not isinstance(H,MetricGraph)) or H.length(e[1])>0:
-                 i=map_H[one_cell_H_class[e]]
-                 (v,vv)=one_cell_H_boundary[e]
-                 boundary_1[i]=(zero_cell_class[v],zero_cell_class[vv])
-                 label_1[i]=(e[1],1)
-
-        zero_cells=set(zero_cell_class[v] for v in zero_cells)
-
-        self._zero_cells=zero_cells
-        self._boundary_2=boundary_2
-        self._boundary_1=boundary_1
-        self._label_1=label_1
-        self._label_2=label_2
-
-    def _build_signed_ends(self):
+    def _build_signed_ends(self,verbose=False):
         """For each edge of G1 computes a list of edges in T0 assigned with a + or a - sign.
 
         It is assumed that ``f=self._f01``: G0->G1 is 
@@ -404,8 +411,8 @@ class ConvexCore():
         A1=G1.alphabet()
 
 
-        t0=G0.spanning_tree()
-        t1=G1.spanning_tree()
+        t0=self._t0
+        t1=self._t1
 
         # the positive letter b in A1 stands for the edge (t1(b),b) of
         # the universal cover of G1 (where t1(b) is the path in t1
@@ -419,19 +426,19 @@ class ConvexCore():
             aa=A0.inverse_letter(a)
             image_a=f.image(a)
             w=t0[G0.initial_vertex(a)]
-            w=G0.reduced_path(g(f(G0.reverse_path(w)))*w)
+            w=G0.reduce_path(g(f(G0.reverse_path(w)))*w)
             for b in image_a: # the image f(a) crosses the edge prefix.b
                 pb=A1.to_positive_letter(b)
                 u0=g(t1[G1.initial_vertex(pb)])
                 if b==pb:
-                    w0=G0.reduced_path(u0*w)
+                    w0=G0.reduce_path(u0*w)
                     if len(w0)==0 or w0[-1]!=A0.inverse_letter(a):
-                        signed_ends[pb].append((w0*Word([a],'+')))
+                        signed_ends[pb].append((w0*Word([a]),'+'))
                     else:
                         signed_ends[pb].append((w0,'-'))
-                w=G0.reduced_path(g.image(A1.inverse_letter(b))*w))
+                w=G0.reduce_path(g.image(A1.inverse_letter(b))*w)
                 if b!=pb:
-                    w0=G0.reduced_path(u0*w)
+                    w0=G0.reduce_path(u0*w)
                     if len(w0)==0 or w0[-1]!=A0.inverse_letter(a):
                         signed_ends[pb].append((w0*Word([a]),'-'))
                     else:
@@ -439,6 +446,78 @@ class ConvexCore():
 
 
         self._signed_ends=signed_ends
+
+    def boundary(self,cell):
+        """The boundary of a cell is the list of cells bounding it. 
+
+        A d dimensional cell is a d+2 tuple:
+
+        - d=2: squares: (w,v,a,b) where w is a path in G0 starting
+          from v0 standing for the vertex of T0 at the end of w, v is
+          a vertex in G1 standing for the vertex at the end of t1(v)
+          in T1, a is a positive letter in A0 and b is a positive
+          letter in A1
+        
+        - d=1: edges: (w,v,(a,0)) or (w,v,(b,1)) with w and v as
+          above. Note that edges are oriented and that wa needs not be
+          reduced.
+
+        - d=0: vertices: (w,v) with w and v as above
+
+
+        - The boundary of a square is a list [e0,e1,e2,e3] of edges such that
+        e0=(w,v,(a,0)) and e2 are edges with a positive letter
+        a, and e1=(w,v,(b,1)) and e3 are edges with b a
+        positive letter.
+
+        - The boundary of an edge it is the list [v0,v1] of the initial vertex
+        v1=(w,v) followed by the terminal vertex.
+
+        - Vertices do not have boundary
+        """
+        if len(cell)==4: # cell is a square
+            w,v,a,b=cell
+            ww,vv=self.boundary((w,v,(b,1)))[1]
+            aa=self._G0.alphabet().inverse_letter(a)
+            bb=self._G1.alphabet().inverse_letter(b)
+            return [(w,v,(a,0)),(self._G0.reduce_path(w*Word([a])),v,(b,1)),(self._G0.reduce_path(ww*Word([a])),vv,(aa,0)),(ww,vv,(bb,1))]
+        elif len(cell)==3: # cell is an edge
+            (w,v,(a,i))=cell
+            if i==0:
+                vv=v
+                ww=self._G0.reduce_path(ww*Word([a]))
+            else: # i=1
+                G0=self._G0
+                G1=self._G1
+                t1=self._t1
+                f10=self._f10
+                vv=G1.terminal_vertex(a)
+                aa=G1.alphabet().inverse_letter(a)
+                ww=G0.reduce_path(f10(t1[vv]*Word([aa])*G1.reverse_path(t1[v]))*w)
+            return [(w,v),(ww,vv)]
+        
+    def path_from_origin(self,vertex,side,verbose=False):
+        """Path from the origin of ``self`` to ``vertex`` on ``side``.
+
+        Recall that on each side, each connected component of the
+        1-skeleton of ``self`` is a tree. The origin is a vertex
+        (w0,w1) with w0 a path of the form t0[v] and w1 a vertex of G1.
+        """
+        if side==0:
+            return vertex[0]
+        else: #side==1
+            w=vertex[0]
+            if len(w)==0:
+                return self._t1[vertex[1]]
+            else:
+                t0=self._t0
+                G0=self._G0
+                G1=self._G1
+                t1=self._t1
+                f01=self._f01
+                return G1.reduce_path(f01(t0[G0.terminal_vertex(w[-1])]*G0.reverse_path(w))*t1[vertex[1]])
+
+
         
     def tree(self,side):
         """
@@ -447,82 +526,28 @@ class ConvexCore():
 
         """
         if side==0:
-            return self._T0
+            return self._G0
         else:
-            return self._T1
+            return self._G1
 
-    def two_cells(self):
+    def squares(self):
         """
-        List of two cells (ie squares) of ``self``.
+        List of squares of ``self``.
         """
-        return self._boundary_2.keys()
+        return self._squares
 
-    def one_cells(self):
+    def edges(self):
         """
-        List of one cells (ie edges) of ``self``.
+        Set of edges of ``self``.
         """
-        return self._boundary_1.keys()
+        return self._edges
 
 
-    def zero_cells(self):
+    def vertices(self):
         """
-        Set of zero cells (vertices) of ``self``.
+        Set of zero vertices of ``self``.
         """
-        return self._zero_cells
-
-
-    def boundary_2(self,c):
-        """
-        Boundary of the two-cell ``c``.
-
-        OUTPUT:
-
-        A tuple ``(e,f,g,h)`` of four one-cells. ``e`` and ``f`` are
-        labeled by ``(a,0)`` for some edge ``a`` of the tree ``T0``,
-        while ``g`` an ``h`` are labeled by ``(b,1)`` for some edge
-        ``b`` of ``T1``.
-        """
-
-        return self._boundary_2[c]
-
-
-    def boundary_1(self,e):
-        """
-        Boundary of the one_cell ``e``.
-
-        OUTPUT:
-
-        ``(u,v)``: the initial vertex ``u`` and the terminal
-        vertex ``v`` of ``e``.
-        """
-
-        return self._boundary_1[e]
-
-    def label_2(self,c):
-        """
-        Label of the two-cell ``c``.
-
-        OUTPUT:
-
-        ``(a,b)`` where ``a`` is an edge of ``T0`` and ``b`` is an
-        edge of ``T1``.
-        """
-
-        return self._label_2[c]
-
-    def label_1(self,e):
-        """
-        Label of the one-cell ``e``.
-
-        OUTPUT:
-
-        ``(a,side)`` where ``side`` is 0 or 1 and ``a`` is an edge of
-        ``Tside``.
-
-        """
-
-        return self._label_1[e]
-
+        return self._vertices
 
 
     def slice(self,a,side):
@@ -546,9 +571,10 @@ class ConvexCore():
         """
 
         G=DiGraph(loops=True,multiedges=True)
-        for (i,b) in self._boundary_2.iteritems():
-            if self.label_1(b[2*side])[0]==a:
-                G.add_edge(b[2*side],b[2*side+1],i)
+        for sq in self.squares():
+            if sq[2+side]==a:
+                b=self.boundary(sq)
+                G.add_edge((b[side],b[side+2],a))
 
         return G
 

@@ -729,7 +729,7 @@ class GraphWithInverses(DiGraph):
                          done=False
           return tree
 
-     def spanning_tree(self):
+     def spanning_tree(self,verbose=False):
           """
           A spanning tree.
 

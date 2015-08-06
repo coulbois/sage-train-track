@@ -744,7 +744,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         from train_track_map import TrainTrackMap
         
 
-        f=self.train_track(stable=True,relative=False,verbose=verbose and verbose<1 and verbose-1)
+        f=self.train_track(stable=True,relative=False,verbose=(verbose and verbose<1 and verbose-1))
 
 
         if verbose:
@@ -805,9 +805,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
     
 
 class free_group_automorphisms:
-    r
-
-        """
+    r"""
     Many examples of free group automorphisms.
     """
     @staticmethod
