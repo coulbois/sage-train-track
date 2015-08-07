@@ -53,21 +53,10 @@ class ConvexCore():
     T2 of G1 and G2, with the fundamental group F of G1 acting on G2
     through ``f``. Edges of length 0 are quotient out.
 
-    TODO:
-
-    Does not detect edges which do not bound a square.
-
     WARNING:
 
-    It is assumed that boths graphs G1 and G2 does not have vertices
+    It is assumed that boths graphs G1 and G2 do not have vertices
     of valence 1 or 2.
-
-    The one squeleton may fail to be connected due to the absence of some
-    isolated edges.
-
-    There might be a problem if the labels of the edges are not
-    coherently positive. Indeed there is a choice of a fundamental
-    domain around the base point in the tree.
 
     AUTHORS:
 
@@ -367,7 +356,87 @@ class ConvexCore():
                     u=G0.reduce_path(g(t1[v1]*G1.reverse_path(prefix))*t0[G0.initial_vertex(a)])
                     edges.add((u,v1,(a,0)))
                     if verbose: print "Isolated edge:",(u,v1,(a,0))
+
+
+        # We now collapse squares and edges of length 0
+        #
+        # Vertices are of the form (w,v) with the last letter of w 
+        # of >0 length
+        # TODO
+        
+        if isinstance(G0,MetricGraph):
+            i=0
+            while i<len(heavy_squares):
+                sq=heavy_squares[i]
+                if G0.length(sq[2])==0:
+                    heavy_squares.pop(i)
+                    edges.add((sq[0],sq[1],(sq[3],1)))
+                else:
+                    i+=1
+            new_edges=set()
+            try:
+                while True:
+                    e=edges.pop()
+                    if e[2][1]==0:
+                        if G0.length(e[2][0])!=0:
+                            new_edges.add(e)
+                    else:
+                        w=e[0]
+                        l=len(w)
+                        while l>0 and G0.length(w[l-1])==0:
+                            l-=1
+                        new_edges.add((w[:l],e[1],e[2]))
+            except KeyError:
+                edges=new_edges
+            new_vertices=set()
+            try:
+                while True:
+                    (w,v)=vertices.pop()
+                    l=len(w)
+                    while l>0 and G0.length(w[l-1])==0:
+                        l-=1
+                    new_vertices.add((w[:l],v))
+            except KeyError:
+                vertices=new_vertices
+                    
             
+                    
+        if isinstance(G1,MetricGraph):
+            i=0
+            while i<len(heavy_squares):
+                sq=heavy_squares[i]
+                if G1.length(sq[3])==0:
+                    heavy_squares.pop(i)
+                    edges.add((sq[0],sq[1],(sq[2],0)))
+                else:
+                    i+=1
+            new_edges=set()
+            try:
+                while True:
+                    e=edges.pop()
+                    if e[2][1]==1:
+                        if G1.length(e[2][0])!=0:
+                            new_edges.add(e)
+                    else:
+                        w=e[0]
+                        l=len(w)
+                        while l>0 and G0.length(w[l-1])==0:
+                            l-=1
+                        new_edges.add((w[:l],e[1],e[2]))
+            except KeyError:
+                edges=new_edges
+            new_vertices=set()
+            try:
+                while True:
+                    (w,v)=vertices.pop()
+                    l=len(w)
+                    while l>0 and G0.length(w[l-1])==0:
+                        l-=1
+                    new_vertices.add((w[:l],v))
+            except KeyError:
+                vertices=new_vertices
+
+        
         self._squares=heavy_squares
         self._edges=edges
         self._vertices=vertices
@@ -471,7 +540,7 @@ class ConvexCore():
         positive letter.
 
         - The boundary of an edge it is the list [v0,v1] of the initial vertex
-        v1=(w,v) followed by the terminal vertex.
+        v0=(w,v) followed by the terminal vertex.
 
         - Vertices do not have boundary
         """
@@ -485,7 +554,7 @@ class ConvexCore():
             (w,v,(a,i))=cell
             if i==0:
                 vv=v
-                ww=self._G0.reduce_path(ww*Word([a]))
+                ww=self._G0.reduce_path(w*Word([a]))
             else: # i=1
                 G0=self._G0
                 G1=self._G1
@@ -500,8 +569,15 @@ class ConvexCore():
         """Path from the origin of ``self`` to ``vertex`` on ``side``.
 
         Recall that on each side, each connected component of the
-        1-skeleton of ``self`` is a tree. The origin is a vertex
-        (w0,w1) with w0 a path of the form t0[v] and w1 a vertex of G1.
+        1-skeleton of ``self`` is a tree. The origin is a vertex 
+
+        - (v0,w1) with v0 the origin of G0 and w1 a vertex of G1.
+
+        or 
+
+        - (w0,v1) with w0 a path of the form t0[v] and v1 the origin
+        of G1.
+
         """
         if side==0:
             return vertex[0]
@@ -536,6 +612,12 @@ class ConvexCore():
         """
         return self._squares
 
+    def twice_light_squares(self):
+        """
+        List of twice light squares of ``self``.
+        """
+        return self._twice_light_squares
+    
     def edges(self):
         """
         Set of edges of ``self``.
@@ -555,13 +637,13 @@ class ConvexCore():
         Slice of ``self`` for the edge ``a`` of the given ``side``.
 
         The slice is the tree whose vertices are edges labeled by
-        ``(a,side)`` and with edges the two cells with one side
+        ``(a,side)`` and with edges the squares with one side
         corresponding to ``(a,side)``.
 
         OUTPUT:
 
         A ``DiGraph``, edges are labeled by the corresponding
-        two-cells of ``self``.
+        square of ``self``,vertices by the corresponding edge.
 
         INPUT:
 
@@ -574,14 +656,16 @@ class ConvexCore():
         for sq in self.squares():
             if sq[2+side]==a:
                 b=self.boundary(sq)
-                G.add_edge((b[side],b[side+2],a))
+                if side==0:
+                    G.add_edge((b[0],(b[3][0],b[3][1],(a,side)),sq[3]))
+                else:
+                    G.add_edge(((b[0][0],b[0][1],(a,side)),b[1],sq[2]))
 
         return G
 
 
-    def one_squeleton(self,side):
-        """
-        One squeleton of ``self`` on the ``side``
+    def one_squeleton(self,side,augmented=False):
+        """One squeleton of ``self`` on the ``side``
 
         INPUT:
 
@@ -590,17 +674,34 @@ class ConvexCore():
 
         OUTPUT:
 
-        A ``GraphWithInverses`` with the same alphabet than ``Tside``
+        A ``DiGraph`` edges are labeled by letters of the alphabet and
+        vertices are labeled by the vertices of ``self``.
+
         """
 
         G=self.tree(side)
         A=G.alphabet()
-        result=GraphWithInverses(alphabet=A)
+        result=DiGraph(loops=True,multiedges=True)
 
-        for (i,b) in self._boundary_1.iteritems():
-            if self.label_1(i)[1]==side:
-                result.add_edge(b[0],b[1],self.label_1(i)[0])
+        for e in self.edges():
+            if e[2][1]==side:
+                b=self.boundary(e)
+                result.add_edge((b[0],b[1],e[2][0]))
 
+        if augmented:
+            for sq in self.twice_light_squares():
+                if side==0:
+                    a=sq[2]
+                    if A.is_positive_letter(a):
+                        result.add_edge(((sq[0],sq[1]),(G.reduce_path(sq[0]*Word([a])),sq[1]),a))
+                    else:
+                        aa=A.inverse_letter(a)
+                        result.add_edge(((G.reduce_path(sq[0]*Word([a])),sq[1]),(sq[0],sq[1]),aa))
+                else:
+                    b=sq[3] # it is assumed that b is a positive letter
+                    bord=self.boundary((sq[0],sq[1],(b,1)))
+                    result.add_edge(((sq[0],sq[1]),bord[1],b))
+        
         return result
 
     def volume(self):
@@ -613,23 +714,27 @@ class ConvexCore():
         If the trees are metric trees, then this is the volume.
         """
 
-        if isinstance(self.tree(0),MetricGraph) and isinstance(self.tree(1),MetricGraph): 
+        G0=self.tree(0)
+        G1=self.tree(1)
+
+
+        if isinstance(G0,MetricGraph) and isinstance(G1,MetricGraph): 
             result=0
-            for  (a,b) in self._label_2.itervalues():
-                result+=self.tree(0).length(a)*self.tree(1).length(b)
+            for  sq in self.squares():
+                result+=G0.length(sq[2])*G1.length(sq[3])
             return result
-        elif isinstance(self.tree(0),MetricGraph):
+        elif isinstance(G0,MetricGraph):
             result=0
-            for (a,b) in self._label_2.itervalues():
-                result+=self.tree(0).length(a)
+            for sq in self.squares():
+                result+=G0.length(sq[2])
             return result
-        elif isinstance(self.tree(1),MetricGraph):
+        elif isinstance(G1,MetricGraph):
             result=0
-            for (a,b) in self._label_2.itervalues():
-                result+=self.tree(1).length(b)
+            for sq in self.squares(): 
+                result+=G1.length(sq[3])
             return result
         else:
-            return len(self._boundary_2)
+            return len(self.squares())
 
     def ideal_curve_diagram(self,radius=1,orientation=1,boundary_word=None):
         """
