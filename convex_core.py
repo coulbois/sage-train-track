@@ -12,6 +12,7 @@ from inverse_graph import GraphWithInverses
 from inverse_graph import MetricGraph
 from graph_map import GraphMap
 from free_group_automorphism import FreeGroupAutomorphism
+import bisect
 
 class ConvexCore():
     """Guirardel's convex core of two simplicial trees with an action of
@@ -104,7 +105,7 @@ class ConvexCore():
                      #point of G0 to the base point of G1 and
                      #conversely
         self._f10=g
-
+        
         # In the sequel t1 is G1.spanning_tree() with v1 as root
         # (similarly v0 is the root of G0.spanning_tree()). A vertex in
         # T0 is designated by a path w from v0. An edge in T0 is
@@ -172,6 +173,8 @@ class ConvexCore():
             wp=common
             for (w,sign) in signed_ends[b]:
                 start=G0.common_prefix_length(wp,w)
+                if start==len(wp) and start>common_len:
+                    start-=1
                 wp=w
                 for i in xrange(start,len(w)-1):
                     a=w[i]
@@ -206,10 +209,10 @@ class ConvexCore():
                         existing_edges[(b,1)]=True
                         if signed_ends[b][0][1]=='+':
                             twice_light_squares.append((common,G1.initial_vertex(b),a,b)) # note that common=Word([])
-                            if verbose: print "Twice-light square",twice_light_squares[-1]
+                            if verbose: print "1/ Twice-light square",twice_light_squares[-1]
                         else:
                             twice_light_squares.append((Word([a]),G1.initial_vertex(b),A0.inverse_letter(a),b))
-                            if verbose: print "Twice-light square",twice_light_squares[-1]
+                            if verbose: print "2/ Twice-light square",twice_light_squares[-1]
                         if A0.is_positive_letter(a):
                             existing_edges[(a,0)]=True
                         else:
@@ -220,10 +223,10 @@ class ConvexCore():
                     existing_edges[(b,1)]=True
                     if signed_ends[b][0][1]=='-':
                         twice_light_squares.append((common[:-1],G1.initial_vertex(b),a,b))
-                        if verbose: print "Twice-light square",twice_light_squares[-1]
+                        if verbose: print "3/ Twice-light square",twice_light_squares[-1]
                     else:
                         twice_light_squares.append((common,G1.initial_vertex(b),A0.inverse_letter(a),b))
-                        if verbose: print "Twice-light square",twice_light_squares[-1]
+                        if verbose: print "4/ Twice-light square",twice_light_squares[-1]   #Apparently there is a problem here. TODO
                     if A0.is_positive_letter(a):
                         existing_edges[(a,0)]=True
                     else:
@@ -308,7 +311,11 @@ class ConvexCore():
 
         for v in semi_isolated_vertices:
             vertices.add(v)
-            
+
+        vertex_labels=list(vertices)
+        vertex_labels.sort()
+
+        if verbose: print "Vertices",vertex_labels
         # There are still isolated edges of the form (a,0) missing
         for a in A0.positive_letters():
             if not existing_edges[(a,0)]:
@@ -348,7 +355,7 @@ class ConvexCore():
                 else:
                     prefix=end_prefix
                 if len(prefix)==0:
-                    e=(t0[G0.initial_vertex(a)],G1.inital_vertex([A1[0]]),(a,0))
+                    e=(t0[G0.initial_vertex(a)],G1.initial_vertex(A1[0]),(a,0))
                     edges.add(e)
                     if verbose: print "Isolated edge:",e
                 else:
@@ -357,90 +364,165 @@ class ConvexCore():
                     edges.add((u,v1,(a,0)))
                     if verbose: print "Isolated edge:",(u,v1,(a,0))
 
+        # We now number the vertices and change edges such that they are of the form [vi,vt,(a,side)]
 
+        edges=list(edges)
+        for i in xrange(len(edges)):
+            e=edges[i]
+            b=self.boundary(e)
+            edges[i]=[bisect.bisect(vertex_labels,b[0])-1,bisect.bisect(vertex_labels,b[1])-1,e[2]]
+
+        # We change the heavy squares such that they are of the form [c1,c2,c3,c4,a,b]
+            
+        for i in xrange(len(heavy_squares)):
+            sq=heavy_squares[i]
+            b=self.boundary(sq)            
+            sq=[bisect.bisect(vertex_labels,(b[j][0],b[j][1]))-1 for j in xrange(4)]+[sq[2],sq[3]]
+            heavy_squares[i]=sq
+
+        # We change the twice_light_squares in the same fashion
+
+        for i in xrange(len(twice_light_squares)):
+            sq=twice_light_squares[i]
+            b=self.boundary(sq)
+            c0=bisect.bisect(vertex_labels,(b[0][0],b[0][1]))-1
+            c2=bisect.bisect(vertex_labels,(b[2][0],b[2][1]))-1
+            c1=len(vertices)+2*i #These two vertices are not part of the convex-core
+            c3=len(vertices)+2*i+1
+            twice_light_squares[i]=[c0,c1,c2,c3,sq[2],sq[3]]
+            
         # We now collapse squares and edges of length 0
-        #
-        # Vertices are of the form (w,v) with the last letter of w 
-        # of >0 length
-        # TODO
-        
+
+        equivalent=range(len(vertices)+2*len(twice_light_squares))
+        quotient=False
         if isinstance(G0,MetricGraph):
             i=0
-            while i<len(heavy_squares):
-                sq=heavy_squares[i]
-                if G0.length(sq[2])==0:
-                    heavy_squares.pop(i)
-                    edges.add((sq[0],sq[1],(sq[3],1)))
+            while i<len(edges):
+                [vi,vt,(a,side)]=edges[i]
+                if side==0 and G0.length(a)==0:
+                    quotient=True
+                    vii=equivalent[vi]
+                    while vi!=vii:
+                        vi=vii
+                        vii=equivalent[vi]
+                    vtt=equivalent[vt]
+                    while vt!=vtt:
+                        vt=vtt
+                        vtt=equivalent[vt]
+                    if vi<vt:
+                        equivalent[vt]=vi
+                    else:
+                        equivalent[vi]=vt
+                    edges.pop(i)
                 else:
                     i+=1
-            new_edges=set()
-            try:
-                while True:
-                    e=edges.pop()
-                    if e[2][1]==0:
-                        if G0.length(e[2][0])!=0:
-                            new_edges.add(e)
-                    else:
-                        w=e[0]
-                        l=len(w)
-                        while l>0 and G0.length(w[l-1])==0:
-                            l-=1
-                        new_edges.add((w[:l],e[1],e[2]))
-            except KeyError:
-                edges=new_edges
-            new_vertices=set()
-            try:
-                while True:
-                    (w,v)=vertices.pop()
-                    l=len(w)
-                    while l>0 and G0.length(w[l-1])==0:
-                        l-=1
-                    new_vertices.add((w[:l],v))
-            except KeyError:
-                vertices=new_vertices
-                    
-            
-                    
-        if isinstance(G1,MetricGraph):
+            i=0
+            while i<len(twice_light_squares):
+                sq=twice_light_squares[i]
+                if G0.length(sq[4])==0:
+                    quotient=True
+                    equivalent[sq[1]]=sq[0]
+                    equivalent[sq[3]]=sq[2]
+                    twice_light_squares.pop(i)
+                    edges.append([sq[0],sq[2],(sq[5],1)])
+                else:
+                    i+=1
+
             i=0
             while i<len(heavy_squares):
                 sq=heavy_squares[i]
-                if G1.length(sq[3])==0:
+                if G0.length(sq[4])==0:
+                    quotient=True
                     heavy_squares.pop(i)
-                    edges.add((sq[0],sq[1],(sq[2],0)))
                 else:
                     i+=1
-            new_edges=set()
-            try:
-                while True:
-                    e=edges.pop()
-                    if e[2][1]==1:
-                        if G1.length(e[2][0])!=0:
-                            new_edges.add(e)
-                    else:
-                        w=e[0]
-                        l=len(w)
-                        while l>0 and G0.length(w[l-1])==0:
-                            l-=1
-                        new_edges.add((w[:l],e[1],e[2]))
-            except KeyError:
-                edges=new_edges
-            new_vertices=set()
-            try:
-                while True:
-                    (w,v)=vertices.pop()
-                    l=len(w)
-                    while l>0 and G0.length(w[l-1])==0:
-                        l-=1
-                    new_vertices.add((w[:l],v))
-            except KeyError:
-                vertices=new_vertices
 
+        if isinstance(G1,MetricGraph):
+            i=0
+            while i<len(edges):
+                [vi,vt,(a,side)]=edges[i]
+                if side==1 and G1.length(a)==0:
+                    quotient=True
+                    vii=equivalent[vi]
+                    while vi!=vii:
+                        vi=vii
+                        vii=equivalent[vi]
+                    vtt=equivalent[vt]
+                    while vt!=vtt:
+                        vt=vtt
+                        vtt=equivalent[vt]
+
+                    if vi<vt:
+                        equivalent[vt]=vi
+                    else:
+                        equivalent[vi]=vt
+                    edges.pop(i)
+                else:
+                    i+=1
+                    
+            i=0
+            while i<len(twice_light_squares):
+                sq=twice_light_squares[i]
+                if G1.length(sq[5])==0:
+                    quotient=True
+                    equivalent[sq[3]]=sq[0]
+                    equivalent[sq[1]]=sq[2]
+                    twice_light_squares.pop(i)
+                    if A0.is_positive_letter(sq[4]):
+                        edges.append([sq[0],sq[2],(sq[4],0)])
+                    else:
+                        edges.append([sq[2],sq[0],(A0.inverse_letter(sq[4]),0)])
+                else:
+                    i+=1
+
+            i=0
+            while i<len(heavy_squares):
+                sq=heavy_squares[i]
+                if G1.length(sq[5])==0:
+                    heavy_squares.pop(i)
+                else:
+                    i+=1
+
+        if quotient:
+            for i in xrange(1,len(equivalent)):
+                j=i
+                k=equivalent[j]
+                l=equivalent[k]
+                while k>l:
+                    equivalent[j]=l
+                    j=k
+                    k=l
+                    l=equivalent[l]
+                equivalent[i]=l
+
+            vertices=[i for i in xrange(len(vertices)) if equivalent[i]==i]
+
+            for e in edges:
+                for i in xrange(2):
+                    e[i]=equivalent[e[i]]
+
+            for sq in heavy_squares:
+                for i in xrange(4):
+                    sq[i]=equivalent[sq[i]]
+
+            for sq in twice_light_squares:
+                for i in xrange(4):
+                    sq[i]=equivalent[sq[i]]
+
+        
+            
+                    
+            
+                
         
         self._squares=heavy_squares
         self._edges=edges
-        self._vertices=vertices
+        if quotient:
+            self._vertices=vertices
+        else:
+            self._vertices=range(len(vertices))
         self._twice_light_squares=twice_light_squares
+        self._vertex_labels=vertex_labels
 
 
     def _build_signed_ends(self,verbose=False):
@@ -517,7 +599,12 @@ class ConvexCore():
         self._signed_ends=signed_ends
 
     def boundary(self,cell):
-        """The boundary of a cell is the list of cells bounding it. 
+        """The boundary of a cell is the list of vertices bounding it. 
+
+        A cell is a square, an edge or a vertex. Squares are bounded
+        by four vertices, edges by two vertices.
+
+        Cells are coded in two different ways, either tuples or lists. 
 
         A d dimensional cell is a d+2 tuple:
 
@@ -542,28 +629,53 @@ class ConvexCore():
         - The boundary of an edge it is the list [v0,v1] of the initial vertex
         v0=(w,v) followed by the terminal vertex.
 
-        - Vertices do not have boundary
+        Whereas for lists:
+
+        - squares: ``[v0,v1,v2,v3,a,b]`` where v0,v1,v2 and v3 are
+          integers standing for vertices and a,b are positive letters
+          labeling edges of G0 and G1:
+
+                a
+          v3 ------> v2
+           ^         ^
+           |         |
+           |b        |b
+           |         |
+           |    a    |
+          v0 ------>v1
+
+        - edges: ``[v0,v1,(a,side)]`` where ``v0`` and ``v1`` are
+          integers standing for vertices a is a label of the tree on
+          ``side``.
+
         """
-        if len(cell)==4: # cell is a square
-            w,v,a,b=cell
-            ww,vv=self.boundary((w,v,(b,1)))[1]
-            aa=self._G0.alphabet().inverse_letter(a)
-            bb=self._G1.alphabet().inverse_letter(b)
-            return [(w,v,(a,0)),(self._G0.reduce_path(w*Word([a])),v,(b,1)),(self._G0.reduce_path(ww*Word([a])),vv,(aa,0)),(ww,vv,(bb,1))]
-        elif len(cell)==3: # cell is an edge
-            (w,v,(a,i))=cell
-            if i==0:
-                vv=v
-                ww=self._G0.reduce_path(w*Word([a]))
-            else: # i=1
-                G0=self._G0
-                G1=self._G1
-                t1=self._t1
-                f10=self._f10
-                vv=G1.terminal_vertex(a)
-                aa=G1.alphabet().inverse_letter(a)
-                ww=G0.reduce_path(f10(t1[vv]*Word([aa])*G1.reverse_path(t1[v]))*w)
-            return [(w,v),(ww,vv)]
+        if isinstance(cell,tuple):
+            if len(cell)==4: # cell is a square
+                w,v,a,b=cell
+                ww,vv=self.boundary((w,v,(b,1)))[1]
+                aa=self._G0.alphabet().inverse_letter(a)
+                bb=self._G1.alphabet().inverse_letter(b)
+                return [(w,v,(a,0)),(self._G0.reduce_path(w*Word([a])),v,(b,1)),(self._G0.reduce_path(ww*Word([a])),vv,(aa,0)),(ww,vv,(bb,1))]
+            elif len(cell)==3: # cell is an edge
+                (w,v,(a,i))=cell
+                if i==0:
+                    vv=v
+                    ww=self._G0.reduce_path(w*Word([a]))
+                else: # i=1
+                    G0=self._G0
+                    G1=self._G1
+                    t1=self._t1
+                    f10=self._f10
+                    vv=G1.terminal_vertex(a)
+                    aa=G1.alphabet().inverse_letter(a)
+                    ww=G0.reduce_path(f10(t1[vv]*Word([aa])*G1.reverse_path(t1[v]))*w)
+                return [(w,v),(ww,vv)]
+        else: #the cell is a list of the form [v0,v1,v2,v3,v4,a,b]: square or [v0,v1,(a,side)]: edge
+            if len(cell)==6:
+                return cell[:4]
+            else:
+                return cell[:2]
+            
         
     def path_from_origin(self,vertex,side,verbose=False):
         """Path from the origin of ``self`` to ``vertex`` on ``side``.
@@ -579,6 +691,10 @@ class ConvexCore():
         of G1.
 
         """
+        if not isinstance(vertex,tuple): # The vertex is an integer
+            vertex=self._vertex_labels[vertex]
+        
+            
         if side==0:
             return vertex[0]
         else: #side==1
@@ -592,7 +708,6 @@ class ConvexCore():
                 t1=self._t1
                 f01=self._f01
                 return G1.reduce_path(f01(t0[G0.terminal_vertex(w[-1])]*G0.reverse_path(w))*t1[vertex[1]])
-
 
         
     def tree(self,side):
@@ -620,14 +735,14 @@ class ConvexCore():
     
     def edges(self):
         """
-        Set of edges of ``self``.
+        List of edges of ``self``.
         """
         return self._edges
 
 
     def vertices(self):
         """
-        Set of zero vertices of ``self``.
+        List of vertices of ``self``.
         """
         return self._vertices
 
@@ -654,13 +769,11 @@ class ConvexCore():
 
         G=DiGraph(loops=True,multiedges=True)
         for sq in self.squares():
-            if sq[2+side]==a:
-                b=self.boundary(sq)
+            if sq[4+side]==a:
                 if side==0:
-                    G.add_edge((b[0],(b[3][0],b[3][1],(a,side)),sq[3]))
+                    G.add_edge(((sq[0],sq[1],(a,0)),(sq[3],sq[2],(a,side)),sq[5]))
                 else:
-                    G.add_edge(((b[0][0],b[0][1],(a,side)),b[1],sq[2]))
-
+                    G.add_edge(((sq[0],sq[3],(a,1)),(sq[1],sq[2],(a,1)),sq[4]))
         return G
 
 
@@ -685,22 +798,20 @@ class ConvexCore():
 
         for e in self.edges():
             if e[2][1]==side:
-                b=self.boundary(e)
-                result.add_edge((b[0],b[1],e[2][0]))
+                result.add_edge((e[0],e[1],e[2][0]))
 
         if augmented:
             for sq in self.twice_light_squares():
                 if side==0:
-                    a=sq[2]
+                    a=sq[4]
                     if A.is_positive_letter(a):
-                        result.add_edge(((sq[0],sq[1]),(G.reduce_path(sq[0]*Word([a])),sq[1]),a))
+                        result.add_edge((sq[0],sq[1],a))
                     else:
                         aa=A.inverse_letter(a)
-                        result.add_edge(((G.reduce_path(sq[0]*Word([a])),sq[1]),(sq[0],sq[1]),aa))
+                        result.add_edge((sq[1],sq[0],aa))
                 else:
-                    b=sq[3] # it is assumed that b is a positive letter
-                    bord=self.boundary((sq[0],sq[1],(b,1)))
-                    result.add_edge(((sq[0],sq[1]),bord[1],b))
+                    b=sq[5] # it is assumed that b is a positive letter
+                    result.add_edge((sq[1],sq[2],b))
         
         return result
 
@@ -721,17 +832,17 @@ class ConvexCore():
         if isinstance(G0,MetricGraph) and isinstance(G1,MetricGraph): 
             result=0
             for  sq in self.squares():
-                result+=G0.length(sq[2])*G1.length(sq[3])
+                result+=G0.length(sq[4])*G1.length(sq[5])
             return result
         elif isinstance(G0,MetricGraph):
             result=0
             for sq in self.squares():
-                result+=G0.length(sq[2])
+                result+=G0.length(sq[4])
             return result
         elif isinstance(G1,MetricGraph):
             result=0
             for sq in self.squares(): 
-                result+=G1.length(sq[3])
+                result+=G1.length(sq[5])
             return result
         else:
             return len(self.squares())

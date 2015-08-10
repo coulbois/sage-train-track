@@ -269,7 +269,7 @@ class GraphMap():
         while not done:
             done=True
             prefix=dict() # the common prefix of all edges outgoing from the class of a vertex
-            ajacent_vertex=dict() # a class of vertices linked by a tree which is contracted by self to a point
+            adjacent_vertex=dict() # a class of vertices linked by a tree which is contracted by self to a point
             for a in A1:
                 u=edge_map[a]
                 v=G1.initial_vertex(a)
