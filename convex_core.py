@@ -208,11 +208,11 @@ class ConvexCore():
 
                         existing_edges[(b,1)]=True
                         if signed_ends[b][0][1]=='+':
-                            twice_light_squares.append((common,G1.initial_vertex(b),a,b)) # note that common=Word([])
-                            if verbose: print "1/ Twice-light square",twice_light_squares[-1]
+                            twice_light_squares.append((Word([a]),G1.initial_vertex(b),A0.inverse_letter(a),b)) # note that common=Word([])
+                            if verbose: print "Twice-light square (type 1)",twice_light_squares[-1]
                         else:
-                            twice_light_squares.append((Word([a]),G1.initial_vertex(b),A0.inverse_letter(a),b))
-                            if verbose: print "2/ Twice-light square",twice_light_squares[-1]
+                            twice_light_squares.append((common,G1.initial_vertex(b),a,b))
+                            if verbose: print "Twice-light square (type 2)",twice_light_squares[-1]
                         if A0.is_positive_letter(a):
                             existing_edges[(a,0)]=True
                         else:
@@ -222,11 +222,11 @@ class ConvexCore():
                     a=common[-1]
                     existing_edges[(b,1)]=True
                     if signed_ends[b][0][1]=='-':
-                        twice_light_squares.append((common[:-1],G1.initial_vertex(b),a,b))
-                        if verbose: print "3/ Twice-light square",twice_light_squares[-1]
-                    else:
                         twice_light_squares.append((common,G1.initial_vertex(b),A0.inverse_letter(a),b))
-                        if verbose: print "4/ Twice-light square",twice_light_squares[-1]   #Apparently there is a problem here. TODO
+                        if verbose: print "Twice-light square (type 3)",twice_light_squares[-1]
+                    else:
+                        twice_light_squares.append((common[:-1],G1.initial_vertex(b),a,b))
+                        if verbose: print "Twice-light square (type 4)",twice_light_squares[-1]   #Apparently there is a problem here. TODO
                     if A0.is_positive_letter(a):
                         existing_edges[(a,0)]=True
                     else:
@@ -246,23 +246,45 @@ class ConvexCore():
                 adjacent_twice_light_squares[(v,1)].append(w)
             else:
                 adjacent_twice_light_squares[(v,1)]=[w]
-            u0=G0.initial_vertex(a)
-            if (u0,0) in adjacent_twice_light_squares:
-                adjacent_twice_light_squares[(u0,0)]+=1
-            else:
-                adjacent_twice_light_squares[(u0,0)]=1
+
             w=w*Word([a]) 
             vv=G1.terminal_vertex(b)
             u=G1.reduce_path(t1[vv]*G1.reverse_path(t1[v]*Word([b])))
             if len(u)>0:  #if vv does not stand for v.b
                 w=G0.reduce_path(g(u)*w)
+            if (vv,1) in adjacent_twice_light_squares:
                 adjacent_twice_light_squares[(vv,1)].append(w)
+            else:
+                adjacent_twice_light_squares[(vv,1)]=[w]
+                
+
+            # b=self.boundary((w,v,a,b))
+            # ww,vv=b[1][1]
+            # if (vv,1) in adjacent_twice_light_squares:
+            #     adjacent_twice_light_squares[(vv,1)].append(ww)
+            # else:
+            #     adjacent_twice_light_squares[(vv,1)]=[ww]
+                
+            u0=G0.initial_vertex(a)
+            if (u0,0) in adjacent_twice_light_squares:
+                adjacent_twice_light_squares[(u0,0)]+=1
+            else:
+                adjacent_twice_light_squares[(u0,0)]=1
+                
+            uu0=G0.terminal_vertex(a)
+            if (uu0,0) in adjacent_twice_light_squares:
+                adjacent_twice_light_squares[(uu0,0)]+=1
+            else:
+                adjacent_twice_light_squares[(uu0,0)]=1
 
         for (v,i) in adjacent_twice_light_squares.keys():
-            if i==1 and len(adjacent_twice_light_squares[(v,1)])==len(G1.outgoing_edges(v)): # v is a semi-isolated vertex
+            if i==1 and len(adjacent_twice_light_squares[(v,1)])==G1.degree(v): # v is a semi-isolated vertex
                 w=adjacent_twice_light_squares[(v,1)][0]
-                u0=G0.terminal_vertex(w)
-                if adjacent_twice_light_squares[(u0,0)]==len(G0.outgoing_edges(u0)):
+                if len(w)>0:
+                    u0=G0.terminal_vertex(w)
+                else:
+                    u0=G0.initial_vertex(A0[0])
+                if adjacent_twice_light_squares[(u0,0)]==G0.degree(u0):
                     isolated_vertices.append((w,v))
                     if verbose: print "Isolated vertex",(w,v)
                 else:
@@ -847,95 +869,133 @@ class ConvexCore():
         else:
             return len(self.squares())
 
-    def ideal_curve_diagram(self,radius=1,orientation=1,boundary_word=None):
-        """
-        
-        An ideal curve diagram on the once punctured surface S of
-        genus g which is transverse to the core.
+    def plot_ideal_curve_diagram(self,radius=1,orientation=1,boundary_word=None,verbose=False):
+        """Plot the set of ideal curves on the surface S=S(g,1) of genus g with
+        one puncture.
 
-        Only works if T0 was the tree transverse to the original set
-        of ideal curves and T1 is the image of T0 by a maaping class
-        of S (not a general outer automorphism).
+
+        The free group has rank N=2g, the trees T0 and T1 are roses
+        transverse to a maximal set of ideal curves on S. The convex
+        core is transverse to the two collections of curves: vertices
+        are connected components of the complement of the union of the
+        two sets of curves, edges are arcs separating two regions and
+        squares are around intersections points of curves.
+
+        For instance T0 can be set to be the rose with the trivial
+        marking, while T1 is obtained from T0 by applying a mapping
+        class (and not a general automorphism). The embedding of the
+        mapping class group is that generated by the ``dehn_twist()``
+        method of the ``FreeGroup`` class.
+
+        The set of ideal curves of T0 is drawn as the boundary of a
+        regular 2N-gone, and the set of ideal curves of T1 is drawn
+        inside this 2N-gone.
 
         INPUT:
 
-        - ``orientation``: ``1`` or ``-1`` (default 1) whether the first 2-cell of
-          ``self`` is positively oriented or not.
+        - ``orientation``: ``1`` or ``-1`` (default 1) whether the
+          first square of ``self`` is positively oriented or not.
         
 
-        - ``radius``: (default 1) the radius of the regular n-gone
+        - ``radius``: (default 1) the radius of the regular 2N-gone
           which is the fondamental domain of the surface.
+
         """
 
         from sage.plot.line import Line
         from sage.plot.arrow import Arrow
         
-        #        boundary_word=Word("AbaBDCdc")
-        #        boundary_word=Word("bABaCDcd")
-        #        boundary_word=Word("baBDCdcA")
-        #    boundary_word=Word("ABabDcdC")
-        #    boundary_word=Word("abABdCDc")
-        #    boundary_word=Word("BAbacDCd")
-        
-        A=self.tree(0).alphabet()
-        N=len(A)
-        
+        A0=self.tree(0).alphabet()
+        N=len(A0)
+        A1=self.tree(1).alphabet()
+        squares=self.squares()
 
-        # orientation of 2-cells
+        # Coherent orientation of the squares
             
-        orient=orientation
-        orientation=dict()
+        if len(squares)>0:
+            orientation=[orientation]
+            orientation==orientation+[0 for i in xrange(1,len(squares))]
 
-        orientation[self.two_cells()[0]]=orient
-        queue=[self.two_cells()[0]]
-        while len(queue)>0:
-            c0=queue.pop()
-            e10,e20,f10,f20=self.boundary_2(c0)
-            for c in self.two_cells():
-                if c not in orientation:
-                    e1,e2,f1,f2=self.boundary_2(c)
-                    if e1==e10 or e2==e20 or f1==f10 or f2==f20:
-                        orientation[c]=-orientation[c0]
-                        queue.append(c)
-                    elif e1==e20 or e2==e10 or f1==f20 or f2==f10:
-                        orientation[c]=orientation[c0]
-                        queue.append(c)
+            #TODO: algorithme deffectueux
 
+            i=0
+            ni=0
+            done=False
+            while not done:
+                done=True
+                i=ni
+                sqi=squares[i]
+                for j in xrange(1,len(squares)):
+                    if j not in orientation:
+                        sqj=squares[j]
+                        if sqi[4]==sqj[4]:
+                            if (sqi[0]==sqj[0] and sqi[1]==sqj[1]) or (sqi[3]==sqj[3] and sqi[2]==sqj[2]):
+                                orientation[j]=-orientation[i]
+                                done=False
+                                ni=j
+                            elif (sqi[0]==sqj[3] and sqi[1]==sqj[2]) or (sqi[3]==sqj[0] and sqi[2]==sqj[1]):
+                                orientation[j]=orientation[i]
+                                done=False
+                                ni=j
+                        if sqi[5]==sqj[5]:
+                            if (sqi[0]==sqj[0] and sqi[3]==sqj[3]) or (sqi[1]==sqj[1] and sqi[2]==sqj[2]):
+                                orientation[j]=-orientation[i]
+                                done=False
+                                ni=j
+                            elif (sqi[0]==sqj[1] and sqi[3]==sqj[2]) or (sqi[1]==sqj[0] and sqi[2]==sqj[3]):
+                                orientation[j]=orientation[i]
+                                done=False
+                                ni=j
 
+            if verbose:
+                for i,sq in enumerate(squares):
+                    print sq,":",orientation[i] #debug
+
+                    
         initial_vertex=dict()
         terminal_vertex=dict()
 
-        boundary_edges_orientation=dict()
-
+        boundary=[]
+        
         for a in A.positive_letters():
             aa=A.inverse_letter(a)
-            s=self.slice(a,0)
-            es=s.edges()
-            size=len(es)+1
+            slicea=[i for i in xrange(len(squares)) if squares[i][4]==a]
+            size=len(slicea)+1
 
             if size==1:
                 continue
 
             # sort the edges of the slice
             i=1
-            start0=es[0][(1-orientation[es[0][2]])/2]
-            endi=es[i-1][(1+orientation[es[i-1][2]])/2]    
+            sqi=slicea[0]
+            sq=squares[sqi]
+            if orientation[sqi]==1:
+                start0=(sq[0],sq[1])
+                endi=(sq[3],sq[2])
+            else:
+                start0=(sq[3],sq[2])
+                endi=(sq[0],sq[1])
 
-            while i<len(es):
+            while i<len(slicea):
                 j=i
-                while j<len(es):
-                    startj=es[j][(1-orientation[es[j][2]])/2]
-                    endj=es[j][(1+orientation[es[j][2]])/2]    
+                while j<len(slicea):
+                    sqjj=slicea[j]
+                    sqj=squares[sqjj]
+                    if orientation[sqjj]==1:
+                        startj=(sqj[0],sqj[1])
+                        endj=(sqj[3],sqj[2])
+                    else:
+                        startj=(sqj[3],sqj[2])
+                        endj=(sqj[0],sqj[1])
                     
                     if endi==startj: # next(es[i-1])==es[j]:
-                        es[j],es[i]=es[i],es[j]
+                        slicea[j],slicea[i]=slicea[i],slicea[j]
                         i+=1
                         endi=endj
                         if i<j:
                             j=j-1
                     elif endj==start0: #next(es[j])==es[0]:
-                        es=[es[j]]+es
-                        es[j+1:j+2]=[]
+                        slicea=[slicea[j]]+slicea[:j]+slicea[j+1:]
                         i+=1
                         start0=startj
                         if i<j:
@@ -944,27 +1004,40 @@ class ConvexCore():
 
 
             # put a curve for each edge of the slice
-            for i,e in enumerate(es):
-                if orientation[e[2]]==1:
-                    initial_vertex[self.boundary_2(e[2])[2]]=(a,(i+1.0)/size)
-                    terminal_vertex[self.boundary_2(e[2])[3]]=(aa,(size-i-1.0)/size)
+            for i in xrange(len(slicea)):
+                sq=squares[i]
+                if orientation[i]==1:
+                    initial_vertex[(sq[0],sq[3],sq[5])]=(a,(i+1.0)/size)
+                    terminal_vertex[(sq[1],sq[2],sq[5])]=(aa,(size-i-1.0)/size)
                 else:
-                    terminal_vertex[self.boundary_2(e[2])[2]]=(a,(i+1.0)/size)
-                    initial_vertex[self.boundary_2(e[2])[3]]=(aa,(size-i-1.0)/size)
+                    terminal_vertex[(sq[0],sq[3],sq[5])]=(a,(i+1.0)/size)
+                    initial_vertex[(sq[1],sq[2],sq[5])]=(aa,(size-i-1.0)/size)
 
-            e=es[0]
-            boundary_edges_orientation[e[(1-orientation[e[2]])/2]]=-1
-            e=es[-1]
-            boundary_edges_orientation[e[(1+orientation[e[2]])/2]]=1
-            
+            sqi=slicea[0]
+            sq=squares[sqi]
+            if orientation[sqi]==1:
+                boundary.append((sq[1],sq[0],(aa,0)))
+            else:
+                boundary.append((sq[2],sq[3],(aa,0)))
+
+            sqi=slicea[-1]
+            sq=squares[sqi]
+            if orientation[sqi]==1:
+                boundary.append((sq[3],sq[2],(a,0)))
+            else:
+                boundary.append((sq[0],sq[1],(a,0)))
+                
         for e in initial_vertex:
             if e not in terminal_vertex:
-                boundary_edges_orientation[e]=1
+                boundary.append((e[0],e[1],(e[2],1)))
         for e in terminal_vertex:
             if e not in initial_vertex:
-                boundary_edges_orientation[e]=-1
+                boundary.append((e[1],e[0],(A1.inverse_letter(e[2]),1)))
                 
 
+        if verbose:
+            print "Boundary:",boundary
+            
         # order the boundary
 
         incomplete_boundary=False
@@ -1089,10 +1162,6 @@ class ConvexCore():
             xx,yy=boundary_terminal_vertex[a]
             g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=5.0/6)
             g+=text(a,((x+xx)/2*text_decalage**2,(y+yy)/2*text_decalage**2),hue=5.0/6)
-
-            #Line([boundary_initial_vertex[a][0],boundary_terminal_vertex[a][0]],\
-            #   [boundary_initial_vertex[a][1],boundary_terminal_vertex[a][1]],\
-            #  {'alpha':1,'thickness':2,'rgbcolor':(0,1,1),'legend_label':''})
  
 
         for e in initial_vertex:
@@ -1108,11 +1177,7 @@ class ConvexCore():
                     g+=text(b,(text_decalage*xx,text_decalage*yy),hue=RR(A.rank(b))/N)
                 
                 g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A.rank(b))/N)
-                
-
-#ar=Line([x,xx],[y,yy],{'alpha':1,'thickness':2,'rgbcolor':color[b],'legend_label':''}) #{'width':3,'head':1,'rgbcolor':(1,0,0),'linestyle':'dashed','zorder':8,'legend_label':''})
-#                g.add_primitive(ar)
-        
+                        
         g.axes(False)
 
         return g

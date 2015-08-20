@@ -1,6 +1,7 @@
 \documentclass[10pt,a4paper]{article}
 
 \usepackage{amsmath}
+\usepackage{makeidx}
 
 \newcommand{\Out}{\text{Out}}
 \newcommand{\Aut}{\text{Aut}}
@@ -33,8 +34,8 @@ Mladen Bestvina and Mark Feighn~\cite{bf-train-track}.
 Sage is based on Python. This is an object oriented language: the
 \textbf{postfix convention} is used. For instance
 \texttt{phi.train-track()} applies the method \texttt{train-track()}
-to the object \texttt{phi}. Note that \index{method} is the object
-oriented linguo for what mathematicians call ``function''.
+to the object \texttt{phi}. Note that method\index{method} is the
+object oriented linguo for what mathematicians call ``function''.
 
 You can always ask for \textbf{automatic completion} and \textbf{help} by using the TAB key: 
 \begin{enumerate}
@@ -64,8 +65,8 @@ of Sage. Then you need to download the files at
 
 \subsection{Creating free groups}
 
-Probably you first need to create a \index{free group}. It can be specified by
-its rank or a list of letters. You can also first create the \index{alphabet}.
+Probably you first need to create a free group\index{free group}. It can be specified by
+its rank or a list of letters. You can also first create the alphabet\index{alphabet}.
 \begin{verbatim}
 sage: F=FreeGroup(3); F
    Free group over ['a', 'b', 'c']
@@ -125,7 +126,7 @@ word: x1
 
 The parsing of free group automorphisms relies on that of
 substitutions. Most of what you might expect should correctly create a
-\index{free group automorphism}:
+free group automorphism\index{free group automorphism}:
 \begin{verbatim}
 sage: phi=FreeGroupMorphism('a->ab,b->a'); phi
 Automorphism of the Free group over ['a', 'b']:
@@ -153,8 +154,8 @@ a->b,b->c,c->Ba
 \end{verbatim}
 
 Also Free group automorphisms can be obtained as composition of
-\index{elementary Nielsen automorphisms} (of the form $a\mapsto
-ab$). Up to now they are rather called \index{Dehn twist}.
+{elementary Nielsen automorphisms\index{elementary Nielsen automorphism} (of the form $a\mapsto
+ab$). Up to now they are rather called Dehn twists\index{Dehn twist}.
 \begin{verbatim}
 sage: F=FreeGroup(3)
 sage: print F.dehnt_twist('a','c')
@@ -169,7 +170,8 @@ If the free group as even rank $N=2g$, then it is the fundamental
 group of an oriented surface ofgenus $g$ with one boundary
 component. In this case the mapping class group of $S_{g,1}$ is a
 subgroup of the outer automorphism group of $F_N$ and it is generated
-by a collection of $3g-1$ Dehn twists along curves. Those \index{Dehn twist}s are accessed through:
+by a collection of $3g-1$ Dehn twists along curves. Those Dehn
+twists\index{Dehn twist}s are accessed through:
 \begin{verbatim}
 sage: F=FreeGroup(4)
 sage: print F.surface_dehn_twist(2)
@@ -183,10 +185,11 @@ sage: print F.braid_automorphism(0)
 a->c,b->b,c->caC
 \end{verbatim}
 
-Finally for statistical purpose, one can access \index{random
-  automorphisms} or \index{random mapping classes} or \index{random
-  braids}. The random elements are obtained by composition of a given number
-of randomly chosen generators of these groups.
+Finally for statistical purpose, one can access random
+automorphisms\index{random automorphism} or random mapping
+classes\index{random mapping class} or random braids\index{random
+  braid}. The random elements are obtained by composition of a given
+number of randomly chosen generators of these groups.
 \begin{verbatim}
 sage: F=FreeGroup(4)
 sage: F.random_automorphism(8)
@@ -211,7 +214,7 @@ Graph with inverses: a: 0->0, b: 0->0, c: 0->0
 sage: G.plot()
 \end{verbatim}
 Otherwise a graph can be given by a variety of inputs like a list of
-edges, etc. Graphs can easily be \index{plot}ted. Note that
+edges, etc. Graphs can easily be plotted\index{plot}. Note that
 \texttt{plot()} tries to lower the number of accidental crossing of
 edges, using some thermodynamics and randomness, thus two calls of
 \texttt{plot()} may output two different figures.
@@ -244,7 +247,37 @@ marked then those operations will carry on the marking.
 
 The main feature and the main achievement of the program is to compute
 train-track representative for (outer) automorphisms of free groups.
+\texttt{phi.train\_track()} computes a train-track representative for
+the (outer) automorphism phi. This train-track\index{train-track} can be either an
+absolute train-track or a relative train-track. The celebrated theorem
+of Bestvina and Feighn~\cite{bf-train-track} assures that if phi is
+fully irreducible (iwip) then there exists an absolute train-track
+representing phi.
+
+The \texttt{train-track(relative=False)} method will terminate with
+either an absolute train-track or with a topological representative
+with a reduction: an invariant strict subgraph with non-trivial
+fundamental group.
+
+One more feature of train-tracks (absolute or relative) is to lower
+the number of Nielsn paths\index{Nielsen path}. Setting the \texttt{stable=True}
+option will return a train-track with at most one indivisible Nielsen path\index{indivisible
+  Nielsen path} (per exponential stratum if it is a relative
+train-track).
 
 
+\section{More on free group automorphisms}
+
+Using the \texttt{train-track()} method our program can decide wether
+an automorphism is fully irreducible\index{fully irreducible} or not. If it is iwip,
+one can compute the \textbf{index}, index-list or \textbf{ideal
+  Whitehead graphs}. Not that these computations are done using an
+absolute expanding train-track representative: they can be use for a
+broader class than just iwip automorphisms.
+
+
+\section{Convex cores, curve complex and more}
+
+\printindex
 
 \end{document}
