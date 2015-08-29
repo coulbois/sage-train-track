@@ -869,7 +869,7 @@ class ConvexCore():
         else:
             return len(self.squares())
 
-    def plot_ideal_curve_diagram(self,radius=1,orientation=1,boundary_word=None,verbose=False):
+    def plot_ideal_curve_diagram(self,boundary_word=None,radius=1,orientation=1,verbose=False):
         """Plot the set of ideal curves on the surface S=S(g,1) of genus g with
         one puncture.
 
@@ -893,6 +893,9 @@ class ConvexCore():
 
         INPUT:
 
+        -``boundary_word``: The word read when going around the
+         boundary of the surface.
+
         - ``orientation``: ``1`` or ``-1`` (default 1) whether the
           first square of ``self`` is positively oriented or not.
         
@@ -908,48 +911,63 @@ class ConvexCore():
         A0=self.tree(0).alphabet()
         N=len(A0)
         A1=self.tree(1).alphabet()
+
+        if boundary_word is None and N==4:
+            boundary_word=[A0[0],A0[1],A0.inverse_letter(A0[3]),A0[2],A0[3],A0.inverse_letter(A0[2])]
+            boundary_word+=[A0.inverse_letter(A0[0]),A0.inverse_letter(A0[1])]  # abDcdCAB if A0 was 'abcd'
+            
         squares=self.squares()
 
         # Coherent orientation of the squares
             
         if len(squares)>0:
-            orientation=[orientation]
-            orientation==orientation+[0 for i in xrange(1,len(squares))]
+            orientation=[orientation]+[0 for i in xrange(1,len(squares))]
 
-            #TODO: algorithme deffectueux
+            todo=[0] # oriented squares with not yet oriented neighboors
 
-            i=0
-            ni=0
-            done=False
-            while not done:
-                done=True
-                i=ni
-                sqi=squares[i]
-                for j in xrange(1,len(squares)):
-                    if j not in orientation:
-                        sqj=squares[j]
-                        if sqi[4]==sqj[4]:
-                            if (sqi[0]==sqj[0] and sqi[1]==sqj[1]) or (sqi[3]==sqj[3] and sqi[2]==sqj[2]):
+            oriented=1 #number of oriented squares
+
+
+            while oriented<len(squares):
+                while len(todo)>0 and oriented<len(squares):
+                    i=todo.pop()
+                    sqi=squares[i]
+                    for j in xrange(1,len(squares)):
+                        if orientation[j]==0:
+                            sqj=squares[j]
+                            if sqi[4]==sqj[4] and ((sqi[0]==sqj[0] and sqi[1]==sqj[1]) or (sqi[3]==sqj[3] and sqi[2]==sqj[2])):
                                 orientation[j]=-orientation[i]
-                                done=False
-                                ni=j
-                            elif (sqi[0]==sqj[3] and sqi[1]==sqj[2]) or (sqi[3]==sqj[0] and sqi[2]==sqj[1]):
+                                todo.append(j)
+                                oriented+=1
+                            elif sqi[4]==sqj[4] and ((sqi[0]==sqj[3] and sqi[1]==sqj[2]) or (sqi[3]==sqj[0] and sqi[2]==sqj[1])):
                                 orientation[j]=orientation[i]
-                                done=False
-                                ni=j
-                        if sqi[5]==sqj[5]:
-                            if (sqi[0]==sqj[0] and sqi[3]==sqj[3]) or (sqi[1]==sqj[1] and sqi[2]==sqj[2]):
+                                todo.append(j)
+                                oriented+=1
+                            elif sqi[5]==sqj[5] and ((sqi[0]==sqj[0] and sqi[3]==sqj[3]) or (sqi[1]==sqj[1] and sqi[2]==sqj[2])):
                                 orientation[j]=-orientation[i]
-                                done=False
-                                ni=j
-                            elif (sqi[0]==sqj[1] and sqi[3]==sqj[2]) or (sqi[1]==sqj[0] and sqi[2]==sqj[3]):
+                                todo.append(j)
+                                oriented+=1
+                            elif sqi[5]==sqj[5] and ((sqi[0]==sqj[1] and sqi[3]==sqj[2]) or (sqi[1]==sqj[0] and sqi[2]==sqj[3])):
                                 orientation[j]=orientation[i]
-                                done=False
-                                ni=j
+                                todo.append(j)
+                                oriented+=1
+                if oriented<len(squares): # there is more than one strongly connected component
+                    if verbose:
+                        print "There is another strongly connected component"
+                    for i in xrange(1,len(squares)):
+                        if orientation[i]==0:
+                            break
+                    todo.append(i)
+                    orientation[i]=orientation
+                    oriented+=1
+
+                    
+
 
             if verbose:
+                print "Orientation of the squares:"
                 for i,sq in enumerate(squares):
-                    print sq,":",orientation[i] #debug
+                    print i,":",sq,":",orientation[i] #debug
 
                     
         initial_vertex=dict()
@@ -1002,11 +1020,13 @@ class ConvexCore():
                             j=j-1
                     j+=1
 
+            if verbose:
+                print "Slice of", a,":",slicea       
 
             # put a curve for each edge of the slice
-            for i in xrange(len(slicea)):
-                sq=squares[i]
-                if orientation[i]==1:
+            for i,sqi in enumerate(slicea):
+                sq=squares[sqi]
+                if orientation[sqi]==1:
                     initial_vertex[(sq[0],sq[3],sq[5])]=(a,(i+1.0)/size)
                     terminal_vertex[(sq[1],sq[2],sq[5])]=(aa,(size-i-1.0)/size)
                 else:
@@ -1036,115 +1056,10 @@ class ConvexCore():
                 
 
         if verbose:
-            print "Boundary:",boundary
+            print "Edges of the boundary:",boundary
             
-        # order the boundary
-
-        incomplete_boundary=False
-
-        boundary=boundary_edges_orientation.keys()
-        i=1
-        e0=boundary[0]
-        if boundary_edges_orientation[e0]==1:
-            start0,endi=self.boundary_1(e0)
-        else:
-            endi,start0=self.boundary_1(e0)
-        while i<len(boundary):
-            j=i
-            skip=True
-            while j<len(boundary):
-                e=boundary[j]
-                if boundary_edges_orientation[e]==1:
-                    startj,endj=self.boundary_1(e)
-                else:
-                    endj,startj=self.boundary_1(e)
-                if endi==startj:
-                    boundary[i],boundary[j]=boundary[j],boundary[i]
-                    endi=endj
-                    i=i+1
-                    if i<j:
-                        j=j-1
-                    skip=False
-                elif start0==endj:
-                    boundary=[boundary[j]]+boundary
-                    boundary[j+1:j+2]=[]
-                    start0=startj
-                    i+=1
-                    if i<j:
-                        j=j-1
-                    skip=False
-                j+=1
-            if skip:
-                i+=1
-                
-                incomplete_boundary=True
-
-        # disc bounded by ideal curves
-        disc_0=[A[0]]
-
-
-        while len(disc_0)<2*N:
-            a=disc_0[-1]
-            done=False
-            j=len(boundary)-1
-            while j>=0 and not done:
-                if self.label_1(boundary[j])[1]==0:
-                    e=boundary[j]
-                    b=self.label_1(e)[0]
-                    if boundary_edges_orientation[e]==-1:
-                        b=A.inverse_letter(b)
-                    if a==b:
-                        done=True
-                j-=1
-
-            if j<0: j=len(boundary)-1
-            while self.label_1(boundary[j])[1]==1:
-                j-=1
-                if j<0: j=len(boundary)-1
-            e=boundary[j]
-            b=self.label_1(e)[0]
-            if boundary_edges_orientation[e]==1:
-                b=A.inverse_letter(b)
-            disc_0.append(b)
-
-        print "disc",
-        for a in disc_0:
-            print a,
-        print
-        print "boundary",
-        for e in boundary:
-            a,i=self.label_1(e)
-            if boundary_edges_orientation[e]==-1:
-                a=A.inverse_letter(a)
-            print "{0}_{1}".format(a,i),
-
-        # we now fix the ideal curves starting from corners
-            
-        i=0
-        while self.label_1(boundary[i])[1]==1:
-            i+=1
-
-        previous_letter=self.label_1(boundary[i])[0]
-        if boundary_edges_orientation[boundary[i]]==-1:
-            previous_letter=A.inverse_letter(previous_letter)
+        disc_0=boundary_word
         
-        j=i-1
-        if j<0: j=len(boundary)-1
-        while j!=i:
-            e=boundary[j]
-            if self.label_1(e)[1]==0:
-                previous_letter=self.label_1(e)[0]
-                if boundary_edges_orientation[e]==-1:
-                    previous_letter=A.inverse_letter(previous_letter)
-            else:
-                if boundary_edges_orientation[e]==1:
-                    terminal_vertex[e]=(previous_letter,1)
-                else:
-                    initial_vertex[e]=(previous_letter,1)
-            j-=1
-            if j<0:
-                j=len(boundary)-1
-
         g=Graphics()
 
         boundary_initial_vertex=dict()
@@ -1168,7 +1083,7 @@ class ConvexCore():
             if e in terminal_vertex:
                 a,p=initial_vertex[e]
                 aa,pp=terminal_vertex[e]
-                b=self.label_1(e)[0]
+                b=e[2]
                 x=boundary_initial_vertex[a][0]+p*(boundary_terminal_vertex[a][0]-boundary_initial_vertex[a][0])
                 y=boundary_initial_vertex[a][1]+p*(boundary_terminal_vertex[a][1]-boundary_initial_vertex[a][1])
                 xx=boundary_initial_vertex[aa][0]+pp*(boundary_terminal_vertex[aa][0]-boundary_initial_vertex[aa][0])
