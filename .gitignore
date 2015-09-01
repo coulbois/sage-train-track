@@ -1,3 +1,11 @@
+*.aux
+*.log
+*.idx
 *.pyc
+*.tex~
 *.py~
 .rope*
+*.bbl
+*.blg
+*.ilg
+*.ind
