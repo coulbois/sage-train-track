@@ -1650,62 +1650,39 @@ class TopologicalRepresentative(GraphMap):
             done=True
             if verbose:
                 print "Fold inp: ",inp[0],inp[1]
-            image=(self.image(inp[0][0]),self.image(inp[1][0]))
-            prefix_length=self._domain.common_prefix_length(image[0],image[1])
-            if len(image[0])==prefix_length or len(image[1])==prefix_length:
-                if verbose: print "Full fold"
+                
+            if A.to_positive_letter(inp[0][0]) not in stratum:
+                # we are in the case where the inp starts in the
+                # lower stratum. That is to say there is an
+                # inessential connecting path to fold
+
                 done=False
 
-                if len(image[1])>len(image[0]): #order the two branches of the inp
-                    inp=(inp[1],inp[0])
-                    image=(image[1],image[0]) # now image[0]>=image[1]
+                i=0
+                while A.to_positive_letter(inp[0][i]) not in stratum:
+                    i+=1
+                j=0
+                while A.to_positive_letter(inp[1][j]) not in stratum:
+                    j+=1
+                path=G.reverse_path(inp[0][:i])*inp[1][:j]
 
-                if len(image[0])==prefix_length: #both edges have the same image
-                    folding_morph=self.fold([inp[0][0],inp[1][0]],image[0],verbose=verbose)
+                if verbose:
+                    print "Foldable connecting path at the beginning of the INP:",path
 
-                else: # now image[0]>image[1]
-                    i=1
-                    while A.to_positive_letter(inp[1][i]) not in stratum: i+=1
-                    if i>1:
-                        folding_morph=self.fold([(inp[1][:i],'path'),inp[0][0]],self(inp[1][:i]),verbose)
-                    else:
-                        folding_morph=self.fold([inp[0][0],inp[1][0]],image[1],verbose)
+                
+                folding_morph=self.fold_paths([path],verbose=verbose and verbose>1 and verbose-1)
 
-                stratum=set(A.to_positive_letter(folding_morph.image(a)[0]) for a in stratum)
-                stratum.add(A.to_positive_letter(folding_morph.image(inp[0][0])[-1]))
+                stratum=set(folding_morph.image(a)[0] for a in stratum)
+                # we are only folding in lower strata, so this should
+                # be unuseful
 
-                inp=(folding_morph(inp[0]),folding_morph(inp[1]))
+                
+                inp=(self.domain().reduce_path(folding_morph(inp[0])),self.domain().reduce_path(folding_morph(inp[1])))
                 prefix_length=self._domain.common_prefix_length(inp[0],inp[1])
                 inp=(inp[0][prefix_length:],inp[1][prefix_length:])
 
-                if result_morph:
-                    result_morph=folding_morph*result_morph
-                else:
-                    result_morph=folding_morph
 
-            else:
-                if verbose: print "Partial fold:",inp
-
-                folding_morph=self.fold((inp[0][0],inp[1][0]),image[0][:prefix_length],verbose)
-
-                edge_map=dict((a,self.image(a)) for a in A)
-
-                u=folding_morph.image(inp[0][0])
-                edge_map[u[0]]=self.image(u[0])*u[:1]
-                edge_map[A.inverse_letter(u[0])]=G.reverse_path(edge_map[u[0]])
-                if len(u)==2:
-                    edge_map[u[1]]=self.image(u[1])[1:]
-                    edge_map[A.inverse_letter(u[1])]=G.reverse_path(edge_map[u[1]])
-                    v=folding_morph.image(inp[1][0])
-                    edge_map[v[1]]=self.image(v[1])[1:]
-                    edge_map[A.inverse_letter(v[1])]=G.reverse_path(edge_map[v[1]])
-                else: #the INP is in a one-edge loop
-                    edge_map[u[1]]=self.image(u[1])[1:-1]
-                    edge_map[A.inverse_letter(u[1])]=G.reverse_path(edge_map[u[1]])
-
-
-                self.set_edge_map(edge_map)
-
+                
                 if result_morph:
                     result_morph=folding_morph*result_morph
                 else:
@@ -1713,6 +1690,72 @@ class TopologicalRepresentative(GraphMap):
 
                 if verbose: print "\n",self
 
+            else:
+                image=(self.image(inp[0][0]),self.image(inp[1][0]))
+                prefix_length=self._domain.common_prefix_length(image[0],image[1])
+                if len(image[0])==prefix_length or len(image[1])==prefix_length:
+                    if verbose: print "Full fold"
+                    done=False
+
+                    if len(image[1])>len(image[0]): #order the two branches of the inp
+                        inp=(inp[1],inp[0])
+                        image=(image[1],image[0]) # now image[0]>=image[1]
+
+                    if len(image[0])==prefix_length: #both edges have the same image
+                        folding_morph=self.fold([inp[0][0],inp[1][0]],image[0],verbose=verbose)
+
+                    else: # now image[0]>image[1]
+                        i=1
+                        while A.to_positive_letter(inp[1][i]) not in stratum: i+=1
+                        if i>1:
+                            folding_morph=self.fold([(inp[1][:i],'path'),inp[0][0]],self(inp[1][:i]),verbose)
+                        else:
+                            folding_morph=self.fold([inp[0][0],inp[1][0]],image[1],verbose)
+
+                    stratum=set(A.to_positive_letter(folding_morph.image(a)[0]) for a in stratum)
+                    stratum.add(A.to_positive_letter(folding_morph.image(inp[0][0])[-1]))
+
+                    inp=(folding_morph(inp[0]),folding_morph(inp[1]))
+                    prefix_length=self._domain.common_prefix_length(inp[0],inp[1])
+                    inp=(inp[0][prefix_length:],inp[1][prefix_length:])
+
+                    if result_morph:
+                        result_morph=folding_morph*result_morph
+                    else:
+                        result_morph=folding_morph
+
+                else: 
+                    if verbose: print "Partial fold:",inp
+
+                    folding_morph=self.fold((inp[0][0],inp[1][0]),image[0][:prefix_length],verbose)
+
+                    edge_map=dict((a,self.image(a)) for a in A)
+
+                    u=folding_morph.image(inp[0][0])
+                    edge_map[u[0]]=self.image(u[0])*u[:1]
+                    edge_map[A.inverse_letter(u[0])]=G.reverse_path(edge_map[u[0]])
+                    if len(u)==2:
+                        edge_map[u[1]]=self.image(u[1])[1:]
+                        edge_map[A.inverse_letter(u[1])]=G.reverse_path(edge_map[u[1]])
+                        v=folding_morph.image(inp[1][0])
+                        edge_map[v[1]]=self.image(v[1])[1:]
+                        edge_map[A.inverse_letter(v[1])]=G.reverse_path(edge_map[v[1]])
+                    else: #the INP is in a one-edge loop
+                        edge_map[u[1]]=self.image(u[1])[1:-1]
+                        edge_map[A.inverse_letter(u[1])]=G.reverse_path(edge_map[u[1]])
+
+
+                    self.set_edge_map(edge_map)
+
+                    if result_morph:
+                        result_morph=folding_morph*result_morph
+                    else:
+                        result_morph=folding_morph
+
+                    if verbose: print "\n",self
+
+
+                
         self._strata=strata
         return result_morph
 
@@ -2630,7 +2673,7 @@ class TopologicalRepresentative(GraphMap):
             if result_morph:
                 p=G.reduce_path(result_morph(p))
 
-            if verbose: print "Starting the fold of an inessential connecting path..."
+            if verbose: print "Starting the fold of the inessential connecting path:",p
 
             # We need to cleverly choose the place to fold.  The
             # strategy is to fold all possible places in p starting
