@@ -459,6 +459,12 @@ class ConvexCore():
                 else:
                     i+=1
 
+            i=0
+            while i<len(isolated_eges):
+                e=isolated_edges[i]
+                if e[2][1]==0 and G0.length(e[2][0])==0:
+                    isolated_edges.pop(i)
+
         if isinstance(G1,MetricGraph):
             i=0
             while i<len(edges):
@@ -505,6 +511,13 @@ class ConvexCore():
                 else:
                     i+=1
 
+            i=0
+            while i<len(isolated_eges):
+                e=isolated_edges[i]
+                if e[2][1]==1 and G1.length(e[2][0])==0:
+                    isolated_edges.pop(i)
+
+
         if quotient:
             for i in xrange(1,len(equivalent)):
                 j=i
@@ -546,6 +559,8 @@ class ConvexCore():
         self._twice_light_squares=twice_light_squares
         self._vertex_labels=vertex_labels
 
+        self._isolated_edges=isolated_edges
+        
 
     def _build_signed_ends(self,verbose=False):
         """For each edge of G1 computes a list of edges in T0 assigned with a + or a - sign.
@@ -768,6 +783,11 @@ class ConvexCore():
         """
         return self._vertices
 
+    def isolated_edges(self):
+        """
+        List of isolated edges
+        """
+        return self._isolated_edges
 
     def slice(self,a,side):
         """
@@ -915,6 +935,9 @@ class ConvexCore():
         if boundary_word is None and N==4:
             boundary_word=[A0[0],A0[1],A0.inverse_letter(A0[3]),A0[2],A0[3],A0.inverse_letter(A0[2])]
             boundary_word+=[A0.inverse_letter(A0[0]),A0.inverse_letter(A0[1])]  # abDcdCAB if A0 was 'abcd'
+
+        if verbose:
+            print "Boundary word:",boundary_word    
             
         squares=self.squares()
 
@@ -1054,25 +1077,64 @@ class ConvexCore():
             if e not in initial_vertex:
                 boundary.append((e[1],e[0],(A1.inverse_letter(e[2]),1)))
                 
+        for sq in self.twice_light_squares():
+            boundary.append((sq[0],sq[1],(sq[4],0)))
+            boundary.append((sq[1],sq[2],(sq[5],1)))
+            boundary.append((sq[2],sq[3],(A0.inverse_letter(sq[4]),0)))
+            boundary.append((sq[3],sq[2],(A1.inverse_letter(sq[5]),1)))
 
+        for e in self.isolated_edges():
+            boundary.append(e)
+            if e[2][1]==0:
+                boundary.append((e[1],e[0],(A0.inverse_letter(e[2]),0)))
+            else:
+                boundary.append((e[1],e[0],(A1.inverse_letter(e[2]),1)))
+            
+
+                
         if verbose:
             print "Edges of the boundary:",boundary
+
+                
+        boundary_graph=DiGraph(boundary)
+
+        eulerian_circuits=[boundary_graph.eulerian_circuit()] # list of euler circuits in the boundary
+
+        for cyclic_order in eulerian_circuits:
+            # cyclic order of ideal curves around the boundary
+            polygon_side_0=[e[2][0] for e in cyclic_order if e[2][1]==0] #TODO: faux
+            # regular 2N-gone that is the foundamental domain
+            # of the surface on side 0
+
+            i=0
+            while polygon_side_0[i]!=A0[0]:
+                i+=1
+            polygon_side_0=polygon_side_0[i:]+polygon_side_0[:i]
             
-        disc_0=boundary_word
-        
+            if boundary_word is not None:
+                if not any(boundary_word[i]!=polygon_side_0[i] for i in xrange(len(boundary_word))):
+                    if verbose:
+                        print "Cyclic order compatible with the boundary word",cyclic_order 
+                    break
+            else: #we need to check the genus of that word
+                break #TODO
+
+        print cyclic_order
+        print polygon_side_0 #debug
+            
         g=Graphics()
 
         boundary_initial_vertex=dict()
         boundary_terminal_vertex=dict()
 
-        for i,a in enumerate(disc_0):
+        for i,a in enumerate(polygon_side_0):
             boundary_initial_vertex[a]=(RR(radius*cos(i*pi/N)),RR(radius*sin(i*pi/N)))
             boundary_terminal_vertex[a]=(RR(radius*cos((i+1)*pi/N)),RR(radius*sin((i+1)*pi/N)))
 
 
         # Regular polygon
         text_decalage=1.05
-        for a in disc_0:
+        for a in polygon_side_0:
             x,y=boundary_initial_vertex[a]
             xx,yy=boundary_terminal_vertex[a]
             g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=5.0/6)
