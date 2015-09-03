@@ -2697,33 +2697,16 @@ class TopologicalRepresentative(GraphMap):
                 if verbose:
                     print "Fold path:",p,"order of folds to perform:",folds_order
 
-                a=A.inverse_letter(p[folds_order[0]])
-                b=p[folds_order[0]+1]
+                i=folds_order.pop(0)
+                folds_order.append(i)
+                a=A.inverse_letter(p[i])
+                b=p[i+1]
                 u=self.image(a)
                 v=self.image(b)
                 cpl=G.common_prefix_length(u,v)
                 common_prefix=u[:cpl]
 
-                if cpl==len(u) and cpl==len(v):
-                    folds_order[0]-=1
-                else:
-                    i=folds_order.pop(0)
-                    if cpl==len(u) and i>0:
-                        u=self.image(p[i-1])
-                        if len(u)>0 and A.are_inverse(u[-1],v[cpl]):
-                            if A.are_inverse(p[i-1],p[i+1]):
-                                folds_order.append(i-1)
-                            else:
-                                folds_order.insert(0,i-1)
-                    elif cpl==len(v) and i+2<len(p):
-                        v=self.image(p[i+2])
-                        if len(v)>0 and u[cpl]==v[0]:
-                            if A.are_inverse(p[i],p[i+2]):
-                                folds_order.append(i)
-                            else:
-                                folds_order.insert(0,i)
-
-                fold_morph=self.fold((a,b),common_prefix,verbose=verbose)
+                fold_morph=self.fold((a,b),common_prefix,verbose=verbose and verbose>1 and verbose-1)
 
                 q=G.reduce_path(fold_morph(p))
                 for i in xrange(len(folds_order)):
@@ -2747,10 +2730,8 @@ class TopologicalRepresentative(GraphMap):
                     if i in folds:
                         new_folds_order.append(i)
                         folds.remove(i)
-                for i in folds:
-                    new_folds_order.append(i)
 
-                folds_order=new_folds_order
+                folds_order=list(folds)+new_folds_order
 
                 if result_morph:
                     result_morph=fold_morph*result_morph
