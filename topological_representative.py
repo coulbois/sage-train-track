@@ -367,16 +367,17 @@ class TopologicalRepresentative(GraphMap):
                 aa=self._domain._alphabet.inverse_letter(a)
                 result[a]=subdivide_morph(self.image(e))
                 result[aa]=self._codomain.reverse_path(result[a])
-
-        for e in edge_list:
-            a=subdivide_dict[e][0]
-            b=subdivide_dict[e][1]
-            if len(self.image(e))>1:
-                result[a]=subdivide_dict[self.image(e)[0]]
-                result[b]=subdivide_morph(self.image(e)[1:])
-            else:
-                result[a]=subdivide_dict[self.image(e)[0]][:1]
-                result[b]=subdivide_dict[self.image(e)[0]][1:2]
+            else: # this edge has been subdivided
+                u=self.image(e)
+                if len(u)>=len(subdivide_dict[e]):
+                    for i,a in enumerate(subdivide_dict[e]):
+                        result[a]=subdivide_dict[u[i]]
+                    result[subdivide_dict[e][-1]]=subdivide_morph(u[i:])
+                else: # there are only two edges
+                    a=subdivide_dict[e][0]
+                    b=subdivide_dict[e][1]
+                    result[a]=subdivide_dict[self.image(e)[0]][:1]
+                    result[b]=subdivide_dict[self.image(e)[0]][1:2]
 
         self.set_edge_map(result)
 
@@ -385,7 +386,7 @@ class TopologicalRepresentative(GraphMap):
 
         return subdivide_morph
 
-    def subdivide_edge(self,edge,position,verbose=True):
+    def subdivide_edge(self,edge,position,verbose=False):
         """
         Subdivides ``edge`` in two edges a and b. The image of a is
         the prefix of length ``position`` of the image of ``edge``.
@@ -431,8 +432,26 @@ class TopologicalRepresentative(GraphMap):
         return subdivide_morph
 
 
+    def subdivide_edges_fully(edges,verbose=False):
+        """
+        Subdivide each edge of ``edges`` in as many parts as the
+        number of edges in its image.
 
+        Each part of the edge is then mapped to the corresponding old
+        edge.
 
+        OUTPUT:
+
+        The WordMorphism for the old edges to the new images.
+
+        WARNING:
+
+        This has no effect on the possible strata of self.
+
+        """
+
+        pass
+        
     def multifold(self,turns,verbose=False):
         """
         Folds (partially) and iteratively the turns
@@ -2405,10 +2424,10 @@ class TopologicalRepresentative(GraphMap):
                         if highest_edges[i][k+1]-highest_edges[i][k-1]>2:
                             tmp_lines.append(line[highest_edges[i][k-1]+1:highest_edges[i][k+1]])
                             tmp_target_edge_index.append(highest_edges[i][k]-highest_edges[i][k-1]-1)
-                    if len(highest_edges[i])%2==0 and len(line)-highest_edges[i][-2]>2:
+                    if len(highest_edges[i])%2==1 and len(line)-highest_edges[i][-2]>2:
                         tmp_lines.append(line[highest_edges[i][-2]+1:])
                         tmp_target_edge_index.append(highest_edges[i][-1]-highest_edges[i][-2]-1)
-                    elif len(highest_edges[i])%2==1 and len(line)-highest_edges[i][-1]>1:
+                    elif len(highest_edges[i])%2==0 and len(line)-highest_edges[i][-1]>1:
                         tmp_lines.append(line[highest_edges[i][-1]:])
                         tmp_target_edge_index.append(0)
 
@@ -2480,7 +2499,7 @@ class TopologicalRepresentative(GraphMap):
                 if len(lines)>0:
                     strata=self._strata
                     self._strata=False
-                    tmp_morph=self.fusion_lines(lines,target_edge_index,verbose)
+                    tmp_morph=self.fusion_lines(lines,target_edge_index,verbose=verbose and verbose>1 and verbose-1)
 
                     #If there was fusionned lines, contract pretrivial forest
 
@@ -2675,68 +2694,64 @@ class TopologicalRepresentative(GraphMap):
 
             if verbose: print "Starting the fold of the inessential connecting path:",p
 
-            # We need to cleverly choose the place to fold.  The
-            # strategy is to fold all possible places in p starting
-            # with the oldest one. folds_order is the list of foldable
-            # places in p in that order.
+            
+            # Algorithm as described by Bestvina and
+            # Handel [BH-train-track] should: 1/ subdivide the edges
+            # of p at each vertex of their image and 2/ perform folds
+            # between edges a and b of the path such
+            # self(a)==self(b).
 
-            i=0
-            if len(p)>0:
-                u=self.image(p[0])
-            folds_order=[]
-            while i+1<len(p):
-                v=self.image(p[i+1])
-                if len(u)==0 or len(v)==0:
-                    folds_order.insert(0,i)
-                elif A.are_inverse(u[-1],v[0]):
-                    folds_order.append(i)
-                i=i+1
-                u=v
+            subdivide=dict((A.to_positive_letter(a),[]) for a in p)
+            for a in subdivide:
+                subdivide[a]=[b for b in self.image(a)]
 
-            while len(p)>1: #because of previous foldings an edge can be contracted to a point
+            subdivide_morph=None
+            for a in subdivide:
+                aa=a
+                for u in subdivide[a][:-1]:
+                    if subdivide_morph is None:
+                        subdivide_morph=self.subdivide_edge(aa,len(u),verbose=verbose and verbose>1 and verbose-1)
+                    else:
+                        subdivide_morph=self.subdivide_edge(aa,len(subdivide_morph(u)),verbose=verbose and verbose>1 and verbose-1)*subdivide_morph
+                    aa=subdivide_morph.image(a)[-1]
+
+            if subdivide_morph is not None:
+                p=subdivide_morph(p)
+
+            if verbose:
+                print "Subdivision of edges"
+                print self
+                print "Path to fold",p
+
+            if subdivide_morph is not None:
+                if result_morph is None:
+                    result_morph=subdivide_morph
+                else:
+                    result_morph=subdivide_morph*result_morph
+
+            while len(p)>1:
+                for i,a in enumerate(p):
+                    a=A.inverse_letter(a)
+                    u=self.image(a)
+                    b=p[i+1]
+                    if len(u)==0:
+                        break
+                    v=self.image(b)
+                    if u==v:
+                        break
+
+                fold_morph=self.fold((a,b),u,verbose=verbose and verbose>1 and verbose-1)
+
+                p=G.reduce_path(fold_morph(p))
+
                 if verbose:
-                    print "Fold path:",p,"order of folds to perform:",folds_order
-
-                i=folds_order.pop(0)
-                folds_order.append(i)
-                a=A.inverse_letter(p[i])
-                b=p[i+1]
-                u=self.image(a)
-                v=self.image(b)
-                cpl=G.common_prefix_length(u,v)
-                common_prefix=u[:cpl]
-
-                fold_morph=self.fold((a,b),common_prefix,verbose=verbose and verbose>1 and verbose-1)
-
-                q=G.reduce_path(fold_morph(p))
-                for i in xrange(len(folds_order)):
-                    u=G.reduce_path(fold_morph(p[:folds_order[i]+1]))
-                    folds_order[i]=G.common_prefix_length(u,q)-1
-
-                p=q
-
-                if len(p)>1:
-                    u=self.image(p[0])
-                i=0
-                folds=set()
-                for i in xrange(len(p)-1):
-                    v=self.image(p[i+1])
-                    if len(u)==0 or len(v)==0 or A.are_inverse(u[-1],v[0]):
-                        folds.add(i)
-                    u=v
-
-                new_folds_order=[]
-                for i in folds_order:
-                    if i in folds:
-                        new_folds_order.append(i)
-                        folds.remove(i)
-
-                folds_order=list(folds)+new_folds_order
-
+                    print "Path to fold:",p
+                
                 if result_morph:
                     result_morph=fold_morph*result_morph
                 else:
                     result_morph=fold_morph
+
 
         tails=self._domain.find_tails()
         if len(tails)>0:

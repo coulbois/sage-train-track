@@ -454,14 +454,14 @@ class GraphWithInverses(DiGraph):
           """
           Subdvides each of the edges in ``edge_list`` into two edges.
 
-          WARNING:
-
-          Edges in ``edge_list`` are assumed to be distinct.
+          An edge may appear several time in the list: it will be
+          subdivided as many times.  
 
           OUTPUT:
 
           A dictionnary that maps an old edge to a path in the new
           graph.
+
           """
           A=self._alphabet
           result_map=dict((e,Word([e])) for e in A)
@@ -470,13 +470,12 @@ class GraphWithInverses(DiGraph):
 
           for i,e in enumerate(edge_list):
                ee=A.inverse_letter(e)
+               ne=result_map[e][-1]
                v=new_vertices[i]
-               vi=self.initial_vertex(e)
-               vt=self.terminal_vertex(e)
+               vt=self.terminal_vertex(result_map[e][-1])
                f=new_edges[i][0]
-               ee=A.inverse_letter(e)
                ff=new_edges[i][1]
-               self.set_terminal_vertex(e,v)
+               self.set_terminal_vertex(ne,v)
                self.add_edge(v,vt,[f,ff])
                result_map[e]=result_map[e]*Word([f])
                result_map[ee]=Word([ff])*result_map[ee]
