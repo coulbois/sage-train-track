@@ -1998,7 +1998,7 @@ class TopologicalRepresentative(GraphMap):
         Core subdivision of the ``s`` stratum of ``self`` as defined in [BH-train-track].
 
         After a core subdivision, the topological representative
-        satisfies RTT-i: the image of each edge of the ``i`` stratum
+        satisfies RTT-i: the image of each edge of the ``s`` stratum
         starts with an edge of the stratum.
 
         INPUT:
@@ -2701,33 +2701,23 @@ class TopologicalRepresentative(GraphMap):
             # between edges a and b of the path such
             # self(a)==self(b).
 
-            subdivide=dict((A.to_positive_letter(a),[]) for a in p)
-            for a in subdivide:
-                subdivide[a]=[b for b in self.image(a)]
+            used_edges=set(A.to_positive_letter(a) for a in p)
+            subdivide_edges=[a for a in used_edges for i in xrange(len(self.image(a))-1)]
 
-            subdivide_morph=None
-            for a in subdivide:
-                aa=a
-                for u in subdivide[a][:-1]:
-                    if subdivide_morph is None:
-                        subdivide_morph=self.subdivide_edge(aa,len(u),verbose=verbose and verbose>1 and verbose-1)
-                    else:
-                        subdivide_morph=self.subdivide_edge(aa,len(subdivide_morph(u)),verbose=verbose and verbose>1 and verbose-1)*subdivide_morph
-                    aa=subdivide_morph.image(a)[-1]
+            if len(subdivide_edges)>0:
+                subdivide_morph=self.subdivide(subdivide_edges,verbose=verbose and verbose>1 and verbose-1)
 
-            if subdivide_morph is not None:
                 p=subdivide_morph(p)
-
-            if verbose:
-                print "Subdivision of edges"
-                print self
-                print "Path to fold",p
-
-            if subdivide_morph is not None:
+                
                 if result_morph is None:
                     result_morph=subdivide_morph
                 else:
                     result_morph=subdivide_morph*result_morph
+
+                if verbose:
+                    print "Subdivision of edges"
+                    print self
+                    print "Path to fold",p
 
             while len(p)>1:
                 for i,a in enumerate(p):
