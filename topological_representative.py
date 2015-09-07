@@ -332,18 +332,20 @@ class TopologicalRepresentative(GraphMap):
             return source[fold]+[fold]
 
     def subdivide(self,edge_list,verbose=False):
-        """
-        Subdivides edges into two edges.
+        """Subdivides edges as many times as they appear in the ``edge_list``.
 
-        If an edge appears in the list then
+        If an edge appears n times in the list then
 
-        - either len(self(edge))>1 and the first part of edge is sent
-          to the first edge of the image.
+        - either len(self(edge))>= n and the first n-1 subedges are
+          sent to the first n-1 edges of self(edge) and the last
+          sub-edge is sent to the rest of the image.
 
-        - or self(edge) is an edge in edge_list and the first part of
-          edge is sent to the first part of its image.
 
-        It is assumed that no edge and its reverse appear in the list.
+        - or else it is assumed that self(edge) contains edges
+        ``edge_list`` and after subdivision of the image it is longer
+        than n. Each of the first n-1 edges are mapped to a new edge
+        and the last n-th edge is map to the rest.
+
 
         OUTPUT:
 
@@ -352,7 +354,12 @@ class TopologicalRepresentative(GraphMap):
 
         WARNING:
 
-        this has no effect on the possible strata of self.
+        It is assumed that no edge and its inverse are present in
+        ``edge_list``.
+  
+        This has no effect on the possible strata of
+        self.
+
         """
 
         if verbose: print "Subdivide edges: ",edge_list
@@ -364,20 +371,20 @@ class TopologicalRepresentative(GraphMap):
         for e in self._edge_map.domain().alphabet():
             if len(subdivide_dict[e])==1:
                 a=subdivide_dict[e][0]
-                aa=self._domain._alphabet.inverse_letter(a)
                 result[a]=subdivide_morph(self.image(e))
-                result[aa]=self._codomain.reverse_path(result[a])
-            else: # this edge has been subdivided
-                u=self.image(e)
-                if len(u)>=len(subdivide_dict[e]):
-                    for i,a in enumerate(subdivide_dict[e]):
-                        result[a]=subdivide_dict[u[i]]
-                    result[subdivide_dict[e][-1]]=subdivide_morph(u[i:])
-                else: # there are only two edges
-                    a=subdivide_dict[e][0]
-                    b=subdivide_dict[e][1]
-                    result[a]=subdivide_dict[self.image(e)[0]][:1]
-                    result[b]=subdivide_dict[self.image(e)[0]][1:2]
+
+        
+        for e in edge_list:   # this edge has been subdivided
+            u=self.image(e)
+            if len(u)>=len(subdivide_dict[e]):
+                for i,a in enumerate(subdivide_dict[e]):
+                    result[a]=subdivide_dict[u[i]]
+                result[subdivide_dict[e][-1]]=subdivide_morph(u[i:])
+            else: # in this other case: len(subdivide_morph(u))>=len(subdivide[e])
+                v=subdivide_morph(u)
+                for i,a in enumerate[subdivide_dict[e]]:
+                    result[a]=v[i]
+                    result[subdivide_dict[e][-1]]=v[i:]
 
         self.set_edge_map(result)
 
@@ -432,26 +439,7 @@ class TopologicalRepresentative(GraphMap):
         return subdivide_morph
 
 
-    def subdivide_edges_fully(edges,verbose=False):
-        """
-        Subdivide each edge of ``edges`` in as many parts as the
-        number of edges in its image.
-
-        Each part of the edge is then mapped to the corresponding old
-        edge.
-
-        OUTPUT:
-
-        The WordMorphism for the old edges to the new images.
-
-        WARNING:
-
-        This has no effect on the possible strata of self.
-
-        """
-
-        pass
-        
+    
     def multifold(self,turns,verbose=False):
         """
         Folds (partially) and iteratively the turns
