@@ -382,7 +382,7 @@ class TopologicalRepresentative(GraphMap):
                 result[subdivide_dict[e][-1]]=subdivide_morph(u[i:])
             else: # in this other case: len(subdivide_morph(u))>=len(subdivide[e])
                 v=subdivide_morph(u)
-                for i,a in enumerate[subdivide_dict[e]]:
+                for i,a in enumerate(subdivide_dict[e]):
                     result[a]=v[i]
                     result[subdivide_dict[e][-1]]=v[i:]
 
