@@ -1095,11 +1095,34 @@ class ConvexCore():
         if verbose:
             print "Edges of the boundary:",boundary
 
+
+        # The boundary of the surface is an Eulerian circuit in the
+        # boundary graph
+        
+        #boundary_graph=DiGraph(boundary)
+
+        #eulerian_circuits=[boundary_graph.eulerian_circuit()] # list of euler circuits in the boundary
+
+        eulerian_circuits=[]
+        next=[(boundary[0],0)]
+
+        while len(next)>0:
+            e,current=next.pop()
+            if current+1==len(boundary):
+                eulerian_circuits.append(boundary[:])
+            for i in xrange(current+1,len(boundary)):
+                if boundary[i]==e:
+                    boundary[i],boundary[current]=boundary[current],boundary[i]
+                    break
+            for i in xrange(current+1,len(boundary)):
+                if boundary[i][0]==boundary[current][1]:
+                    next.append((boundary[i],current+1))
+            
                 
-        boundary_graph=DiGraph(boundary)
-
-        eulerian_circuits=[boundary_graph.eulerian_circuit()] # list of euler circuits in the boundary
-
+        if verbose:
+            print "Eulerian circuits in the boundary:",eulerian_circuits
+        
+        
         for cyclic_order in eulerian_circuits:
             # cyclic order of ideal curves around the boundary
             polygon_side_0=[e[2][0] for e in cyclic_order if e[2][1]==0] #TODO: faux
