@@ -953,7 +953,14 @@ class ConvexCore():
         r"""
         Return the list of possible moves of the Rips machine.
 
-        A move is an automorphism of the free group.
+        A move is an automorphism of the free group. Assume that self
+        is the convex core of an automorphism phi. Let psi be an
+        automorphism given by ``self.rips_machine_moces(side=1)``,
+        then ``ConvexCore(phi*psi)`` is obtained from ``self`` by a
+        move of the Rips machine. On the other side: if ``psi`` is
+        given by ``self.rips_machine_moces(side=0)``, then
+        ``ConvexCore(psi.inverse()*phi)`` is given by a move of the
+        Rips machine.
 
         INPUT:
 
@@ -971,35 +978,14 @@ class ConvexCore():
 
         A0=T0.alphabet()
         A1=T1.alphabet()
-        
-        valence=dict(((e[0],e[1],e[2]),0) for e in self.edges())
 
-        for sq in self.squares():
-            valence[(sq[0],sq[1],(sq[4],0))]+=1
-            valence[(sq[0],sq[3],(sq[5],1))]+=1
-            valence[(sq[1],sq[2],(sq[5],1))]+=1
-            valence[(sq[3],sq[2],(sq[4],0))]+=1
-            
-        boundary=[e for e,v in valence.iteritems() if v==1]
+
+        boundary_squares=self.squares_of_the_boundary(verbose=verbose and verbose>1 and verbose-1) 
 
         if verbose:
-            print "Edges bounding exactly one square",boundary
-        
-        boundary_squares=[]
-        
-        for sq in self.squares():
-            for e in boundary:
-                if e==(sq[0],sq[1],(sq[4],0)):
-                    boundary_squares.append((sq,0))
-                elif  e==(sq[0],sq[3],(sq[5],1)):
-                    boundary_squares.append((sq,3))
-                elif  e==(sq[1],sq[2],(sq[5],1)):
-                    boundary_squares.append((sq,1))
-                elif e==(sq[3],sq[2],(sq[4],0)):
-                    boundary_squares.append((sq,2))
+            print "Squares not surrounded by four squares",boundary_squares
 
-        if verbose:
-            print "Squares not surrondunded by four squares",boundary_squares
+
                     
         point_of_domain=dict()
         for e in self.edges():
@@ -1009,29 +995,30 @@ class ConvexCore():
             else:
                 point_of_domain[(A1.inverse_letter(e[2][0]),1)]=e[1]
 
-        result=[]
+        if verbose:
+            print "Domains of the letters"
+            print point_of_domain
+                
+        holes=[] # a hole is given by an edge in one of the two trees
+                 # (v,w,(a,i)), a letter in the other alphabet and the
+                 # list of partial isometries whose domain is on the
+                 # same side of the hole as the starting point of the
+                 # edge and the list of partial isometries on the
+                 # other side.
     
         for (sq,i) in boundary_squares:
             if side is None or i%2==side:
                 if i==0:
-                    start=sq[0]
-                    end=sq[1]
-                    a=(sq[4],0)
+                    e=(sq[0],sq[1],(sq[4],0))
                     b=(sq[5],1)
                 elif i==1:
-                    start=sq[1]
-                    end=sq[2]
-                    a=(sq[5],0)
+                    e=(sq[1],sq[2],(sq[5],1))
                     b=(A0.inverse_letter(sq[4]),0)
                 elif i==2:
-                    start=sq[3]
-                    end=sq[2]
-                    a=(sq[4],0)
+                    e=(sq[3],sq[2],(sq[4],0))
                     b=(A1.inverse_letter(sq[5]),1)
                 elif i==3:
-                    start=sq[0]
-                    end=sq[3]
-                    a=(sq[5],1)
+                    e=(sq[0],sq[3],(sq[5],1))
                     b=(sq[4],0)
                 if b[1]==0:
                     A=A0
@@ -1039,18 +1026,48 @@ class ConvexCore():
                 else:
                     A=A1
                     T=T0
-                p=T.reverse_path(self.path_from_origin(start,a[1]))
+                p=T.reverse_path(self.path_from_origin(e[0],e[2][1]))
                 start_letters=[]
                 end_letters=[]
                 for x in A:
                     if x!=b[0]:
-                        px=T.reduce_path(p*self.path_from_origin(point_of_domain[(x,a[1])],a[1]))
-                        if len(px)==0 or px[0]!=a[0]: # x is on the side of start
+                        px=T.reduce_path(p*self.path_from_origin(point_of_domain[(x,b[1])],e[2][1]))
+                        if len(px)==0 or px[0]!=e[2][0]: # x is on the side of start
                             start_letters.append(x)
                         else:
                             end_letters.append(x)
-                result.append((a,b,start_letters,end_letters))
+                holes.append((e,b,start_letters,end_letters))
 
+        if verbose:
+            print "Holes:",holes
+
+        result=[]        
+        
+        for e,b,start_letters,end_letters in holes:
+            if b[1]==0:
+                A=A0
+            else:
+                A=A1
+
+            hole_map=dict((a,Word([a])) for a in A.positive_letters())
+                
+            bb=A.inverse_letter(b[0])
+            if bb in start_letters:
+                for x in end_letters:
+                    if A.is_positive_letter(x):
+                        hole_map[x]=Word([bb])*hole_map[x]
+                    else:
+                        xx=A.inverse_letter(x)
+                        hole_map[xx]=hole_map[xx]*Word([b[0]])
+            else:
+                for x in start_letters:
+                    if A.is_positive_letter(x):
+                        hole_map[x]=Word([bb])*hole_map[x]
+                    else:
+                        xx=A.inverse_letter(x)
+                        hole_map[xx]=hole_map[xx]*Word([b[0]])
+            result.append(hole_map)    
+            
         return result
         
         
@@ -1128,8 +1145,47 @@ class ConvexCore():
 
         return squares_orientation
         
+    def squares_of_the_boundary(self,verbose=False):
+        """
+        List of squares which are not surrounded by 4 squares.
 
+        OUTPUT:
+
+        A list of pairs (square,i) where square is a square and i is
+        0,1,2 or 3 designating the edge of square which is not bounded
+        by another square.
+        """
         
+        valence=dict(((e[0],e[1],e[2]),0) for e in self.edges())
+
+        for sq in self.squares():
+            valence[(sq[0],sq[1],(sq[4],0))]+=1
+            valence[(sq[0],sq[3],(sq[5],1))]+=1
+            valence[(sq[1],sq[2],(sq[5],1))]+=1
+            valence[(sq[3],sq[2],(sq[4],0))]+=1
+            
+        boundary=[e for e,v in valence.iteritems() if v==1]
+
+        if verbose:
+            print "Edges bounding exactly one square",boundary
+        
+        boundary_squares=[]
+        
+        for sq in self.squares():
+            for e in boundary:
+                if e==(sq[0],sq[1],(sq[4],0)):
+                    boundary_squares.append((sq,0))
+                elif  e==(sq[0],sq[3],(sq[5],1)):
+                    boundary_squares.append((sq,3))
+                elif  e==(sq[1],sq[2],(sq[5],1)):
+                    boundary_squares.append((sq,1))
+                elif e==(sq[3],sq[2],(sq[4],0)):
+                    boundary_squares.append((sq,2))
+        
+        return  boundary_squares
+
+
+
     def plot_ideal_curve_diagram(self,radius=1, orientation=1, cyclic_order_0=None, cyclic_order_1=None,verbose=False):
 
         """Plot the set of ideal curves on the surface S=S(g,1) of genus g with
@@ -1216,8 +1272,11 @@ class ConvexCore():
         # Coherent orientation of the squares
             
 
-        orientation=self.squares_orientation(orientation,verbose and verbose>1 and verbose-1)
+        orientation=self.squares_orientation(orientation=orientation,verbose=verbose and verbose>1 and verbose-1)
 
+        if cyclic_order_0 is not None or cyclic_order_1 is not None:
+            boundary_squares=self.squares_of_the_boundary(verbose=verbose and verbose>1 and verbose-1)
+            
 
         if verbose:
             print "Orientation of the squares:"
@@ -1225,6 +1284,7 @@ class ConvexCore():
                 for i,sq in enumerate(squares):
                     print i,":",sq,":",orientation[i] 
 
+        # We build the list of edges of the boundary of the surface
                     
         initial_vertex=dict()
         terminal_vertex=dict()
