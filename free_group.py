@@ -411,7 +411,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
 
 
-    def random_mapping_class(self,n=1):
+    def random_mapping_class(self,n=1,verbose=False):
         """
         Random mapping class of length (as a product of generating dehn twists)
         at most ``n``. `
@@ -434,6 +434,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
             result=self.surface_dehn_twist(i)
         else:
             result=self.surface_dehn_twist(i).inverse()
+        used_dehn_twists=[(i,1-2*j)]
         for ii in xrange(n-1):
             l=randint(0,1)
             if j==l:
@@ -446,6 +447,9 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
                 result=result*self.surface_dehn_twist(i)
             else:
                 result=result*self.surface_dehn_twist(i).inverse()
+            used_dehn_twists.append((i,1-2*j))
+        if verbose:
+            print "List of surface Dehn twists used:",used_dehn_twists       
         return result
 
     def braid_automorphism(self,i,inverse=False):

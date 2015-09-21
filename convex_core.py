@@ -59,6 +59,23 @@ class ConvexCore():
     It is assumed that boths graphs G1 and G2 do not have vertices
     of valence 1 or 2.
 
+    EXAMPLES::
+
+    sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+    sage: phi=phi*phi
+    sage: C=ConvexCore(phi)
+    sage: print C.slice('c',0)
+    Looped multi-digraph on 2 vertices
+
+    sage: C.vertices()
+    [0, 1, 2, 3]
+
+    sage: C.squares()
+    [[3, 0, 2, 1, 'c', 'a']]
+    
+    sage: twice_light_squares()
+    [[1, 4, 0, 5, 'a', 'c']]
+
     AUTHORS:
 
     - Matt Clay
@@ -385,7 +402,7 @@ class ConvexCore():
                     v1=G1.terminal_vertex(prefix[-1])
                     u=G0.reduce_path(g(t1[v1]*G1.reverse_path(prefix))*t0[G0.initial_vertex(a)])
                     edges.add((u,v1,(a,0)))
-                    isolated_edges.append(e)
+                    isolated_edges.append((u,v1,(a,0)))
                     if verbose: print "Isolated edge:",(u,v1,(a,0))
 
         # We now number the vertices and change edges such that they are of the form [vi,vt,(a,side)]
@@ -735,6 +752,32 @@ class ConvexCore():
         - (w0,v1) with w0 a path of the form t0[v] and v1 the origin
         of G1.
 
+
+        INPUT:
+
+        - ``vertex``: either a 2-tuple ``(w,v)``. where w is a path in
+          G0 starting from v0 standing for the vertex of T0 at the end
+          of w, v is a vertex in G1 standing for the vertex at the end
+          of t1(v) in T1. Or either an integer standing for a vertex
+          of ``self``.
+
+        - ``side``: 0 or 1
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: C.path_from_origin(2,0)
+        word: Bc
+        
+        sage: C.path_from_origin(('Bc',0),0)
+        word: Bc
+
+        sage: C.path_from_origin(('Bc',0),1)
+        word: a
+        
+
         """
         if not isinstance(vertex,tuple): # The vertex is an integer
             vertex=self._vertex_labels[vertex]
@@ -815,6 +858,15 @@ class ConvexCore():
         If ``self`` is the core of the trees ``T0`` and ``T1`` and
         ``side==0`` then ``a`` is an edge of ``T0``. Conversely if
         ``side==1`` then ``a`` is an edge of ``T1``.
+
+        EXAMPLES::
+        
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: print C.slice('c',0)
+        Looped multi-digraph on 2 vertices
+
         """
 
         G=DiGraph(loops=True,multiedges=True)
@@ -897,7 +949,189 @@ class ConvexCore():
         else:
             return len(self.squares())
 
+    def rips_machine_moves(self,side=None,verbose=False):
+        r"""
+        Return the list of possible moves of the Rips machine.
+
+        A move is an automorphism of the free group.
+
+        INPUT:
+
+        - `side` (default 0): side of Rips moves to find, either 0, 1
+        or None for both sides.  
+        
+        OUPUT:
+
+        - A list of free group automorphisms.
+
+        """
+
+        T0=self.tree(0)
+        T1=self.tree(1)
+
+        A0=T0.alphabet()
+        A1=T1.alphabet()
+        
+        valence=dict(((e[0],e[1],e[2]),0) for e in self.edges())
+
+        for sq in self.squares():
+            valence[(sq[0],sq[1],(sq[4],0))]+=1
+            valence[(sq[0],sq[3],(sq[5],1))]+=1
+            valence[(sq[1],sq[2],(sq[5],1))]+=1
+            valence[(sq[3],sq[2],(sq[4],0))]+=1
+            
+        boundary=[e for e,v in valence.iteritems() if v==1]
+
+        if verbose:
+            print "Edges bounding exactly one square",boundary
+        
+        boundary_squares=[]
+        
+        for sq in self.squares():
+            for e in boundary:
+                if e==(sq[0],sq[1],(sq[4],0)):
+                    boundary_squares.append((sq,0))
+                elif  e==(sq[0],sq[3],(sq[5],1)):
+                    boundary_squares.append((sq,3))
+                elif  e==(sq[1],sq[2],(sq[5],1)):
+                    boundary_squares.append((sq,1))
+                elif e==(sq[3],sq[2],(sq[4],0)):
+                    boundary_squares.append((sq,2))
+
+        if verbose:
+            print "Squares not surrondunded by four squares",boundary_squares
+                    
+        point_of_domain=dict()
+        for e in self.edges():
+            point_of_domain[e[2]]=e[0]
+            if e[2][1]==0:
+                point_of_domain[(A0.inverse_letter(e[2][0]),0)]=e[1]
+            else:
+                point_of_domain[(A1.inverse_letter(e[2][0]),1)]=e[1]
+
+        result=[]
+    
+        for (sq,i) in boundary_squares:
+            if side is None or i%2==side:
+                if i==0:
+                    start=sq[0]
+                    end=sq[1]
+                    a=(sq[4],0)
+                    b=(sq[5],1)
+                elif i==1:
+                    start=sq[1]
+                    end=sq[2]
+                    a=(sq[5],0)
+                    b=(A0.inverse_letter(sq[4]),0)
+                elif i==2:
+                    start=sq[3]
+                    end=sq[2]
+                    a=(sq[4],0)
+                    b=(A1.inverse_letter(sq[5]),1)
+                elif i==3:
+                    start=sq[0]
+                    end=sq[3]
+                    a=(sq[5],1)
+                    b=(sq[4],0)
+                if b[1]==0:
+                    A=A0
+                    T=T1
+                else:
+                    A=A1
+                    T=T0
+                p=T.reverse_path(self.path_from_origin(start,a[1]))
+                start_letters=[]
+                end_letters=[]
+                for x in A:
+                    if x!=b[0]:
+                        px=T.reduce_path(p*self.path_from_origin(point_of_domain[(x,a[1])],a[1]))
+                        if len(px)==0 or px[0]!=a[0]: # x is on the side of start
+                            start_letters.append(x)
+                        else:
+                            end_letters.append(x)
+                result.append((a,b,start_letters,end_letters))
+
+        return result
+        
+        
+    def squares_orientation(self,orientation=1,verbose=False):
+        """Assuming that ``self`` is an orientable surface square-complex, chose a
+        coherent orientation of the squares.
+
+
+        A coherent orientation is such that two squares sharing an
+        edge are coherently oriented.  If there are more than one
+        strongly connected component of squares then they get
+        different numbers.
+
+        Intended to be used by ``ConvexCore.plot_ideal_curve_diagram()``.
+
+        INPUT:
+
+        - ``orientation`` (default 1): the orientation of the first
+          square of ``self``. It can be either 1 or -1.
+
+        OUTPUT:
+        
+        A list of positive and negative numbers such that two adjacent squares are coherently oriented (same number).
+
+        """
+
+        squares=self.squares()
+        
+        if len(squares)==0:
+            return []
+        
+        squares_orientation=[orientation]+[0 for i in xrange(1,len(squares))]
+
+        todo=[0] # oriented squares with not yet oriented neighboors
+
+        oriented=1 #number of oriented squares
+
+
+        while oriented<len(squares):
+            while len(todo)>0 and oriented<len(squares):
+                i=todo.pop()
+                sqi=squares[i]
+                for j in xrange(1,len(squares)):
+                    if squares_orientation[j]==0:
+                        sqj=squares[j]
+                        if sqi[4]==sqj[4] and ((sqi[0]==sqj[0] and sqi[1]==sqj[1]) or (sqi[3]==sqj[3] and sqi[2]==sqj[2])):
+                            squares_orientation[j]=-squares_orientation[i]
+                            todo.append(j)
+                            oriented+=1
+                        elif sqi[4]==sqj[4] and ((sqi[0]==sqj[3] and sqi[1]==sqj[2]) or (sqi[3]==sqj[0] and sqi[2]==sqj[1])):
+                            squares_orientation[j]=squares_orientation[i]
+                            todo.append(j)
+                            oriented+=1
+                        elif sqi[5]==sqj[5] and ((sqi[0]==sqj[0] and sqi[3]==sqj[3]) or (sqi[1]==sqj[1] and sqi[2]==sqj[2])):
+                            squares_orientation[j]=-squares_orientation[i]
+                            todo.append(j)
+                            oriented+=1
+                        elif sqi[5]==sqj[5] and ((sqi[0]==sqj[1] and sqi[3]==sqj[2]) or (sqi[1]==sqj[0] and sqi[2]==sqj[3])):
+                            squares_orientation[j]=squares_orientation[i]
+                            todo.append(j)
+                            oriented+=1
+            if oriented<len(squares): # there is more than one strongly connected component
+                if verbose:
+                    print "There is another strongly connected component"
+                for i in xrange(1,len(squares)):
+                    if squares_orientation[i]==0:
+                        break
+                todo.append(i)
+                if orientation>0:
+                    orientation+=1
+                else:
+                    orientation-=1
+                squares_orientation[i]=orientation
+                oriented+=1
+
+        return squares_orientation
+        
+
+        
     def plot_ideal_curve_diagram(self,radius=1, orientation=1, cyclic_order_0=None, cyclic_order_1=None,verbose=False):
+
         """Plot the set of ideal curves on the surface S=S(g,1) of genus g with
         one puncture.
 
@@ -925,11 +1159,20 @@ class ConvexCore():
 
         -``cyclic_order_0``: (default None) List of edges outgoing
          from the sole vertex of T0 ordered according to the embedding
-         in the surface.
+         in the surface. A typical value in rank 4, compatible with
+         the definition of ``FreeGroup.surface_dehn_twist()`` is :
+         ['A','B','a','C','D','c','d','b']
 
         -``cyclic_order_1``: (default None) List of edges outgoing
          from the sole vertex of T1 ordered according to the embedding
          in the surface.
+
+        EXAMPLES::
+        
+        sage: F=FreeGroup(4)
+        sage: phi=mul([F.surface_dehn_twist(i) for i in [2,1,1,4]])
+        sage: C=ConvexCore(phi)
+        sage: C.plot_ideal_curve_diagram(cyclic_order_0=['A','B','a','C','D','c','d','b'])
 
         """
 
@@ -958,10 +1201,6 @@ class ConvexCore():
         if cyclic_order_1 is None:
             cyclic_order_1=getattr(T1,'cyclic_order',None)
 
-        # if boundary_word is None and N==4:
-        #     boundary_word=[A0[0],A0[1],A0.inverse_letter(A0[3]),A0[2],A0[3],A0.inverse_letter(A0[2])]
-        #     boundary_word+=[A0.inverse_letter(A0[0]),A0.inverse_letter(A0[1])]  # abDcdCAB if A0 was 'abcd'
-
         if verbose:
             if cyclic_order_0 is not None:
                 print "The tree on side 0 is embedded in the surface:",cyclic_order_0
@@ -976,54 +1215,15 @@ class ConvexCore():
 
         # Coherent orientation of the squares
             
-        if len(squares)>0:
-            orientation=[orientation]+[0 for i in xrange(1,len(squares))]
 
-            todo=[0] # oriented squares with not yet oriented neighboors
-
-            oriented=1 #number of oriented squares
+        orientation=self.squares_orientation(orientation,verbose and verbose>1 and verbose-1)
 
 
-            while oriented<len(squares):
-                while len(todo)>0 and oriented<len(squares):
-                    i=todo.pop()
-                    sqi=squares[i]
-                    for j in xrange(1,len(squares)):
-                        if orientation[j]==0:
-                            sqj=squares[j]
-                            if sqi[4]==sqj[4] and ((sqi[0]==sqj[0] and sqi[1]==sqj[1]) or (sqi[3]==sqj[3] and sqi[2]==sqj[2])):
-                                orientation[j]=-orientation[i]
-                                todo.append(j)
-                                oriented+=1
-                            elif sqi[4]==sqj[4] and ((sqi[0]==sqj[3] and sqi[1]==sqj[2]) or (sqi[3]==sqj[0] and sqi[2]==sqj[1])):
-                                orientation[j]=orientation[i]
-                                todo.append(j)
-                                oriented+=1
-                            elif sqi[5]==sqj[5] and ((sqi[0]==sqj[0] and sqi[3]==sqj[3]) or (sqi[1]==sqj[1] and sqi[2]==sqj[2])):
-                                orientation[j]=-orientation[i]
-                                todo.append(j)
-                                oriented+=1
-                            elif sqi[5]==sqj[5] and ((sqi[0]==sqj[1] and sqi[3]==sqj[2]) or (sqi[1]==sqj[0] and sqi[2]==sqj[3])):
-                                orientation[j]=orientation[i]
-                                todo.append(j)
-                                oriented+=1
-                if oriented<len(squares): # there is more than one strongly connected component
-                    if verbose:
-                        print "There is another strongly connected component"
-                    for i in xrange(1,len(squares)):
-                        if orientation[i]==0:
-                            break
-                    todo.append(i)
-                    orientation[i]=orientation
-                    oriented+=1
-
-                    
-
-
-            if verbose:
-                print "Orientation of the squares:"
+        if verbose:
+            print "Orientation of the squares:"
+            if verbose>1:
                 for i,sq in enumerate(squares):
-                    print i,":",sq,":",orientation[i] #debug
+                    print i,":",sq,":",orientation[i] 
 
                     
         initial_vertex=dict()
@@ -1031,8 +1231,8 @@ class ConvexCore():
 
         boundary=[]
         
-        for a in A.positive_letters():
-            aa=A.inverse_letter(a)
+        for a in A0.positive_letters():
+            aa=A0.inverse_letter(a)
             slicea=[i for i in xrange(len(squares)) if squares[i][4]==a]
             size=len(slicea)+1
 
@@ -1149,10 +1349,14 @@ class ConvexCore():
 
             next_allowed_0=None
             next_allowed_1=None
+
+            # We check what are the next germ allowed according to the
+            # given cyclic orders. There is a difficulty: we do
+            # not know the orientation.
             
-            if cyclic_order_0 is not None:
+            if cyclic_order_0 is not None:                        
                 j=current
-                while j>0 and boundary[j][2][1]!=0:
+                while j>=0 and boundary[j][2][1]!=0:
                     j-=1
                 if j>=0:
                     k=0
@@ -1165,7 +1369,7 @@ class ConvexCore():
 
             if cyclic_order_1 is not None:
                 j=current
-                while j>0 and boundary[j][2][1]!=1:
+                while j>=0 and boundary[j][2][1]!=1:
                     j-=1
                 if j>=0:
                     k=0
@@ -1189,13 +1393,17 @@ class ConvexCore():
             print "Possible boundaries:",eulerian_circuits
         
         if len(eulerian_circuits)>1:
-            print ("There is an ambiguity on the choice of the boundary of the surface.")
-            print ("Specify using optionnal argument cyclic_order_0 and cyclic_order_1.")
-            print ("Possible choices:")
+            print "There is an ambiguity on the choice of the boundary of the surface."
+            print "Specify using optionnal argument cyclic_order_0 and cyclic_order_1."
+            print "Possible choices:"
             for cyclic_order in eulerian_circuits:
                 print cyclic_order
-            print ("The first one is chosen")    
-            
+            print "The first one is chosen"    
+        elif len(eulerian_circuits)==0:
+            print "There are no eulerian circuit in the boundary compatible with the given cyclic orders."
+            print "Probably changing the orientation will solve this problem"
+            return False
+        
         cyclic_order=eulerian_circuits[0]
 
 
@@ -1276,8 +1484,11 @@ class ConvexCore():
 
             xx=boundary_initial_vertex[aa][0]+pp*(boundary_terminal_vertex[aa][0]-boundary_initial_vertex[aa][0])
             yy=boundary_initial_vertex[aa][1]+pp*(boundary_terminal_vertex[aa][1]-boundary_initial_vertex[aa][1])
-                
-            g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A.rank(b))/N)
+
+            if pp==0:
+                g+=text(b,(text_decalage*x,text_decalage*y),hue=RR(A1.rank(b))/N)
+
+            g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
             
         for e in terminal_vertex:
             if e not in initial_vertex: # the initial vertex of e is the singularity
@@ -1300,10 +1511,8 @@ class ConvexCore():
                 p=0
                 x=boundary_initial_vertex[a][0]+p*(boundary_terminal_vertex[a][0]-boundary_initial_vertex[a][0])
                 y=boundary_initial_vertex[a][1]+p*(boundary_terminal_vertex[a][1]-boundary_initial_vertex[a][1])
-
-                g+=text(b,(text_decalage*xx,text_decalage*yy),hue=RR(A.rank(b))/N)
                 
-                g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A.rank(b))/N)
+                g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
 
         
         for e in self.isolated_edges():
@@ -1345,14 +1554,15 @@ class ConvexCore():
                 x=boundary_initial_vertex[a][0]+p*(boundary_terminal_vertex[a][0]-boundary_initial_vertex[a][0])
                 y=boundary_initial_vertex[a][1]+p*(boundary_terminal_vertex[a][1]-boundary_initial_vertex[a][1])
 
-                g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A.rank(b))/N)
+                g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
 
             
         g.axes(False)
 
         return g
 
-        
+    def plot_punctured_disc_ideal_curves(self,verbose=False):
+        pass
 
 
         
