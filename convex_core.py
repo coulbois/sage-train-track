@@ -101,7 +101,7 @@ class ConvexCore():
                 f=args[0]
                 g=f.inverse()
             elif isinstance(args[0],FreeGroupAutomorphism): # ConvexCore(phi)
-                f=args[0]
+                f=args[0].simple_outer_representative()
                 A=f.domain().alphabet()
                 G0=GraphWithInverses.rose_graph(A)
                 G1=GraphWithInverses.rose_graph(A)
