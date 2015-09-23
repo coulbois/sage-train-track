@@ -1072,8 +1072,8 @@ class ConvexCore():
         
         
     def squares_orientation(self,orientation=1,verbose=False):
-        """Assuming that ``self`` is an orientable surface square-complex, chose a
-        coherent orientation of the squares.
+        """Assuming that ``self`` is an orientable surface square-complex,
+        chose a coherent orientation of the squares.
 
 
         A coherent orientation is such that two squares sharing an
@@ -1090,7 +1090,8 @@ class ConvexCore():
 
         OUTPUT:
         
-        A list of positive and negative numbers such that two adjacent squares are coherently oriented (same number).
+        A list of positive and negative numbers such that two adjacent
+        squares are coherently oriented (same number).
 
         """
 
@@ -1156,36 +1157,85 @@ class ConvexCore():
         by another square.
         """
         
-        valence=dict(((e[0],e[1],e[2]),0) for e in self.edges())
+        valence=dict(((e[0],e[1],e[2]),True) for e in self.edges())
+        # valence[e]=True if the edge e has valence 0,
+        # valence[e]=(i,j) if i is the unique square bounding e and e
+        # is the j-th edge of i and False if there are at least two
+        # squares bounding e.
 
-        for sq in self.squares():
-            valence[(sq[0],sq[1],(sq[4],0))]+=1
-            valence[(sq[0],sq[3],(sq[5],1))]+=1
-            valence[(sq[1],sq[2],(sq[5],1))]+=1
-            valence[(sq[3],sq[2],(sq[4],0))]+=1
-            
-        boundary=[e for e,v in valence.iteritems() if v==1]
-
-        if verbose:
-            print "Edges bounding exactly one square",boundary
-        
-        boundary_squares=[]
-        
-        for sq in self.squares():
-            for e in boundary:
-                if e==(sq[0],sq[1],(sq[4],0)):
-                    boundary_squares.append((sq,0))
-                elif  e==(sq[0],sq[3],(sq[5],1)):
-                    boundary_squares.append((sq,3))
-                elif  e==(sq[1],sq[2],(sq[5],1)):
-                    boundary_squares.append((sq,1))
-                elif e==(sq[3],sq[2],(sq[4],0)):
-                    boundary_squares.append((sq,2))
-        
+        for i,sq in enumerate(self.squares()):
+            if valence[(sq[0],sq[1],(sq[4],0))] is True:
+                valence[(sq[0],sq[1],(sq[4],0))]=(i,0)
+            else:
+                valence[(sq[0],sq[1],(sq[4],0))]=False
+                
+            if valence[(sq[0],sq[3],(sq[5],1))] is True:
+                valence[(sq[0],sq[3],(sq[5],1))]=(i,3)
+            else:
+                valence[(sq[0],sq[3],(sq[5],1))]=False
+                
+            if valence[(sq[1],sq[2],(sq[5],1))] is True:
+                valence[(sq[1],sq[2],(sq[5],1))]=(i,1)
+            else:
+                valence[(sq[1],sq[2],(sq[5],1))]=False
+                
+            if valence[(sq[3],sq[2],(sq[4],0))] is True:
+                valence[(sq[3],sq[2],(sq[4],0))]=(i,2)
+            else:
+                valence[(sq[3],sq[2],(sq[4],0))]=False
+                    
+        boundary_squares=[s for e,s in valence.iteritems() if ((s is not True) and (s is not False))]
+         
         return  boundary_squares
 
+    def surface_boundary(self,orientation=None,verbose=False):
+        """List of edges in the boundary of the square complex.
 
+        Attended to be used by
+        `ConvexCore.plot_ideal_curve_diagram()`.
 
+        OUTPOUT:
+
+        A list of triples (v,w,(a,i,j)) where v and w are vertices a
+        is a letter of the alphabet of the side i and j is an
+        orientation: it can be 0 meaning that the edge is oriented in
+        this direction or a non-zero number specifying the orientation
+        of the square bounding the edge.
+
+        """
+
+        if orientation is None:
+            orientation=self.squares_orientation()
+        
+        squares=self.squares()
+        
+        boundary_squares=self.squares_of_the_boundary(verbose=verbose and verbose>1 and verbose-1)
+
+        result=[]
+
+        
+        for (i,j) in boundary_squares:
+            sq=squares[i]
+            if j==0 or j==1:
+                result.append((sq[j],sq[(j+1)%4],(sq[4+(j%2)],j%2,orientation[i])))
+                result.append((sq[(j+1)%4],sq[j],(self.tree(side=j).alphabet().inverse_letter(sq[4+(j%2)]),j%2,-orientation[i])))
+            else:
+                result.append((sq[(j+1)%4],sq[j],(sq[4+(j%2)],j%2,-orientation[i])))
+                result.append((sq[j],sq[(j+1)%4],(self.tree(side=j-2).alphabet().inverse_letter(sq[4+(j%2)]),j%2,orientation[i])))
+            
+            
+        for e in self.isolated_edges():
+            result.append((e[0],e[1],(e[2][0],e[2][1],0)))
+            result.append((e[1],e[0],(self.tree(side=e[2][1]).alphabet().inverse_letter(e[2][0]),e[2][1],0)))
+
+        for sq in self.twice_light_squares():
+            result.append((sq[0],sq[1],(sq[4],0,0)))
+            result.append((sq[1],sq[2],(sq[5],1,0)))
+            result.append((sq[1],sq[0],(self.tree(side=0).alphabet().inverse_letter(sq[4]),0,0)))
+            result.append((sq[2],sq[1],(self.tree(side=1).alphabet().inverse_letter(sq[5]),1,0)))
+
+        return result
+                
     def plot_ideal_curve_diagram(self,radius=1, orientation=1, cyclic_order_0=None, cyclic_order_1=None,verbose=False):
 
         """Plot the set of ideal curves on the surface S=S(g,1) of genus g with
@@ -1273,17 +1323,153 @@ class ConvexCore():
             
 
         orientation=self.squares_orientation(orientation=orientation,verbose=verbose and verbose>1 and verbose-1)
-
-        if cyclic_order_0 is not None or cyclic_order_1 is not None:
-            boundary_squares=self.squares_of_the_boundary(verbose=verbose and verbose>1 and verbose-1)
             
-
         if verbose:
             print "Orientation of the squares:"
             if verbose>1:
                 for i,sq in enumerate(squares):
                     print i,":",sq,":",orientation[i] 
 
+        boundary=self.surface_boundary(orientation=orientation,verbose=verbose and verbose>1 and verbose-1)
+
+
+        if verbose:
+            print "Edges of the boundary:"
+            print boundary
+        
+        # The boundary of the surface is an Eulerian circuit in the surface_boundary_graph
+        
+        eulerian_circuits=[]
+        next=[(boundary[0],0)]
+        if boundary[0][2][2]!=0:
+            next.append((boundary[1],0))
+
+        while len(next)>0:
+
+            e,current=next.pop()
+            
+            for i in xrange(current+1,len(boundary)):
+                if boundary[i]==e:
+                    boundary[i],boundary[current]=boundary[current],boundary[i]
+                    # now the boundary is the beginning of an eulerian
+                    # circuit up to current
+                    break
+
+            # We check that the boundary up to current is acceptable
+
+            acceptable=True
+
+            # First, we check that two edges bounding a strongly
+            # connected component of squares share the same
+            # orientation
+            
+            oriented=set()
+            for i in xrange(current+1):
+                e=boundary[i]
+                if e[2][2]!=0 and -e[2][2] in oriented: # edges with orientation 0 are isolated edges
+                    acceptable=False
+                    break
+                else:
+                    oriented.add(e[2][2])
+
+            if not acceptable:
+                continue
+            
+            # Next we check that this is compatible with the given
+            # cyclic order
+
+            if cyclic_order_0 is not None:                
+                i=0
+                j0=None
+                while i<current+1 and boundary[i][2][1]!=0: 
+                    i+=1
+                if i<current+1:
+                    j0=0
+                    while j0<len(cyclic_order_0) and cyclic_order_0[j0]!=boundary[i][2][0]:
+                        j0+=1
+                
+                while i<current:
+                    i+=1
+                    while i<current+1 and boundary[i][2][1]!=0:
+                        i+=1
+                    if i<current+1:
+                        j0+=1
+                        if j0==len(cyclic_order_0):
+                            j0=0
+                        if boundary[i][2][0]!=cyclic_order_0[j0]:
+                            acceptable=False
+                            break
+
+            if not acceptable:
+                continue
+            
+            if cyclic_order_1 is not None:                
+                i=0
+                j1=None
+                while i<current+1 and boundary[i][2][1]!=1:
+                    i+=1
+                if i<current+1:
+                    j1=0
+                    while j1<len(cyclic_order_1) and cyclic_order_1[j1]!=boundary[i][2][0]:
+                        j1+=1
+                while i<current:
+                    i+=1
+                    while i<current+1 and boundary[i][2][1]!=1:
+                        i+=1
+                    if i<current+1:
+                        j1+=1
+                        if j1==len(cyclic_order_0):
+                            j1=0
+                        if boundary[i][2][0]!=cyclic_order_0[j1]:
+                            acceptable=False
+                            break
+
+            if not acceptable:
+                continue
+
+            if current+1==self.tree(side=0).alphabet().cardinality()+self.tree(side=1).alphabet().cardinality():
+                eulerian_circuits.append(boundary[:current+1])    
+            
+            for i in xrange(current+1,len(boundary)):
+                e=boundary[i]
+                if e[0]!=boundary[current][1] or (e[2][2]!=0 and -e[2][2] in oriented):
+                    continue
+                if e[2][1]==0 and (cyclic_order_0 is not None) and (j0 is not None):
+                    j0+=1
+                    if j0==len(cyclic_order_0):
+                        j0=0
+                    if e[2][0]!=cyclic_order_0[j0]:
+                        continue
+                elif e[2][1]==1 and (cyclic_order_1 is not None) and (j1 is not None):
+                    j1+=1
+                    if j1==len(cyclic_order_1):
+                        j1=0
+                    if e[2][0]!=cyclic_order_1[j1]:
+                        continue
+
+                next.append((e,current+1))
+                
+                            
+
+                
+        if verbose:
+            print "Possible boundaries:",eulerian_circuits
+        
+        if len(eulerian_circuits)>1:
+            print "There is an ambiguity on the choice of the boundary of the surface."
+            print "Specify using optionnal argument cyclic_order_0 and cyclic_order_1."
+            print "Possible choices:"
+            for cyclic_order in eulerian_circuits:
+                print cyclic_order
+            print "The first one is chosen"    
+        elif len(eulerian_circuits)==0:
+            print "There are no eulerian circuit in the boundary compatible with the given cyclic orders."
+            print "Probably changing the orientation will solve this problem"
+            return False
+        
+        cyclic_order=eulerian_circuits[0]
+
+        
         # We build the list of edges of the boundary of the surface
                     
         initial_vertex=dict()
