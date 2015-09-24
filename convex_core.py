@@ -949,7 +949,96 @@ class ConvexCore():
         else:
             return len(self.squares())
 
-    def rips_machine_moves(self,side=None,verbose=False):
+    def rips_machine_holes(self,side=None,orientation=None,verbose=False):
+        """
+        The list of holes that can be digged by the Rips machine.
+
+        A hole is a list ``[e,(b,i),right,left]`` where ``e`` is
+        an edge on side ``1-i``, ``b`` a letter on the other side and
+        ``right`` and ``left`` the lists of partial isometries on the
+        right or the left of the hole.
+        """
+
+        T0=self.tree(0)
+        T1=self.tree(1)
+
+        A0=T0.alphabet()
+        A1=T1.alphabet()
+
+        squares=self.squares()
+
+        boundary_squares=self.squares_of_the_boundary(verbose=verbose and verbose>1 and verbose-1) 
+
+        if verbose:
+            print "Squares not surrounded by four squares",boundary_squares
+
+
+        if orientation is None:
+            orientation=getattr(self,'_squares_orientation',None)
+
+        if orientation is None: 
+            orientation=self.squares_orientation()
+
+                    
+        point_of_domain=dict()
+        for e in self.edges():
+            point_of_domain[e[2]]=e[0]
+            if e[2][1]==0:
+                point_of_domain[(A0.inverse_letter(e[2][0]),0)]=e[1]
+            else:
+                point_of_domain[(A1.inverse_letter(e[2][0]),1)]=e[1]
+
+        if verbose:
+            print "Domains of the letters"
+            print point_of_domain
+                
+        holes=[] # a hole is given by an edge in one of the two trees
+                 # (v,w,(a,i)), a letter in the other alphabet and the
+                 # list of partial isometries whose domain is on the
+                 # same side of the hole as the starting point of the
+                 # edge and the list of partial isometries on the
+                 # other side.
+    
+        for (sqi,i) in boundary_squares:
+            sq=squares[sqi]
+            if side is None or i%2==side:
+                if i==0:
+                    e=(sq[0],sq[1],(sq[4],0))
+                    b=(sq[5],1)
+                elif i==1:
+                    e=(sq[1],sq[2],(sq[5],1))
+                    b=(A0.inverse_letter(sq[4]),0)
+                elif i==2:
+                    e=(sq[3],sq[2],(sq[4],0))
+                    b=(A1.inverse_letter(sq[5]),1)
+                elif i==3:
+                    e=(sq[0],sq[3],(sq[5],1))
+                    b=(sq[4],0)
+                if orientation is not None and orientation[sqi]==-1:
+                    e=(e[1],e[0],(self.tree(side=e[2][1]).alphabet().inverse_letter(e[2][0]),e[2][1]))
+                if b[1]==0:
+                    A=A0
+                    T=T1
+                else:
+                    A=A1
+                    T=T0
+                p=T.reverse_path(self.path_from_origin(e[0],e[2][1]))
+                start_letters=[]
+                end_letters=[]
+                for x in A:
+                    if x!=b[0]:
+                        px=T.reduce_path(p*self.path_from_origin(point_of_domain[(x,b[1])],e[2][1]))
+                        if len(px)==0 or px[0]!=e[2][0]: # x is on the side of start
+                            start_letters.append(x)
+                        else:
+                            end_letters.append(x)
+                holes.append((e,b,start_letters,end_letters))
+
+        return holes
+
+
+
+    def rips_machine_moves(self,side=None,holes=None,orientation=None,verbose=False):
         r"""
         Return the list of possible moves of the Rips machine.
 
@@ -973,70 +1062,8 @@ class ConvexCore():
 
         """
 
-        T0=self.tree(0)
-        T1=self.tree(1)
-
-        A0=T0.alphabet()
-        A1=T1.alphabet()
-
-
-        boundary_squares=self.squares_of_the_boundary(verbose=verbose and verbose>1 and verbose-1) 
-
-        if verbose:
-            print "Squares not surrounded by four squares",boundary_squares
-
-
-                    
-        point_of_domain=dict()
-        for e in self.edges():
-            point_of_domain[e[2]]=e[0]
-            if e[2][1]==0:
-                point_of_domain[(A0.inverse_letter(e[2][0]),0)]=e[1]
-            else:
-                point_of_domain[(A1.inverse_letter(e[2][0]),1)]=e[1]
-
-        if verbose:
-            print "Domains of the letters"
-            print point_of_domain
-                
-        holes=[] # a hole is given by an edge in one of the two trees
-                 # (v,w,(a,i)), a letter in the other alphabet and the
-                 # list of partial isometries whose domain is on the
-                 # same side of the hole as the starting point of the
-                 # edge and the list of partial isometries on the
-                 # other side.
-    
-        for (sq,i) in boundary_squares:
-            if side is None or i%2==side:
-                if i==0:
-                    e=(sq[0],sq[1],(sq[4],0))
-                    b=(sq[5],1)
-                elif i==1:
-                    e=(sq[1],sq[2],(sq[5],1))
-                    b=(A0.inverse_letter(sq[4]),0)
-                elif i==2:
-                    e=(sq[3],sq[2],(sq[4],0))
-                    b=(A1.inverse_letter(sq[5]),1)
-                elif i==3:
-                    e=(sq[0],sq[3],(sq[5],1))
-                    b=(sq[4],0)
-                if b[1]==0:
-                    A=A0
-                    T=T1
-                else:
-                    A=A1
-                    T=T0
-                p=T.reverse_path(self.path_from_origin(e[0],e[2][1]))
-                start_letters=[]
-                end_letters=[]
-                for x in A:
-                    if x!=b[0]:
-                        px=T.reduce_path(p*self.path_from_origin(point_of_domain[(x,b[1])],e[2][1]))
-                        if len(px)==0 or px[0]!=e[2][0]: # x is on the side of start
-                            start_letters.append(x)
-                        else:
-                            end_letters.append(x)
-                holes.append((e,b,start_letters,end_letters))
+        if holes is None:
+            holes=self.rips_machine_holes(side=side,orientation=orientation,verbose=verbose and verbose>1 and verbose-1)
 
         if verbose:
             print "Holes:",holes
@@ -1044,10 +1071,7 @@ class ConvexCore():
         result=[]        
         
         for e,b,start_letters,end_letters in holes:
-            if b[1]==0:
-                A=A0
-            else:
-                A=A1
+            A=self.tree(side=b[1]).alphabet()
 
             hole_map=dict((a,Word([a])) for a in A.positive_letters())
                 
@@ -1205,6 +1229,9 @@ class ConvexCore():
         """
 
         if orientation is None:
+            orientation=getattr(self,'_squares_orientation',None)
+
+        if orientation is None: 
             orientation=self.squares_orientation()
         
         squares=self.squares()
@@ -1340,13 +1367,22 @@ class ConvexCore():
         # The boundary of the surface is an Eulerian circuit in the surface_boundary_graph
         
         eulerian_circuits=[]
+
+	boundary_length=2*(self.tree(side=0).alphabet().cardinality()+self.tree(side=1).alphabet().cardinality())
+
         next=[(boundary[0],0)]
         if boundary[0][2][2]!=0:
             next.append((boundary[1],0))
 
+        if verbose:
+            print "Looking for an eulerian circuit in the boundary"
+
         while len(next)>0:
 
             e,current=next.pop()
+
+            if verbose:
+                print e,current
             
             for i in xrange(current+1,len(boundary)):
                 if boundary[i]==e:
@@ -1368,6 +1404,8 @@ class ConvexCore():
                 e=boundary[i]
                 if e[2][2]!=0 and -e[2][2] in oriented: # edges with orientation 0 are isolated edges
                     acceptable=False
+                    if verbose:
+                        print "The current boundary does not respect orientation",e[2][2]
                     break
                 else:
                     oriented.add(e[2][2])
@@ -1398,6 +1436,8 @@ class ConvexCore():
                             j0=0
                         if boundary[i][2][0]!=cyclic_order_0[j0]:
                             acceptable=False
+                            if verbose:
+                                print "The current boundary does not respect the given cyclic order on side 0"
                             break
 
             if not acceptable:
@@ -1418,16 +1458,19 @@ class ConvexCore():
                         i+=1
                     if i<current+1:
                         j1+=1
-                        if j1==len(cyclic_order_0):
+                        if j1==len(cyclic_order_1):
                             j1=0
-                        if boundary[i][2][0]!=cyclic_order_0[j1]:
+                        if boundary[i][2][0]!=cyclic_order_1[j1]:
                             acceptable=False
+                            if verbose:
+                                print "The current boundary does not respect the given cyclic order on side 1"
+
                             break
 
             if not acceptable:
                 continue
 
-            if current+1==self.tree(side=0).alphabet().cardinality()+self.tree(side=1).alphabet().cardinality():
+            if current+1==boundary_length:
                 eulerian_circuits.append(boundary[:current+1])    
             
             for i in xrange(current+1,len(boundary)):
@@ -1435,16 +1478,16 @@ class ConvexCore():
                 if e[0]!=boundary[current][1] or (e[2][2]!=0 and -e[2][2] in oriented):
                     continue
                 if e[2][1]==0 and (cyclic_order_0 is not None) and (j0 is not None):
-                    j0+=1
-                    if j0==len(cyclic_order_0):
-                        j0=0
-                    if e[2][0]!=cyclic_order_0[j0]:
+                    jj0=j0+1
+                    if jj0==len(cyclic_order_0):
+                        jj0=0
+                    if e[2][0]!=cyclic_order_0[jj0]:
                         continue
                 elif e[2][1]==1 and (cyclic_order_1 is not None) and (j1 is not None):
-                    j1+=1
-                    if j1==len(cyclic_order_1):
-                        j1=0
-                    if e[2][0]!=cyclic_order_1[j1]:
+                    jj1=j1+1
+                    if jj1==len(cyclic_order_1):
+                        jj1=0
+                    if e[2][0]!=cyclic_order_1[jj1]:
                         continue
 
                 next.append((e,current+1))
@@ -1469,14 +1512,29 @@ class ConvexCore():
         
         cyclic_order=eulerian_circuits[0]
 
+        # Now we can fix the orientation of the squares according to
+        # the chosen boundary
+
+        direct_orientation=set(e[2][2] for e in cyclic_order if e[2][2]!=0)
         
-        # We build the list of edges of the boundary of the surface
+        for i in xrange(len(self.squares())):
+            if orientation[i] in direct_orientation:
+                orientation[i]=-1
+            else:
+                orientation[i]=1
+        
+
+        if verbose:
+            print "Orientation of the squares coherent with the choice of the boundary"
+            print orientation
+
+        self._squares_orientation=orientation
+
+        # We put the edges in the fundamental domain
                     
         initial_vertex=dict()
         terminal_vertex=dict()
 
-        boundary=[]
-        
         for a in A0.positive_letters():
             aa=A0.inverse_letter(a)
             slicea=[i for i in xrange(len(squares)) if squares[i][4]==a]
@@ -1535,125 +1593,10 @@ class ConvexCore():
                     terminal_vertex[(sq[0],sq[3],sq[5])]=(a,(i+1.0)/size)
                     initial_vertex[(sq[1],sq[2],sq[5])]=(aa,(size-i-1.0)/size)
 
-            sqi=slicea[0]
-            sq=squares[sqi]
-            if orientation[sqi]==1:
-                boundary.append((sq[1],sq[0],(aa,0)))
-            else:
-                boundary.append((sq[2],sq[3],(aa,0)))
 
-            sqi=slicea[-1]
-            sq=squares[sqi]
-            if orientation[sqi]==1:
-                boundary.append((sq[3],sq[2],(a,0)))
-            else:
-                boundary.append((sq[0],sq[1],(a,0)))
-                
-        for e in initial_vertex:
-            if e not in terminal_vertex:
-                boundary.append((e[0],e[1],(e[2],1)))
-        for e in terminal_vertex:
-            if e not in initial_vertex:
-                boundary.append((e[1],e[0],(A1.inverse_letter(e[2]),1)))
-                
-        for sq in self.twice_light_squares():
-            boundary.append((sq[0],sq[1],(sq[4],0)))
-            boundary.append((sq[1],sq[2],(sq[5],1)))
-            boundary.append((sq[1],sq[0],(A0.inverse_letter(sq[4]),0)))
-            boundary.append((sq[2],sq[1],(A1.inverse_letter(sq[5]),1)))
+        # We compute the regular 2N-gone that is the foundamental domain
+        # of the surface on side 0
 
-        for e in self.isolated_edges():
-            boundary.append(e)
-            if e[2][1]==0:
-                boundary.append((e[1],e[0],(A0.inverse_letter(e[2][0]),0)))
-            else:
-                boundary.append((e[1],e[0],(A1.inverse_letter(e[2][0]),1)))
-            
-
-                
-        if verbose:
-            print "Edges of the boundary:",boundary
-
-
-        # The boundary of the surface is an Eulerian circuit in the
-        # boundary graph that respects the cyclic_orders of the two
-        # sides if given
-        
-        eulerian_circuits=[]
-        next=[(boundary[0],0)]        
-
-        while len(next)>0:
-            e,current=next.pop()
-            if current+1==len(boundary):
-                eulerian_circuits.append(boundary[:])
-            for i in xrange(current+1,len(boundary)):
-                if boundary[i]==e:
-                    boundary[i],boundary[current]=boundary[current],boundary[i]
-                    # now the boundary is the beginning a an eulerian
-                    # circuit up to current
-                    break
-
-            next_allowed_0=None
-            next_allowed_1=None
-
-            # We check what are the next germ allowed according to the
-            # given cyclic orders. There is a difficulty: we do
-            # not know the orientation.
-            
-            if cyclic_order_0 is not None:                        
-                j=current
-                while j>=0 and boundary[j][2][1]!=0:
-                    j-=1
-                if j>=0:
-                    k=0
-                    while cyclic_order_0[k]!=boundary[j][2][0]:
-                        k+=1
-                    k+=1
-                    if k==len(cyclic_order_0):
-                        k=0
-                    next_allowed_0=cyclic_order_0[k]
-
-            if cyclic_order_1 is not None:
-                j=current
-                while j>=0 and boundary[j][2][1]!=1:
-                    j-=1
-                if j>=0:
-                    k=0
-                    while cyclic_order_1[k]!=boundary[j][2][0]:
-                        k+=1
-                    k+=1
-                    if k==len(cyclic_order_1):
-                        k=0
-                    next_allowed_1=cyclic_order_1[k]
-                
-            for i in xrange(current+1,len(boundary)): # we look for the possible extensions
-                if boundary[i][0]==boundary[current][1]:
-                    if boundary[i][2][1]==0 and ((next_allowed_0 is None) or next_allowed_0==boundary[i][2][0]):
-                        next.append((boundary[i],current+1))
-                    elif boundary[i][2][1]==1 and (next_allowed_1 is None or next_allowed_1==boundary[i][2][0]):
-                        next.append((boundary[i],current+1))
-                            
-
-                
-        if verbose:
-            print "Possible boundaries:",eulerian_circuits
-        
-        if len(eulerian_circuits)>1:
-            print "There is an ambiguity on the choice of the boundary of the surface."
-            print "Specify using optionnal argument cyclic_order_0 and cyclic_order_1."
-            print "Possible choices:"
-            for cyclic_order in eulerian_circuits:
-                print cyclic_order
-            print "The first one is chosen"    
-        elif len(eulerian_circuits)==0:
-            print "There are no eulerian circuit in the boundary compatible with the given cyclic orders."
-            print "Probably changing the orientation will solve this problem"
-            return False
-        
-        cyclic_order=eulerian_circuits[0]
-
-
-        # cyclic order of ideal curves around the boundary
         i=0
         while cyclic_order[i][2][1]==1:
             i+=1
@@ -1661,9 +1604,6 @@ class ConvexCore():
 
         a=A0.inverse_letter(cyclic_order[i][2][0])
         polygon_side_0=[a]
-
-        # Regular 2N-gone that is the foundamental domain
-        # of the surface on side 0
 
         for j in xrange(2*N-1):
             k=0
@@ -1673,7 +1613,7 @@ class ConvexCore():
             while cyclic_order[k][2][1]==1:
                 k-=1
                 if k==0:
-                    k=2*N-1
+                    k=boundary_length-1
             a=A0.inverse_letter(cyclic_order[k][2][0])
             polygon_side_0.append(a)
 
