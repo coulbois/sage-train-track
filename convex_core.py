@@ -243,7 +243,7 @@ class ConvexCore():
                         if verbose: print "Twice-light square (type 3)",twice_light_squares[-1]
                     else:
                         twice_light_squares.append((common[:-1],G1.initial_vertex(b),a,b))
-                        if verbose: print "Twice-light square (type 4)",twice_light_squares[-1]   #Apparently there is a problem here. TODO
+                        if verbose: print "Twice-light square (type 4)",twice_light_squares[-1]   
                     if A0.is_positive_letter(a):
                         existing_edges[(a,0)]=True
                     else:
@@ -988,6 +988,13 @@ class ConvexCore():
             else:
                 point_of_domain[(A1.inverse_letter(e[2][0]),1)]=e[1]
 
+        for sq in self.twice_light_squares():
+            point_of_domain[(sq[4],0)]=sq[0]
+            point_of_domain[(sq[5],1)]=sq[0]
+            point_of_domain[(A0.inverse_letter(sq[4]),0)]=sq[2]
+            point_of_domain[(A1.inverse_letter(sq[5]),0)]=sq[2]
+            
+                
         if verbose:
             print "Domains of the letters"
             print point_of_domain
