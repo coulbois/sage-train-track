@@ -992,7 +992,7 @@ class ConvexCore():
             point_of_domain[(sq[4],0)]=sq[0]
             point_of_domain[(sq[5],1)]=sq[0]
             point_of_domain[(A0.inverse_letter(sq[4]),0)]=sq[2]
-            point_of_domain[(A1.inverse_letter(sq[5]),0)]=sq[2]
+            point_of_domain[(A1.inverse_letter(sq[5]),1)]=sq[2]
             
                 
         if verbose:
@@ -1008,7 +1008,7 @@ class ConvexCore():
     
         for (sqi,i) in boundary_squares:
             sq=squares[sqi]
-            if side is None or i%2==side:
+            if side is None or i%2==side: #TODO check orientation
                 if i==0:
                     e=(sq[0],sq[1],(sq[4],0))
                     b=(sq[5],1)
@@ -1016,10 +1016,10 @@ class ConvexCore():
                     e=(sq[1],sq[2],(sq[5],1))
                     b=(A0.inverse_letter(sq[4]),0)
                 elif i==2:
-                    e=(sq[3],sq[2],(sq[4],0))
+                    e=(sq[2],sq[3],(A0.inverse_letter(sq[4]),0))
                     b=(A1.inverse_letter(sq[5]),1)
                 elif i==3:
-                    e=(sq[0],sq[3],(sq[5],1))
+                    e=(sq[3],sq[0],(A1.inverse_letter(sq[5]),1))
                     b=(sq[4],0)
                 if orientation is not None and orientation[sqi]==-1:
                     e=(e[1],e[0],(self.tree(side=e[2][1]).alphabet().inverse_letter(e[2][0]),e[2][1]))
@@ -1477,6 +1477,64 @@ class ConvexCore():
             if not acceptable:
                 continue
 
+
+            # If there are no given cyclic orders we check that on
+            # both side there is only one connected component.
+
+            if (cyclic_order_0 is None) and (cyclic_order_1 is None):
+                tmp_cyclic_0=[boundary[i][2][0] for i in xrange(current+1) if boundary[i][2][1]==0] 
+                i=0
+                if len(tmp_cyclic_0)<2*len(A0):
+                    while i<len(tmp_cyclic_0):
+                        j=i
+                        done=False
+                        while True: 
+                            aa=A0.inverse_letter(tmp_cyclic_0[j])
+                            j=0
+                            while j<len(tmp_cyclic_0) and tmp_cyclic_0[j]!=aa:
+                                j+=1
+                            if j==len(tmp_cyclic_0) or j==0:
+                                i+=1
+                                break
+                            j-=1
+                            if i==j:
+                                acceptable=False
+                                if verbose:
+                                    print "There is more than one boundary component on side 0"
+                                    print "Cyclic order on side 0:",tmp_cyclic_0
+                                i=len(tmp_cyclic_0)
+                                break
+
+                if not acceptable:
+                    continue
+
+
+                tmp_cyclic_1=[boundary[i][2][0] for i in xrange(current+1) if boundary[i][2][1]==1] 
+                i=0
+                if len(tmp_cyclic_1)<2*len(A1):
+                    while i<len(tmp_cyclic_1):
+                        j=i
+                        done=False
+                        while True: 
+                            aa=A1.inverse_letter(tmp_cyclic_1[j])
+                            j=0
+                            while j<len(tmp_cyclic_1) and tmp_cyclic_1[j]!=aa:
+                                j+=1
+                            if j==len(tmp_cyclic_1) or j==0:
+                                i+=1
+                                break
+                            j-=1
+                            if i==j:
+                                acceptable=False
+                                if verbose:
+                                    print "There is more than one boundary component on side 1"
+                                    print "Cyclic order on side 1:",tmp_cyclic_1
+                                i=len(tmp_cyclic_1)
+                                break
+
+                if not acceptable:
+                    continue
+
             if current+1==boundary_length:
                 eulerian_circuits.append(boundary[:current+1])    
             
@@ -1510,7 +1568,8 @@ class ConvexCore():
             print "Specify using optionnal argument cyclic_order_0 and cyclic_order_1."
             print "Possible choices:"
             for cyclic_order in eulerian_circuits:
-                print cyclic_order
+                print "side 0:",[e[2][0] for e in cyclic_order if e[2][1]==0]
+                print "side 1:",[e[2][0] for e in cyclic_order if e[2][1]==1]
             print "The first one is chosen"    
         elif len(eulerian_circuits)==0:
             print "There are no eulerian circuit in the boundary compatible with the given cyclic orders."
