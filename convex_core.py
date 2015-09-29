@@ -977,7 +977,7 @@ class ConvexCore():
             orientation=getattr(self,'_squares_orientation',None)
 
         if orientation is None: 
-            orientation=self.squares_orientation()
+            orientation=self.squares_orientation(verbose=verbose and verbose>1 and verbose-1)
 
                     
         point_of_domain=dict()
@@ -1008,7 +1008,7 @@ class ConvexCore():
     
         for (sqi,i) in boundary_squares:
             sq=squares[sqi]
-            if side is None or i%2==side: #TODO check orientation
+            if side is None or i%2==side: 
                 if i==0:
                     e=(sq[0],sq[1],(sq[4],0))
                     b=(sq[5],1)
@@ -1372,6 +1372,8 @@ class ConvexCore():
             print boundary
         
         # The boundary of the surface is an Eulerian circuit in the surface_boundary_graph
+
+        #TODO there is a problem when there is an isolated edge.
         
         eulerian_circuits=[]
 
@@ -1727,7 +1729,7 @@ class ConvexCore():
                         j=i
                     i+=1
                     
-                if i==0:
+                if j==0 and cyclic_order[j][2][1]==1:
                     j=len(cyclic_order)-1
                     while cyclic_order[j][2][1]==1:
                         j-=1
@@ -1747,7 +1749,7 @@ class ConvexCore():
                 aa,pp=terminal_vertex[e]
                 xx=boundary_initial_vertex[aa][0]+pp*(boundary_terminal_vertex[aa][0]-boundary_initial_vertex[aa][0])
                 yy=boundary_initial_vertex[aa][1]+pp*(boundary_terminal_vertex[aa][1]-boundary_initial_vertex[aa][1])
-                b=A1.inverse_letter(e[2])
+                b=A1.inverse_letter(e[2][0])
                 i=0
                 j=0
                 while cyclic_order[i][2][1]==0 or cyclic_order[i][2][0]!=b:
@@ -1755,14 +1757,13 @@ class ConvexCore():
                          j=i
                     i+=1
                     
-                if i==0:
+                if j==0 and cyclic_order[j][2][1]==1:
                     j=len(cyclic_order)-1
                     while cyclic_order[j][2][1]==1:
                         j-=1
                 a=A0.inverse_letter(cyclic_order[j][2][0])
-                p=0
-                x=boundary_initial_vertex[a][0]+p*(boundary_terminal_vertex[a][0]-boundary_initial_vertex[a][0])
-                y=boundary_initial_vertex[a][1]+p*(boundary_terminal_vertex[a][1]-boundary_initial_vertex[a][1])
+                x=boundary_initial_vertex[a][0]
+                y=boundary_initial_vertex[a][1]
                 
                 g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
 
@@ -1775,37 +1776,37 @@ class ConvexCore():
                 j=0
                 while cyclic_order[i][2][1]==0 or cyclic_order[i][2][0]!=b:
                     if cyclic_order[i][2][1]==0:
-                        j=i
+                         j=i
                     i+=1
                     
-                if i==0:
+                if j==0 and cyclic_order[j][2][1]==1:
                     j=len(cyclic_order)-1
                     while cyclic_order[j][2][1]==1:
                         j-=1
-                aa=A0.inverse_letter(cyclic_order[j][2][0])
-                pp=0
-                xx=boundary_initial_vertex[aa][0]+pp*(boundary_terminal_vertex[aa][0]-boundary_initial_vertex[aa][0])
-                yy=boundary_initial_vertex[aa][1]+pp*(boundary_terminal_vertex[aa][1]-boundary_initial_vertex[aa][1])
+                a=A0.inverse_letter(cyclic_order[j][2][0])
+                x=boundary_initial_vertex[a][0]
+                y=boundary_initial_vertex[a][1]
 
-                #The start of e is also at the singularity
-                
+                #The start of e is also at the singularity 
                 b=A1.inverse_letter(b)
                 i=0
                 j=0
                 while cyclic_order[i][2][1]==0 or cyclic_order[i][2][0]!=b:
                     if cyclic_order[i][2][1]==0:
-                         j=i
+                        j=i
                     i+=1
                     
-                if i==0:
+                if j==0 and cyclic_order[j][2][1]==1:
                     j=len(cyclic_order)-1
                     while cyclic_order[j][2][1]==1:
                         j-=1
-                a=A0.inverse_letter(cyclic_order[j][2][0])
-                p=0
-                x=boundary_initial_vertex[a][0]+p*(boundary_terminal_vertex[a][0]-boundary_initial_vertex[a][0])
-                y=boundary_initial_vertex[a][1]+p*(boundary_terminal_vertex[a][1]-boundary_initial_vertex[a][1])
+                aa=A0.inverse_letter(cyclic_order[j][2][0])
 
+
+                xx=boundary_initial_vertex[aa][0]
+                yy=boundary_initial_vertex[aa][1]
+
+                
                 g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
 
             
@@ -1814,10 +1815,104 @@ class ConvexCore():
         return g
 
     def plot_punctured_disc_ideal_curves(self,verbose=False):
+        """
+        Plot a disc with punctures and ideal curves with ``self`` as dual graph.
+        """
+        
         pass
 
 
-        
+    def unicorn_surgery_paths(self,side=1,verbose=False):
 
+        A0=self.tree(side=0).alphabet()
+        A1=self.tree(side=1).alphabet()
+        orientation=dict()
+        permutation=dict((A0[i],A1[i]) for i in xrange(len(A0)))
+
+        C=self
+
+        self.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b'])
+        
+        done=False
+        while not done:
+            done=True
+
+            holes=C.rips_machine_holes(side=side)
+            if len(holes)==0:
+                break
+            i=0
+            surgeries=[]
+            while i<len(holes):
+                if A1.is_positive_letter(holes[i][0][2][0]):
+                    holes.pop(i)
+                    continue
+                b=holes[i][1][0]
+                bp=A0.to_positive_letter(b)
+                bb=A0.inverse_letter(b)
+
+                if (bb in holes[i][2]) ^ (b==bp):
+                    orbp=1
+                else:
+                    orbp=-1
+
+                if bp in orientation and orientation[bp]!=orbp:
+                    holes.pop(i)    
+                    continue
+                surgeries.append([A1.inverse_letter(holes[i][0][2][0]),bp,orbp])
+                i+=1    
+
+            if verbose:
+                print "Surgeries:",surgeries
+            
+            steps=[]
+            available_surgeries=[i for i in xrange(len(surgeries))]
+            while len(available_surgeries)>0:
+                current=[available_surgeries[0]]
+                
+                while True:
+                    next_a=permutation[surgeries[current[-1]][1]]
+                    i=0
+                    while i<len(current) and surgeries[current[i]][0]!=next_a:
+                        i+=1
+                    if i<len(current):
+                        steps.append(current[i:])
+                        for j in current:
+                            available_surgeries.remove(j)
+                        break
+                    i=0
+                    while i<len(available_surgeries) and surgeries[available_surgeries[i]][0]!=next_a:
+                        i+=1
+                    if i<len(available_surgeries):
+                        current.append(available_surgeries[i])
+                    else:
+                        for j in current:
+                            available_surgeries.remove(j)
+                        break
+            if verbose:
+                print "Possible surgeries:", steps 
+
+            if len(steps)>0:
+                done=False
+
+                step=steps[0]
+
+                print step
+                print [holes[i] for i in step]
+                
+                moves=C.rips_machine_moves(holes=[holes[i] for i in step])
+
+                print moves
+                
+                psi=FreeGroupAutomorphism(moves[0])
+                for i in xrange(1,len(moves)):
+                    psi=psi*FreeGroupAutomorphism(moves[i])
+
+                print step
+                print psi
+
+                G0=C.tree(side=0).precompose(psi.inverse())
+                print G0
+                C=ConvexCore(G0,C.tree(side=1))
+                C.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show()    
         
         
