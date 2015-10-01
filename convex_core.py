@@ -1827,11 +1827,14 @@ class ConvexCore():
         A0=self.tree(side=0).alphabet()
         A1=self.tree(side=1).alphabet()
         orientation=dict()
-        permutation=dict((A0[i],A1[i]) for i in xrange(len(A0)))
+        permutation=dict()
 
+        phi=self._f01
         C=self
 
-        self.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b'])
+        next=[]
+        
+        self.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show()
         
         done=False
         while not done:
@@ -1843,11 +1846,21 @@ class ConvexCore():
             i=0
             surgeries=[]
             while i<len(holes):
-                if A1.is_positive_letter(holes[i][0][2][0]):
+                a=holes[i][0][2][0]
+                ap=A1.to_positive_letter(a)
+                if a==ap:
+                    orap=-1
+                else:
+                    orap=1
+                if ((ap,side) in orientation) and (orientation[(ap,side)]!=orap):
                     holes.pop(i)
                     continue
                 b=holes[i][1][0]
                 bp=A0.to_positive_letter(b)
+                if (ap in permutation) and (bp!=permutation[ap]):
+                    holes.pop(i)
+                    continue
+                
                 bb=A0.inverse_letter(b)
 
                 if (bb in holes[i][2]) ^ (b==bp):
@@ -1855,64 +1868,49 @@ class ConvexCore():
                 else:
                     orbp=-1
 
-                if bp in orientation and orientation[bp]!=orbp:
+                if ((bp,1-side) in orientation) and (orientation[(bp,1-side)]!=orbp):
                     holes.pop(i)    
                     continue
-                surgeries.append([A1.inverse_letter(holes[i][0][2][0]),bp,orbp])
+                
+                surgeries.append([((ap,side),orap),((bp,1-side),orbp)])
                 i+=1    
 
             if verbose:
-                print "Surgeries:",surgeries
+                print "Symetric surgeries:",surgeries
             
-            steps=[]
-            available_surgeries=[i for i in xrange(len(surgeries))]
-            while len(available_surgeries)>0:
-                current=[available_surgeries[0]]
-                
-                while True:
-                    next_a=permutation[surgeries[current[-1]][1]]
-                    i=0
-                    while i<len(current) and surgeries[current[i]][0]!=next_a:
-                        i+=1
-                    if i<len(current):
-                        steps.append(current[i:])
-                        for j in current:
-                            available_surgeries.remove(j)
-                        break
-                    i=0
-                    while i<len(available_surgeries) and surgeries[available_surgeries[i]][0]!=next_a:
-                        i+=1
-                    if i<len(available_surgeries):
-                        current.append(available_surgeries[i])
-                    else:
-                        for j in current:
-                            available_surgeries.remove(j)
-                        break
-            if verbose:
-                print "Possible surgeries:", steps 
-
-            if len(steps)>0:
+            if len(holes)>0:
                 done=False
 
-                step=steps[0]
-
-                print step
-                print [holes[i] for i in step]
+                if verbose:
+                    print "Using symetric surgery:", surgeries[0]
+                    print "associated to hole:",holes[0]
                 
-                moves=C.rips_machine_moves(holes=[holes[i] for i in step])
-
-                print moves
+                moves=C.rips_machine_moves(holes=[holes[0]])
                 
                 psi=FreeGroupAutomorphism(moves[0])
-                for i in xrange(1,len(moves)):
-                    psi=psi*FreeGroupAutomorphism(moves[i])
+                if verbose:
+                    print "and automorphism:",psi
 
-                print step
-                print psi
+                #G0=C.tree(side=0)
+                #G0.marking().compose_edge_map(psi.inverse())
 
-                G0=C.tree(side=0).precompose(psi.inverse())
-                print G0
-                C=ConvexCore(G0,C.tree(side=1))
-                C.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show()    
+                phi=phi*psi
+                phi=phi.simple_outer_representative()
+                
+                if verbose:
+                    #print "Marked graph on side 0:",G0
+                    print "Current automorphism:",phi
+                    
+                surgeries[0]
+                orientation[surgeries[0][0][0]]=surgeries[0][0][1]
+                orientation[surgeries[0][1][0]]=surgeries[0][1][1]
+                permutation[surgeries[0][0][0][0]]=surgeries[0][1][0][0]
+                
+                #C=ConvexCore(G0,C.tree(side=1))
+                C=ConvexCore(phi)
+                
+                #print "Difference of marking:",C._f01
+                
+                C.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show(title=surgeries[0])
         
-        
+                sys.stdout.flush()
