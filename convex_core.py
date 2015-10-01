@@ -1788,10 +1788,10 @@ class ConvexCore():
                 y=boundary_initial_vertex[a][1]
 
                 #The start of e is also at the singularity 
-                b=A1.inverse_letter(b)
+                bb=A1.inverse_letter(b)
                 i=0
                 j=0
-                while cyclic_order[i][2][1]==0 or cyclic_order[i][2][0]!=b:
+                while cyclic_order[i][2][1]==0 or cyclic_order[i][2][0]!=bb:
                     if cyclic_order[i][2][1]==0:
                         j=i
                     i+=1
@@ -1809,7 +1809,51 @@ class ConvexCore():
                 
                 g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
 
-            
+                g+=text(b,(text_decalage*xx,text_decalage*yy),hue=RR(A1.rank(b))/N)
+
+        for sq in self.twice_light_squares():
+            b=A1.to_positive_letter(sq[5])
+            #The end of b is at the singularity
+            i=0
+            j=0
+            while cyclic_order[i][2][1]==0 or cyclic_order[i][2][0]!=b:
+                if cyclic_order[i][2][1]==0:
+                     j=i
+                i+=1
+
+            if j==0 and cyclic_order[j][2][1]==1:
+                j=len(cyclic_order)-1
+                while cyclic_order[j][2][1]==1:
+                    j-=1
+            a=A0.inverse_letter(cyclic_order[j][2][0])
+            x=boundary_initial_vertex[a][0]
+            y=boundary_initial_vertex[a][1]
+
+            #The start of b is also at the singularity 
+            bb=A1.inverse_letter(b)
+            i=0
+            j=0
+            while cyclic_order[i][2][1]==0 or cyclic_order[i][2][0]!=bb:
+                if cyclic_order[i][2][1]==0:
+                    j=i
+                i+=1
+
+            if j==0 and cyclic_order[j][2][1]==1:
+                j=len(cyclic_order)-1
+                while cyclic_order[j][2][1]==1:
+                    j-=1
+            aa=A0.inverse_letter(cyclic_order[j][2][0])
+
+
+            xx=boundary_initial_vertex[aa][0]
+            yy=boundary_initial_vertex[aa][1]
+
+
+            g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
+
+            g+=text(b,(text_decalage*xx,text_decalage*yy),hue=RR(A1.rank(b))/N)
+
+
         g.axes(False)
 
         return g
@@ -1822,29 +1866,31 @@ class ConvexCore():
         pass
 
 
-    def unicorn_surgery_paths(self,side=1,verbose=False):
+    def unicorn_surgery_paths(self,side=1,force_surgery=None,verbose=False):
 
         A0=self.tree(side=0).alphabet()
         A1=self.tree(side=1).alphabet()
-        orientation=dict()
-        permutation=dict()
+
+        orientation=getattr(self,'_orientation',dict())
+        permutation=getattr(self,'_permutation',dict())
 
         phi=self._f01
         C=self
 
         next=[]
         
-        self.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show()
+        #self.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show()
         
-        done=False
+        done=(self.volume()==0)
+
         while not done:
-            done=True
 
             holes=C.rips_machine_holes(side=side)
             if len(holes)==0:
                 break
             i=0
             surgeries=[]
+            symetric_holes=[]
             while i<len(holes):
                 a=holes[i][0][2][0]
                 ap=A1.to_positive_letter(a)
@@ -1852,14 +1898,9 @@ class ConvexCore():
                     orap=-1
                 else:
                     orap=1
-                if ((ap,side) in orientation) and (orientation[(ap,side)]!=orap):
-                    holes.pop(i)
-                    continue
+
                 b=holes[i][1][0]
                 bp=A0.to_positive_letter(b)
-                if (ap in permutation) and (bp!=permutation[ap]):
-                    holes.pop(i)
-                    continue
                 
                 bb=A0.inverse_letter(b)
 
@@ -1868,49 +1909,70 @@ class ConvexCore():
                 else:
                     orbp=-1
 
-                if ((bp,1-side) in orientation) and (orientation[(bp,1-side)]!=orbp):
-                    holes.pop(i)    
-                    continue
+                if (ap,side) not in orientation or orientation[(ap,side)]==orap:                
+                    surgeries.append([((ap,side),orap),((bp,1-side),orbp)])
+                    if (((bp,1-side) not in orientation) or (orientation[(bp,1-side)]==orbp))\
+                        and ((ap not in permutation) or (bp==permutation[ap])):
+                        symetric_holes.append(i)
+                    i+=1
+                else:
+                    holes.pop(i)
+                    
+
                 
-                surgeries.append([((ap,side),orap),((bp,1-side),orbp)])
-                i+=1    
+            if verbose:
+                print "Symetric holes:",[holes[i] for i in symetric_holes]
+            
+            if len(symetric_holes)>0:
+                i=symetric_holes[0]
+            elif force_surgery is not None:
+                i=force_surgery
+                force_surgery=None
+            else:
+                print "No more symetric surgeries, specify one using option force_surgery:"
+                for i,hole in enumerate(holes):
+                    print i, ":",hole,"surgery:",surgeries[i]
+                print "Permutation:",permutation 
+                C._orientation=orientation
+                C._permutation=permutation
+
+                return C
+                break
+
+
+            hole=holes[i]
 
             if verbose:
-                print "Symetric surgeries:",surgeries
-            
-            if len(holes)>0:
-                done=False
+                print "Using symetric surgery:", surgeries[i]
+                print "associated to hole:",hole
 
-                if verbose:
-                    print "Using symetric surgery:", surgeries[0]
-                    print "associated to hole:",holes[0]
-                
-                moves=C.rips_machine_moves(holes=[holes[0]])
-                
-                psi=FreeGroupAutomorphism(moves[0])
-                if verbose:
-                    print "and automorphism:",psi
+            moves=C.rips_machine_moves(holes=[hole])
 
-                #G0=C.tree(side=0)
-                #G0.marking().compose_edge_map(psi.inverse())
+            psi=FreeGroupAutomorphism(moves[0])
+            if verbose:
+                print "and automorphism:",psi
 
-                phi=phi*psi
-                phi=phi.simple_outer_representative()
-                
-                if verbose:
-                    #print "Marked graph on side 0:",G0
-                    print "Current automorphism:",phi
-                    
-                surgeries[0]
-                orientation[surgeries[0][0][0]]=surgeries[0][0][1]
-                orientation[surgeries[0][1][0]]=surgeries[0][1][1]
-                permutation[surgeries[0][0][0][0]]=surgeries[0][1][0][0]
-                
-                #C=ConvexCore(G0,C.tree(side=1))
-                C=ConvexCore(phi)
-                
-                #print "Difference of marking:",C._f01
-                
-                C.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show(title=surgeries[0])
+            #G0=C.tree(side=0)
+            #G0.marking().compose_edge_map(psi.inverse())
+
+            phi=phi*psi
+            phi=phi.simple_outer_representative()
+
+            if verbose:
+                #print "Marked graph on side 0:",G0
+                print "Current automorphism:",phi
+
         
-                sys.stdout.flush()
+            orientation[surgeries[i][0][0]]=surgeries[i][0][1]
+            orientation[surgeries[i][1][0]]=surgeries[i][1][1]
+            permutation[surgeries[i][0][0][0]]=surgeries[i][1][0][0]
+
+            #C=ConvexCore(G0,C.tree(side=1))
+            C=ConvexCore(phi)
+
+            #print "Difference of marking:",C._f01
+
+            C.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show(title=surgeries[i])
+
+            sys.stdout.flush()
+            done=(C.volume()==0)
