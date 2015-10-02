@@ -1316,6 +1316,7 @@ class ConvexCore():
 
         """
 
+        from sage.plot.graphics import Graphics
         from sage.plot.line import Line
         from sage.plot.arrow import Arrow
         
@@ -1373,7 +1374,6 @@ class ConvexCore():
         
         # The boundary of the surface is an Eulerian circuit in the surface_boundary_graph
 
-        #TODO there is a problem when there is an isolated edge.
         
         eulerian_circuits=[]
 
