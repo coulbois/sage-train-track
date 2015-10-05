@@ -1072,18 +1072,20 @@ class ConvexCore():
         if holes is None:
             holes=self.rips_machine_holes(side=side,orientation=orientation,verbose=verbose and verbose>1 and verbose-1)
 
-        if verbose:
-            print "Holes:",holes
-
         result=[]        
         
-        for e,b,start_letters,end_letters in holes:
+        for i,hole in enumerate(holes):
+            e,b,start_letters,end_letters=hole
+
             A=self.tree(side=b[1]).alphabet()
 
             hole_map=dict((a,Word([a])) for a in A.positive_letters())
                 
             bb=A.inverse_letter(b[0])
             if bb in start_letters:
+                if verbose:
+                    print i,":",hole
+                    print "surgery:",e[2],",",(bb,b[1])
                 for x in end_letters:
                     if A.is_positive_letter(x):
                         hole_map[x]=Word([bb])*hole_map[x]
@@ -1091,6 +1093,9 @@ class ConvexCore():
                         xx=A.inverse_letter(x)
                         hole_map[xx]=hole_map[xx]*Word([b[0]])
             else:
+                if verbose:
+                    print i,":",hole
+                    print "surgery:",e[2],",",b
                 for x in start_letters:
                     if A.is_positive_letter(x):
                         hole_map[x]=Word([bb])*hole_map[x]
@@ -1739,9 +1744,6 @@ class ConvexCore():
             xx=boundary_initial_vertex[aa][0]+pp*(boundary_terminal_vertex[aa][0]-boundary_initial_vertex[aa][0])
             yy=boundary_initial_vertex[aa][1]+pp*(boundary_terminal_vertex[aa][1]-boundary_initial_vertex[aa][1])
 
-            if pp==0:
-                g+=text(b,(text_decalage*x,text_decalage*y),hue=RR(A1.rank(b))/N)
-
             g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
             
         for e in terminal_vertex:
@@ -1766,6 +1768,8 @@ class ConvexCore():
                 y=boundary_initial_vertex[a][1]
                 
                 g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
+
+                g+=text(e[2][0],(text_decalage*xx,text_decalage*yy),hue=RR(A1.rank(b))/N)
 
         
         for e in self.isolated_edges():
@@ -1809,7 +1813,7 @@ class ConvexCore():
                 
                 g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
 
-                g+=text(b,(text_decalage*xx,text_decalage*yy),hue=RR(A1.rank(b))/N)
+                g+=text(b,(text_decalage*x,text_decalage*y),hue=RR(A1.rank(b))/N)
 
         for sq in self.twice_light_squares():
             b=A1.to_positive_letter(sq[5])
@@ -1851,7 +1855,7 @@ class ConvexCore():
 
             g+=line([(x,y),(xx,yy)],alpha=1,thickness=2,hue=RR(A1.rank(b))/N)
 
-            g+=text(b,(text_decalage*xx,text_decalage*yy),hue=RR(A1.rank(b))/N)
+            g+=text(b,(text_decalage*x,text_decalage*y),hue=RR(A1.rank(b))/N)
 
 
         g.axes(False)
