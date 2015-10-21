@@ -1870,113 +1870,297 @@ class ConvexCore():
         pass
 
 
-    def unicorn_surgery_paths(self,side=1,force_surgery=None,verbose=False):
+    def unicorn_surgery_step(self,side=1,orientation=dict(),permutation=dict(),force_surgery=None,verbose=False):
+        """Looks for a possible symmetric surgery on ``self``.
 
+        First look for the list of possible holes. Then keep only
+        those compatible with orientation and permutation.
+
+        """
+        
         A0=self.tree(side=0).alphabet()
         A1=self.tree(side=1).alphabet()
 
-        orientation=getattr(self,'_orientation',dict())
-        permutation=getattr(self,'_permutation',dict())
-
+        T1=self.tree(side=1)
+        
         phi=self._f01
         C=self
 
-        next=[]
-        
-        #self.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show()
-        
-        done=(self.volume()==0)
+        holes=C.rips_machine_holes(side=side)
 
-        while not done:
+        # Adding isolated edges and exceptional surgeries
 
-            holes=C.rips_machine_holes(side=side)
-            if len(holes)==0:
-                break
-            i=0
-            surgeries=[]
-            symetric_holes=[]
-            while i<len(holes):
-                a=holes[i][0][2][0]
-                ap=A1.to_positive_letter(a)
-                if a==ap:
-                    orap=-1
+        if len(self.isolated_edges())>0:
+            point_of_domain=dict()
+            for e in self.edges():
+                point_of_domain[e[2]]=e[0]
+                if e[2][1]==0:
+                    point_of_domain[(A0.inverse_letter(e[2][0]),0)]=e[1]
                 else:
-                    orap=1
+                    point_of_domain[(A1.inverse_letter(e[2][0]),1)]=e[1]
 
-                b=holes[i][1][0]
-                bp=A0.to_positive_letter(b)
-                
-                bb=A0.inverse_letter(b)
+            for sq in self.twice_light_squares():
+                point_of_domain[(sq[4],0)]=sq[0]
+                point_of_domain[(sq[5],1)]=sq[0]
+                point_of_domain[(A0.inverse_letter(sq[4]),0)]=sq[2]
+                point_of_domain[(A1.inverse_letter(sq[5]),1)]=sq[2]
 
-                if (bb in holes[i][2]) ^ (b==bp):
-                    orbp=1
-                else:
-                    orbp=-1
-
-                if (ap,side) not in orientation or orientation[(ap,side)]==orap:                
-                    surgeries.append([((ap,side),orap),((bp,1-side),orbp)])
-                    if (((bp,1-side) not in orientation) or (orientation[(bp,1-side)]==orbp))\
-                        and ((ap not in permutation) or (bp==permutation[ap])):
-                        symetric_holes.append(i)
-                    i+=1
-                else:
-                    holes.pop(i)
-                    
-
-                
-            if verbose:
-                print "Symetric holes:",[holes[i] for i in symetric_holes]
             
-            if len(symetric_holes)>0:
-                i=symetric_holes[0]
-            elif force_surgery is not None:
-                i=force_surgery
-                force_surgery=None
+        for e in self.isolated_edges():
+            if e[2][1]==side:
+                if verbose:
+                    print "Isolated edge:",e,"Corresponding to holes:"
+                start_letters=[]
+                end_letters=[]
+                p=T1.reverse_path(self.path_from_origin(e[0],side))
+                for b in A0:
+                    px=T1.reduce_path(p*self.path_from_origin(point_of_domain[(b,0)],side))
+                    if len(px)==0 or px[0]!=e[2][0]:
+                        start_letters.append(b)
+                    else:
+                        end_letters.append(b)
+                ee=(e[1],e[0],(A1.inverse_letter(e[2][0]),e[2][1]))
+                for i,b in enumerate(start_letters):
+                    bb=A0.inverse_letter(b)
+                    if bb in end_letters:
+                        local_start_letters=start_letters[:i]+start_letters[i+1:]
+                        local_end_letters=[c for c in end_letters if c!=bb]
+                        
+                        holes.append([e,(b,0),local_start_letters,end_letters])
+                        holes.append([ee,(b,0),end_letters,local_start_letters])
+                        holes.append([e,(bb,0),start_letters,local_end_letters])
+                        holes.append([ee,(bb,0),local_end_letters,start_letters])
+                        if verbose:
+                            print holes[-4:]
+
+        # Adding holes corresponding to twice light squares not yet acknowledge by the permutation
+
+        for sq in self.twice_light_squares():
+            a=sq[4]
+            b=sq[5]
+            ap=A0.to_positive_letter(a)
+            aa=A0.inverse_letter(a)
+            bb=A1.inverse_letter(b)
+            if (ap,0) not in permutation or permutation[(ap,0)]!=sq[5]:
+                if verbose:
+                    print "Twice light square not yet acknowledge by the permutation:",sq
+                start_letters=[]
+                end_letters=[c for c in A0 if c!=aa and c!=a]
+                holes.append([[sq[1],sq[2],(b,1)],(aa,0),start_letters,end_letters+[a]])
+                holes.append([[sq[1],sq[2],(b,1)],(a,0),start_letters+[aa],end_letters])
+                holes.append([[sq[2],sq[1],(bb,1)],(aa,0),end_letters+[a],start_letters])
+                holes.append([[sq[2],sq[1],(bb,1)],(a,0),end_letters,start_letters+[aa]])
+                if verbose:
+                    print holes[-4:]
+                    
+                
+
+        i=0
+        surgeries=[]
+        symetric_surgeries=[]
+
+        while i<len(holes):
+            a=holes[i][0][2][0]
+            ap=A1.to_positive_letter(a)
+            if a==ap:
+                orap=-1
             else:
-                print "No more symetric surgeries, specify one using option force_surgery:"
-                for i,hole in enumerate(holes):
-                    print i, ":",hole,"surgery:",surgeries[i]
-                print "Permutation:",permutation 
-                C._orientation=orientation
-                C._permutation=permutation
+                orap=1
 
-                return C
-                break
+            b=holes[i][1][0]
+            bp=A0.to_positive_letter(b)
 
+            bb=A0.inverse_letter(b)
 
-            hole=holes[i]
+            if (bb in holes[i][2]) ^ (b==bp):
+                orbp=1
+            else:
+                orbp=-1
 
-            if verbose:
-                print "Using symetric surgery:", surgeries[i]
-                print "associated to hole:",hole
-
-            moves=C.rips_machine_moves(holes=[hole])
-
-            psi=FreeGroupAutomorphism(moves[0])
-            if verbose:
-                print "and automorphism:",psi
-
-            #G0=C.tree(side=0)
-            #G0.marking().compose_edge_map(psi.inverse())
-
-            phi=phi*psi
-            phi=phi.simple_outer_representative()
-
-            if verbose:
-                #print "Marked graph on side 0:",G0
-                print "Current automorphism:",phi
+            if (ap,side) not in orientation or orientation[(ap,side)]==orap:                
+                surgeries.append([((ap,side),orap),((bp,1-side),orbp)])
+                if (((ap,side) not in permutation) or (bp==permutation[(ap,side)])) and\
+                        (((bp,1-side) not in permutation) or (ap==permutation[(bp,1-side)])):
+                    symetric_surgeries.append(i)
+                i+=1
+            else:
+                holes.pop(i)
 
         
-            orientation[surgeries[i][0][0]]=surgeries[i][0][1]
-            orientation[surgeries[i][1][0]]=surgeries[i][1][1]
-            permutation[surgeries[i][0][0][0]]=surgeries[i][1][0][0]
+                
 
-            #C=ConvexCore(G0,C.tree(side=1))
-            C=ConvexCore(phi)
+        if verbose:
+            print "Symetric surgeries:",[surgeries[i] for i in symetric_surgeries]
 
-            #print "Difference of marking:",C._f01
 
-            C.plot_ideal_curve_diagram(cyclic_order_1=['a', 'B', 'D', 'C', 'd', 'c','A','b']).show(title=surgeries[i])
+        if force_surgery is not None:
+            i=0
+            while surgeries[i]!=force_surgery:
+                i+=1
+        elif len(symetric_surgeries)>0:
+            i=symetric_surgeries[0]
 
-            sys.stdout.flush()
-            done=(C.volume()==0)
+        else:
+            if verbose:
+                print "No more symetric surgeries, specify one using option force_surgery:"
+                for i,surgery in enumerate(surgeries):
+                    print i, ":",surgery
+            raise NoSymmetricSurgeryException(surgeries)
+
+
+        hole=holes[i]
+
+        if verbose:
+            print "Using symetric surgery:", surgeries[i]
+
+        moves=C.rips_machine_moves(holes=[hole])
+
+        psi=FreeGroupAutomorphism(moves[0])
+        if verbose:
+            print "and automorphism:",psi
+
+
+        phi=phi*psi
+        phi=phi.simple_outer_representative()
+
+        if verbose:
+            print "Current automorphism:",phi
+
+
+        orientation[surgeries[i][0][0]]=surgeries[i][0][1]
+        orientation[surgeries[i][1][0]]=surgeries[i][1][1]
+        permutation[surgeries[i][0][0]]=surgeries[i][1][0][0]
+        permutation[surgeries[i][1][0]]=surgeries[i][0][0][0]
+
+        C=ConvexCore(phi)
+
+        return surgeries[i],C,orientation,permutation
+
+
+    def unicorn_surgery_path(self,side=1,cyclic_order_0=None,cyclic_order_1=None,reverse=False,verbose=False):
+
+        C=self
+
+        path="/home/coulbois/recherche/sage-tex/"
+        count=0
+        title="0:"   #%s"%self._f01
+        filename=path+"unicorn+%s.png"%count
+        g=C.plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+        g.save(filename=filename,title=title)
+        g.show(title=title)
+        if reverse:
+            pphi0=C._f10.simple_outer_representative()
+            title="-0:"   #%s"%self._f01
+            filename=path+"unicorn-%s.png"%count
+            g=ConvexCore(pphi0).plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+            g.save(filename=filename,title=title)
+            g.show(title=title)
+        
+        orientation=dict()
+        permutation=dict()
+
+        while C.volume()>0 or len(C.isolated_edges())>0:
+            try: 
+                surgery,C,orientation,permutation=C.unicorn_surgery_step(side=side,orientation=orientation,permutation=permutation,verbose=verbose and verbose>1 and verbose-1)
+                count+=1
+                if verbose:
+                    print count,": Symmetric surgery:",surgery
+                title="%s:%s"%(count,surgery)
+
+
+                g=C.plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+                filename=path+"unicorn+%s.png"%count
+                g.save(filename=filename,title=title)
+                g.show(title=title)
+                if reverse:
+                    phi=C._f01
+                    CC=ConvexCore((pphi0*phi).simple_outer_representative())
+                    title="-%s:"%count   #%s"%self._f01
+                    filename=path+"unicorn-%s.png"%count
+                    g=CC.plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+                    g.save(filename=filename,title=title)
+                    g.show(title=title)
+
+            except NoSymmetricSurgeryException as surgeries:
+                if verbose:
+                    print "No single symmetric surgery, looking for a cycle"
+                    print "Surgeries:",surgeries.args[0]
+                    print "Permutation:",permutation
+                surgeries=surgeries.args[0]
+                A1=C.tree(side=side).alphabet()
+                surgery_permutation=dict((surgery[0][0],surgery[1][0]) for surgery in surgeries)
+                next=dict()
+                cycles_starts=[]
+                for b,side in surgery_permutation.keys():
+                    current_next=dict()
+                    b0=b
+                    while b not in current_next:
+                        a= surgery_permutation[(b,side)]
+                        if a in permutation:
+                            current_next[b]=permutation[a]
+                            b=current_next[b]
+                        elif (b0,side) not in permutation:
+                            b=b0
+                        else:
+                            break
+                    else:
+                        cycles_starts.append(b)
+                
+                max_cycles_len=A1.cardinality()+1
+                shortest_cycle=None
+
+                for b0 in cycles_starts:
+                    cycle=[b0]
+                    b=permutation[surgery_permutation[(b0,side)]]
+                    while b!=b0:
+                        cycle.append(b)
+                        a=surgery_permutation[(b,side)]
+                        if a in permutation:
+                            b=permutation[a]
+                        else:
+                            b=b0
+                    if len(cycle)<max_cycles_len:
+                        shortest_cycle=cycle
+                        max_cycles_len=len(cycle)
+
+                if verbose:
+                    print "Symmetric cycle of surgeries:",shortest_cycle
+                    for b in shortest_cycle:
+                        for surgery in surgeries:
+                            if surgery[0][0][0]==b and surgery_permutation[(b,side)]==surgery[1][0]:
+                                print surgery
+                                break
+
+                for b  in shortest_cycle:
+                    for surgery in surgeries:
+                        if surgery[0][0][0]==b and surgery_permutation[(b,side)]==surgery[1][0]:
+                            break
+                      
+                    surgery,C,orientation,permutation=C.unicorn_surgery_step(side=side,force_surgery=surgery,orientation=orientation,permutation=permutation,verbose=verbose and verbose>1 and verbose-1)
+                    if verbose:
+                        print "Surgery:",surgery
+
+                    count+=1
+                    title="%s (intermediate):%s"%(count,surgery)
+                    g=C.plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+                    filename=path+"unicorn+%s.png"%count
+                    g.save(filename=filename,title=title)
+                    g.show(title=title)
+                    if reverse:
+                        phi=C._f01
+                        CC=ConvexCore((pphi0*phi).simple_outer_representative())
+                        title="-%s:"%count   #%s"%self._f01
+                        filename=path+"unicorn-%s.png"%count
+                        g=CC.plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+                        g.save(filename=filename,title=title)
+                        g.show(title=title)
+
+                    
+                    permutation[surgery[0][0]]=surgery[1][0][0]
+                    permutation[surgery[1][0]]=surgery[0][0][0]
+                    
+                
+
+
+class NoSymmetricSurgeryException(Exception):
+    pass
