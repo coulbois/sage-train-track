@@ -876,6 +876,10 @@ class ConvexCore():
                     G.add_edge(((sq[0],sq[1],(a,0)),(sq[3],sq[2],(a,side)),sq[5]))
                 else:
                     G.add_edge(((sq[0],sq[3],(a,1)),(sq[1],sq[2],(a,1)),sq[4]))
+        if len(G)==0:
+            for e in self.isolated_edges():
+                if e[2]==(a,side):
+                    G.add_vertex((e[0],e[1],e[2]))
         return G
 
 
