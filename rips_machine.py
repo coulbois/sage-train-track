@@ -20,8 +20,8 @@ class ConvexCoreWithRipsMachine(ConvexCore):
         """
         The list of holes that can be digged by the Rips machine.
 
-        A hole is a list ``[e,(b,i),right,left]`` where ``e`` is
-        an edge on side ``1-i``, ``b`` a letter on the other side and
+        A hole is a list ``[e,(b,side),right,left]`` where ``e`` is
+        an edge on side ``1-side``, ``b`` a letter on the other side and
         ``right`` and ``left`` the lists of partial isometries on the
         right or the left of the hole.
         """
@@ -467,8 +467,77 @@ class ConvexCoreWithRipsMachine(ConvexCore):
                     
                     permutation[surgery[0][0]]=surgery[1][0][0]
                     permutation[surgery[1][0]]=surgery[0][0][0]
-                    
+
+
+    def alphabetic_surgery_path(self,side=1,cyclic_order_0=None,cyclic_order_1=None,reverse=False,verbose=False,save=False):
+        """
+        Realize a sequence of surgeries (or equivalently Rips machine
+        moves) one letter of the alphabet after the other.
+
+        """
+
+        C=self
+
+        A1=self.tree(side=side).alphabet()
+        A0=self.tree(side=1-side).alphabet()
+        
+        path="/Users/coulboisthierry/Desktop/recherche/sage-tex/"
+        count=0
+        g=C.plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+        title="0:"   #%s"%self._f01
+        if save:
+            filename=path+"unicorn+%s.png"%count
+            g.save(filename=filename,title=title)
+        g.show(title=title)
+        if reverse:
+            pphi0=C._f10.simple_outer_representative()
+            g=ConvexCore(pphi0).plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+            title="-0:"   #%s"%self._f01
+            if save:
+                filename=path+"unicorn-%s.png"%count
+                g.save(filename=filename,title=title)
+            g.show(title=title)
+
+        for b in A1.positive_letters():
+            while len(C.slice(b,side))>1:
+                holes=C.rips_machine_holes(side=side,verbose=verbose and verbose>1 and verbose-1)
+                holes=[hole for hole in holes if hole[0][2]==(b,side)]
+                hole=holes[0]
+                a=hole[1][0]
+                ap=A0.to_positive_letter(a)
+                aa=A0.inverse_letter(a)
+                if (aa in hole[2]) ^ (a==ap):
+                    orap=1
+                else:
+                    orap=-1
+                surgery=(((b,side),1),(ap,1-side,orap))
                 
+                moves=C.rips_machine_moves(holes=holes)
+                psi=FreeGroupAutomorphism(moves[0])
+                phi=C._f01*psi
+                phi=phi.simple_outer_representative()
+                C=ConvexCoreWithRipsMachine(phi)
+                    
+                count+=1
+
+                if verbose:
+                    print count,": surgery:",surgery
+
+                g=C.plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+                title="%s:%s"%(count,surgery)
+                if save:
+                    filename=path+"unicorn+%s.png"%count
+                    g.save(filename=filename,title=title)
+                g.show(title=title)
+                if reverse:
+                    phi=C._f01
+                    CC=ConvexCore((pphi0*phi).simple_outer_representative())
+                    g=CC.plot_ideal_curve_diagram(cyclic_order_0=cyclic_order_0,cyclic_order_1=cyclic_order_1,verbose=verbose and verbose>2 and verbose-2)
+                    title="-%s:"%count   #%s"%self._f01
+                    if save:
+                        filename=path+"unicorn-%s.png"%count
+                        g.save(filename=filename,title=title)
+                    g.show(title=title)
 
 
 class NoSymmetricSurgeryException(Exception):
