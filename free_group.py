@@ -5,25 +5,31 @@
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-from sage.combinat.words.words import FiniteWords_over_OrderedAlphabet
+try:
+    # after trac ticket #19619
+    from sage.combinat.words.words import FiniteWords
+except ImportError:
+    # before trac ticket #19619
+    from sage.combinat.words.words import FiniteWords_over_OrderedAlphabet as FiniteWords
+
 from inverse_alphabet import AlphabetWithInverses
 from free_group_word import FreeGroupWord
 
 
-class FreeGroup(FiniteWords_over_OrderedAlphabet):
+class FreeGroup(FiniteWords):
     """
     Free group of finite rank.
 
     EXAMPLES::
 
-    sage: A=AlphabetWithInverses(['a','b'])
+    sage: A = AlphabetWithInverses(['a','b'])
     sage: FreeGroup(A)
     Free group over ['a', 'b']
 
     sage: FreeGroup(3)
     Free group over ['a', 'b', 'c']
 
-    sage: A=AlphabetWithInverses(2,type='x0')
+    sage: A = AlphabetWithInverses(2,type='x0')
     sage: FreeGroup(A)
     Free group over ['x0', 'x1']
 
@@ -32,9 +38,10 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
     - Thierry Coulbois (2013-05-16): beta.0 version
     """
     def __init__(self,alphabet):
-        if not isinstance(alphabet,AlphabetWithInverses):
-            alphabet=AlphabetWithInverses(alphabet)
-        FiniteWords_over_OrderedAlphabet.__init__(self,alphabet)
+        if not isinstance(alphabet, AlphabetWithInverses):
+            alphabet = AlphabetWithInverses(alphabet)
+        FiniteWords.__init__(self,alphabet)
+        self.element_class = self._element_classes['list']
 
     def __repr__(self):
         """
@@ -67,7 +74,7 @@ class FreeGroup(FiniteWords_over_OrderedAlphabet):
 
         EXAMPLES::
 
-            sage: A= AlphabetWithInverses(['a','b','c'])
+            sage: A = AlphabetWithInverses(['a','b','c'])
             sage: F= FreeGroup(A)
             sage: w="abcAab"
             sage: print F.is_reduced(w)
