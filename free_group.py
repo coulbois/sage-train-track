@@ -12,7 +12,7 @@ except ImportError:
     # before trac ticket #19619
     from sage.combinat.words.words import FiniteWords_over_OrderedAlphabet as FiniteWords
 
-from inverse_alphabet import AlphabetWithInverses
+from inverse_alphabet import AlphabetWithInverses, AbstractAlphabetWithInverses
 from free_group_word import FreeGroupWord
 
 
@@ -38,7 +38,7 @@ class FreeGroup(FiniteWords):
     - Thierry Coulbois (2013-05-16): beta.0 version
     """
     def __init__(self,alphabet):
-        if not isinstance(alphabet, AlphabetWithInverses):
+        if not isinstance(alphabet, AbstractAlphabetWithInverses):
             alphabet = AlphabetWithInverses(alphabet)
         FiniteWords.__init__(self,alphabet)
         self.element_class = self._element_classes['list']
