@@ -109,7 +109,7 @@ class FreeGroupWord(FiniteWord_list):
         EXAMPLES::
 
             sage: F = FreeGroup('abc')
-            sage: ~F('abCbA')
+            sage: F('abCbA')
             word: aBcBA
             sage: F('abCbA').inverse()
             word: aBcBA
