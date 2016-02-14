@@ -888,7 +888,7 @@ class free_group_automorphisms:
         Automorphism given as Example 5.16 in [BH-train-track].
 
         This automorphism occurs as a pseudo-Anosov homeomorphism of
-        the four-times punctured phere. Thus is it reducible.
+        the four-times punctured phere. Thus it is reducible.
 
         REFERENCES:
 
@@ -1014,7 +1014,7 @@ class free_group_automorphisms:
 
         Automorphism given as example 7.3 in [CL-dynamics].
 
-        This is an atoroidal iwip.
+        This is an atoroidal parageometric iwip.
 
         REFERENCES:
 
@@ -1149,12 +1149,12 @@ class free_group_automorphisms:
 
     @staticmethod
     def Jolivet():    
-        """
-
-        Automorphism of F_4 suggested by Timo Jolivet [personal
+        """Automorphism of F_4 suggested by Timo Jolivet [personal
         communication]
 
-        This is positive thus train-track on the rose. 
+        This is positive thus train-track on the rose. However it is
+        not iwip as the ideal Whitehead graph at the sole vertex is
+        not connected.
 
         This a geometric automorphism corresponding to a non-oriented
         pseudo-Anosov on the surface of genus 2 with 1 boundary
@@ -1168,3 +1168,18 @@ class free_group_automorphisms:
         """
 
         return FreeGroupAutomorphism("a->db,b->dc,c->d,d->a")
+
+    @staticmethod
+    def Boshernitzan_Kornfeld():
+        r"""
+        Automorphism of F_3 given by M. Boshernitzan and M. Kornfeld [BK]
+
+        It is the induction of an interval translation mapping.
+
+        This is the inverse of a parageometric iwip.
+
+        REFERENCES:
+        
+        [BK] M. Boshernitzan and M. Kornfeld, TODO
+        """
+        return FreeGroupAutomorphism("a->b,b->caaa,c->caa")
