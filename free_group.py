@@ -41,7 +41,7 @@ class FreeGroup(FiniteWords):
         if not isinstance(alphabet, AlphabetWithInverses):
             alphabet = AlphabetWithInverses(alphabet)
         FiniteWords.__init__(self,alphabet)
-        self.element_class = self._element_classes['list']
+        self.element_class = FreeGroupWord
 
     def __repr__(self):
         """
