@@ -8,6 +8,7 @@
 from topological_representative import TopologicalRepresentative
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
+from sage.combinat.words.words import FiniteWords
 from sage.graphs.graph import Graph
 from sage.rings.qqbar import AA
 from sage.matrix.constructor import matrix
@@ -446,6 +447,8 @@ class TrainTrackMap(TopologicalRepresentative):
 
         G=self.domain()
         A=G.alphabet()
+        N=len(A)
+        
 
         possible_np=[] #long illegal turns that have not yet been ruled out
         images=[] #images of the possible inp
@@ -464,7 +467,7 @@ class TrainTrackMap(TopologicalRepresentative):
             vv=self.image(t[1])
             p=G.common_prefix_length(uu,vv)            
             images.append((uu[p:],vv[p:])) #tigthen image of possible_np
-            next.append((Word(),Word())) #letters to add to possible_np
+            next.append((Word([]),Word([]))) #letters to add to possible_np
 
 
                     
@@ -498,7 +501,7 @@ class TrainTrackMap(TopologicalRepresentative):
                 for a in extension[u[-1]]:
                     possible_np.insert(i,(u,v))
                     images.insert(i,(uu,vv))
-                    next.insert(i,(a,Word()))
+                    next.insert(i,(a,Word([])))
             elif len(vv)==0:
                 if verbose: print "extend"
                 done=False
@@ -506,7 +509,7 @@ class TrainTrackMap(TopologicalRepresentative):
                 for a in extension[v[-1]]:
                     possible_np.insert(i,(u,v))
                     images.insert(i,(uu,vv))
-                    next.insert(i,(Word(),a))
+                    next.insert(i,(Word([]),a))
             else:
                 compatible=False
                 for tt in possible_np:
@@ -523,19 +526,19 @@ class TrainTrackMap(TopologicalRepresentative):
                                 for a in extension[u[-1]]:
                                     possible_np.insert(i,(u,v))
                                     images.insert(i,(uu,vv))
-                                    next.insert(i,(a,Word()))
+                                    next.insert(i,(a,Word([])))
                                 break
                             elif q<len(tt[1-j]):  #vv is a strict prefix of tt[1-j]: we have to extend v
                                 done=False
                                 for a in extension[v[-1]]:
                                     possible_np.insert(i,(u,v))
                                     images.insert(i,(uu,vv))
-                                    next.insert(i,(Word(),a))    
+                                    next.insert(i,(Word([]),a))    
                                 break
                             else:  #we do not know yet what to extend
                                 possible_np.insert(i,(u,v))
                                 images.insert(i,(uu,vv))
-                                next.insert(i,(Word(),Word()))
+                                next.insert(i,(Word([]),Word([])))
                                 i=i+1
                                 break
                     if compatible:
@@ -633,8 +636,11 @@ class TrainTrackMap(TopologicalRepresentative):
                         uu=self(uu)
                         vv=self(vv)
                         p=G.common_prefix_length(uu,vv)
-                        new_prefix_ab=uu[:p].parikh_vector(A)
-                        new_prefix_ab=matrix(len(A),1,[new_prefix_ab[k]+new_prefix_ab[k+len(A)] for k in xrange(len(A))])
+                        new_prefix_ab=matrix(N,1)
+                        for a in uu[:p]:
+                            new_prefix_ab[A.rank(a)%N,0]+=1
+                        #new_prefix_ab=uu[:p].abelian_vector()
+                        #new_prefix_ab=matrix(len(A),1,[new_prefix_ab[k]+new_prefix_ab[k+len(A)] for k in xrange(len(A))])
                         prefix_ab=M*prefix_ab+new_prefix_ab
                         uu=uu[p:p+maxl]
                         vv=vv[p:p+maxl]
@@ -643,13 +649,19 @@ class TrainTrackMap(TopologicalRepresentative):
 
                     Mperiod=M**period
 
-                    u_ab=u.parikh_vector(A)
-                    u_ab=matrix(len(A),1,[u_ab[k]+u_ab[k+len(A)] for k in xrange(len(A))])
+                    u_ab=matrix(N,1)
+                    for a in u:
+                        u_ab[A.rank(a)%N,0]+=1
+                    #u_ab=u.abelian_vector()
+                    #u_ab=matrix(len(A),1,[u_ab[k]+u_ab[k+len(A)] for k in xrange(len(A))])
                     uu_ab=Mperiod*u_ab
                     right1=sum(uu_ab.column(0))-prefix_len-len(u)
 
-                    v_ab=v.parikh_vector(A)
-                    v_ab=matrix(len(A),1,[v_ab[k]+v_ab[k+len(A)] for k in xrange(len(A))])
+                    v_ab=matrix(N,1)
+                    for a in v:
+                        v_ab[A.rank(a)%N,0]+=1
+                    #v_ab=v.abelian_vector()
+                    #v_ab=matrix(len(A),1,[v_ab[k]+v_ab[k+len(A)] for k in xrange(len(A))])
                     vv_ab=Mperiod*v_ab
                     right2=sum(vv_ab.column(0))-prefix_len-len(v)
 
