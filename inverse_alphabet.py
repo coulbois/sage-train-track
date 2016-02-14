@@ -5,9 +5,10 @@
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
+from sage.structure.parent import Parent
 from sage.rings.integer import Integer
 
-class AlphabetWithInverses():
+class AlphabetWithInverses(Parent):
     """
     Class for alphabet with inverse letters.
 
@@ -175,6 +176,9 @@ class AlphabetWithInverses():
         else:
             return self._negative[n-self.cardinality()]
 
+
+    unrank=__getitem__
+        
     def inverse_letter(self,letter):
        """
        Inverse of ``letter``.
