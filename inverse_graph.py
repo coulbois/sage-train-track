@@ -79,7 +79,7 @@ class GraphWithInverses(DiGraph):
 
 
           DiGraph.__init__(self,data=data,loops=True,multiedges=True,vertex_labels=True,pos=None,format=None,\
-                                boundary=[],weighted=None,implementation='c_graph',sparse=True)
+                                weighted=None,implementation='c_graph',sparse=True)
 
 
           for e in self.edges():
