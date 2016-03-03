@@ -485,7 +485,7 @@ class ConvexCore():
                     i+=1
 
             i=0
-            while i<len(isolated_eges):
+            while i<len(isolated_edges):
                 e=isolated_edges[i]
                 if e[2][1]==0 and G0.length(e[2][0])==0:
                     isolated_edges.pop(i)
