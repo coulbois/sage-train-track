@@ -240,6 +240,18 @@ class AlphabetWithInverses(Parent):
         """
         return (self.rank(a)<=self.rank(b))
 
+    def compare_letters(self,a,b):
+        """
+        Compares the letters ``a`` and ``b`` according to their rank in ``self``.
+
+        OUTPUT:
+        
+        -1 if a<b
+        0 if a==b
+        1 if a>b
+        """
+        return cmp(self.rank(a),self.rank(b))
+
     def random_letter(self,exclude=[]):
         """
         A random letter, different from the letters in ``exclude``.

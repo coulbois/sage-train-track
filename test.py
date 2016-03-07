@@ -17,7 +17,7 @@ def test(rang,longueur,nombre):
     t=cputime()
 
     for i in xrange(nombre):
-        phi=F.random_automorphism(longueur)
+        phi=FreeGroupAutomorphism.random_automorphism(F,longueur)
         print i,":",phi
         f=phi.train_track(stable=True,relative=True)
         if len(f._strata)==1: 
@@ -34,7 +34,7 @@ def test_stat(rangs,longueurs,puissance):
             stat=0
             t=cputime()
             for i in xrange(puissance):
-                phi=F.random_automorphism(l)
+                phi=FreeGroupAutomorphism.random_automorphism(F,l)
                 try:
                     f=phi.train_track(relative=True,stable=True)
                     if len(f._strata)==1: 
@@ -106,34 +106,34 @@ def bugs():
     #Braids of Mark Bell which causes difficulties
     F = FreeGroup(4)
 
-    phi = F.identity_automorphism()
+    phi = FreeGroupAutomorphism.identity_automorphism(F)
     # Difficulties in folding an inessential INP in the relative
     # train-track: need to fold inessential connecting paths in the
     # process
     for i in [1, -2, 3, 1, 1, 3, 2, -1, 2, 2, -3]:
-        phi *= F.braid_automorphism(abs(i), i < 0)
+        phi *= FreeGroupAutomorphism.braid_automorphism(F,abs(i), i < 0)
     result.append(phi)
 
-    phi = F.identity_automorphism()
+    phi = FreeGroupAutomorphism.identity_automorphism(F)
     # Difficulties in folding an inessential INP in the relative
     # train-track: need to fold inessential connecting paths in the
     # process
     for i in [-2, 3, -2, -1, -1]:
-        phi *= F.braid_automorphism(abs(i), i < 0)
+        phi *= FreeGroupAutomorphism.braid_automorphism(F,abs(i), i < 0)
     result.append(phi)
 
-    phi = F.identity_automorphism()
+    phi = FreeGroupAutomorphism.identity_automorphism(F)
     # Difficulties in folding an inessential INP in the relative
     # train-track: need to fold inessential connecting paths in the
     # process
     for i in [2, -1, 2, 3, 3]:
-        phi *= F.braid_automorphism(abs(i), i < 0)
+        phi *= FreeGroupAutomorphism.braid_automorphism(F,abs(i), i < 0)
     result.append(phi)
 
-    phi = F.identity_automorphism()
+    phi = FreeGroupAutomorphism.identity_automorphism(F)
     # Difficulties in folding an inessential connecting paths: chosing cleverly the order.
     for i in [-2, -1, -1, -2, 3]:
-        phi *= F.braid_automorphism(abs(i), i < 0)
+        phi *= FreeGroupAutomorphism.braid_automorphism(F,abs(i), i < 0)
     result.append(phi)
 
 

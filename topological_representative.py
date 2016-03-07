@@ -210,7 +210,7 @@ class TopologicalRepresentative(GraphMap):
         """
         from sage.matrix.constructor import matrix
 
-        A=self._domain._alphabet
+        A=self.domain().alphabet()
         m=len(A.positive_letters())
         M=matrix(m)
         for i,a in enumerate(A.positive_letters()):
@@ -220,7 +220,7 @@ class TopologicalRepresentative(GraphMap):
 
     def expansion_factor(self,stratum=None):
         """
-        The dominant Perron-Frobenius eigenvalue of the matrix of self.
+        The dominant Perron-Frobenius eigenvalue of the matrix of ``self``.
 
         INPUT:
 
@@ -249,7 +249,7 @@ class TopologicalRepresentative(GraphMap):
         else:
             G=MarkedGraph(self._domain)
         A=G.marking().domain().alphabet()
-        B=self._domain.alphabet()
+        B=self.domain().alphabet()
 
         tree=self._domain.maximal_tree()
         if verbose: print "Spanning tree: ",tree
@@ -281,7 +281,7 @@ class TopologicalRepresentative(GraphMap):
         OUTPUT:
 
         A list ``[[edge,position],t1,t2,...,tn]`` where ``tn`` is a
-        fold turn turn (the images of its two edges have a non-trivial
+        fold turn (the images of its two edges have a non-trivial
         common prefix) that is in the iterated image of ``edge``
         (``self(ti)=ti+1``). The turn is chosen such as ``n`` is as
         small as possible. ``position`` is an integer such that ``t1``
@@ -556,7 +556,7 @@ class TopologicalRepresentative(GraphMap):
 
                 if isinstance(avoid,list): avoid_image=w[0:position]
 
-                subdivide_morph=self.subdivide(subdivide,verbose)
+                subdivide_morph=self.subdivide(subdivide,verbose=verbose and verbose>1 and verbose-1)
 
                 if result_morph:
                     result_morph=subdivide_morph*result_morph
@@ -585,7 +585,7 @@ class TopologicalRepresentative(GraphMap):
             else:
                 prefix=prefix[:prefix_length]
 
-            fold_morph=self.fold(turns[-1],prefix,verbose=verbose)
+            fold_morph=self.fold(turns[-1],prefix,verbose=verbose and verbose>1 and verbose-1)
 
             better=False #No edge in turns is mapped to a point.
 
@@ -990,12 +990,12 @@ class TopologicalRepresentative(GraphMap):
         """
         tails=self._domain.find_tails()
         if len(tails)>0:
-            result_morph=self.contract_tails(tails,verbose)
+            result_morph=self.contract_tails(tails,verbose=verbose and verbose>1 and verbose-1)
         else: result_morph=False
 
         pretrivial_forest=self.pretrivial_forest()
         if len(pretrivial_forest)>0:
-            tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose)
+            tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)
 
             if result_morph:
                 result_morph=tmp_morph*result_morph
@@ -1009,7 +1009,7 @@ class TopologicalRepresentative(GraphMap):
                 i=i+1
             if i>0:
                 trees=self._domain.connected_components(filtration[i-1])
-                tmp_morph=self.contract_invariant_forest(trees,verbose)
+                tmp_morph=self.contract_invariant_forest(trees,verbose=verbose and verbose>1 and verbose-1)
 
                 if result_morph:
                     result_morph=tmp_morph*result_morph
@@ -1017,7 +1017,7 @@ class TopologicalRepresentative(GraphMap):
                     result_morph=tmp_morph
 
             if i<len(filtration)-1:
-                self.stratify(verbose)
+                self.stratify(verbose=verbose and verbose>1 and verbose-1)
                 if not result_morph:
                     result_morph=WordMorphism(dict((a,a) for a in self._domain._alphabet))
                 return result_morph
@@ -1025,7 +1025,7 @@ class TopologicalRepresentative(GraphMap):
 
         lines=self._domain.find_valence_2_vertices()
         if len(lines)>0:
-            tmp_morph=self.fusion_lines(lines,None,verbose)
+            tmp_morph=self.fusion_lines(lines,None,verbose=verbose and verbose>1 and verbose-1)
 
             if result_morph:
                 result_morph=tmp_morph*result_morph
@@ -1034,7 +1034,7 @@ class TopologicalRepresentative(GraphMap):
 
             pretrivial_forest=self.pretrivial_forest()
             if len(pretrivial_forest)>0:
-                result_morph=self.contract_invariant_forest(pretrivial_forest,verbose)*result_morph
+                result_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)*result_morph
 
             filtration=self.maximal_filtration()
             if len(filtration)>1:
@@ -1043,14 +1043,14 @@ class TopologicalRepresentative(GraphMap):
                     i=i+1
                 if i>0:
                     trees=self._domain.connected_components(filtration[i-1])
-                    result_morph=self.contract_invariant_forest(trees,verbose)*result_morph
+                    result_morph=self.contract_invariant_forest(trees,verbose=verbose and verbose>1 and verbose-1)*result_morph
 
                     if result_morph:
                         result_morph=tmp_morph*result_morph
                     else:
                         result_morph=tmp_morph
 
-        self.stratify(verbose)
+        self.stratify(verbose=verbose and verbose>1 and verbose-1)
 
         if not result_morph:
             result_morph=WordMorphism(dict((a,Word([a])) for a in self._domain._alphabet))
@@ -1077,7 +1077,7 @@ class TopologicalRepresentative(GraphMap):
         """
         done=False
 
-        result_morph=self.reduce(verbose)
+        result_morph=self.reduce(verbose and verbose>1 and verbose-1)
 
         if len(self._strata)>1:
             if verbose:
@@ -1092,14 +1092,14 @@ class TopologicalRepresentative(GraphMap):
             if len(turns)==0:
                 done=True
                 if verbose:
-                    print "Train-track !"
+                    print "Absolute train-track !"
             else:
                 self._strata=None
-                tmp_morph=self.multifold(turns,verbose)
+                tmp_morph=self.multifold(turns,verbose=verbose and verbose>1 and verbose-1)
                 result_morph=tmp_morph*result_morph
 
 
-                tmp_morph=self.reduce(verbose)
+                tmp_morph=self.reduce(verbose=verbose and verbose>1 and verbose-1)
                 if tmp_morph:
                     result_morph=tmp_morph*result_morph
 
@@ -1709,15 +1709,15 @@ class TopologicalRepresentative(GraphMap):
                         image=(image[1],image[0]) # now image[0]>=image[1]
 
                     if len(image[0])==prefix_length: #both edges have the same image
-                        folding_morph=self.fold([inp[0][0],inp[1][0]],image[0],verbose=verbose)
+                        folding_morph=self.fold([inp[0][0],inp[1][0]],image[0],verbose=verbose and verbose>1 and verbose-1)
 
                     else: # now image[0]>image[1]
                         i=1
                         while A.to_positive_letter(inp[1][i]) not in stratum: i+=1
                         if i>1:
-                            folding_morph=self.fold([(inp[1][:i],'path'),inp[0][0]],self(inp[1][:i]),verbose)
+                            folding_morph=self.fold([(inp[1][:i],'path'),inp[0][0]],self(inp[1][:i]),verbose=verbose and verbose>1 and verbose-1)
                         else:
-                            folding_morph=self.fold([inp[0][0],inp[1][0]],image[1],verbose)
+                            folding_morph=self.fold([inp[0][0],inp[1][0]],image[1],verbose=verbose and verbose>1 and verbose-1)
 
                     stratum=set(A.to_positive_letter(folding_morph.image(a)[0]) for a in stratum)
                     stratum.add(A.to_positive_letter(folding_morph.image(inp[0][0])[-1]))
@@ -1734,7 +1734,7 @@ class TopologicalRepresentative(GraphMap):
                 else: 
                     if verbose: print "Partial fold:",inp
 
-                    folding_morph=self.fold((inp[0][0],inp[1][0]),image[0][:prefix_length],verbose)
+                    folding_morph=self.fold((inp[0][0],inp[1][0]),image[0][:prefix_length],verbose=verbose and verbose>1 and verbose-1)
 
                     edge_map=dict((a,self.image(a)) for a in A)
 
@@ -1863,7 +1863,7 @@ class TopologicalRepresentative(GraphMap):
         ``TopologicalRepresentative.maximal_filtration()``
         """
 
-        filtration=self.maximal_filtration(verbose)
+        filtration=self.maximal_filtration(verbose=verbose and verbose>1 and verbose-1)
 
         strata=[filtration[0]]
         for i in xrange(1,len(filtration)):
@@ -1902,7 +1902,7 @@ class TopologicalRepresentative(GraphMap):
         result_strata=[]
         shift=0
         for s in xrange(len(self._strata)):
-            n=self.filtre_stratum(s+shift,verbose)
+            n=self.filtre_stratum(s+shift,verbose=verbose and verbose>1 and verbose-1)
             heritage[s]=[s+shift+i for i in xrange(n)]
             shift+=n-1
 
@@ -2136,7 +2136,7 @@ class TopologicalRepresentative(GraphMap):
 
 
             # Subdivide strata[s] into irreducible substrata:
-            self.filtre_stratum(s,verbose)
+            self.filtre_stratum(s,verbose=verbose and verbose>1 and verbose-1)
 
             if verbose: print "\n",self
 
@@ -2181,14 +2181,14 @@ class TopologicalRepresentative(GraphMap):
 
         tails=self._domain.find_tails()
         if len(tails)>0:
-            result_morph=self.contract_tails(tails,verbose)
+            result_morph=self.contract_tails(tails,verbose=verbose and verbose>1 and verbose-1)
         else: result_morph=False
 
         #Contract pretrivial forest
 
         pretrivial_forest=self.pretrivial_forest()
         if len(pretrivial_forest)>0:
-            tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose)
+            tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)
             if result_morph:
                 result_morph=tmp_morph*result_morph
             else:
@@ -2228,9 +2228,9 @@ class TopologicalRepresentative(GraphMap):
                     i=i+1
             if i>0:
                 trees=self._domain.connected_components([a for j in xrange(i) for a in self._strata[j]])
-                tmp_morph=self.contract_invariant_forest(trees,verbose)
+                tmp_morph=self.contract_invariant_forest(trees,verbose=verbose and verbose>1 and verbose-1)
                 self._strata=self._strata[i:]
-                heritage=self.update_strata(tmp_morph,verbose)
+                heritage=self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
 
                 if result_morph:
                     result_morph=tmp_morph*result_morph
@@ -2292,20 +2292,20 @@ class TopologicalRepresentative(GraphMap):
 
         tails=self._domain.find_tails()
         if len(tails)>0:
-            result_morph=self.contract_tails(tails,verbose)
+            result_morph=self.contract_tails(tails,verbose=verbose and verbose>1 and verbose-1)
         else: result_morph=False
 
         #Contract pretrivial forest
 
         pretrivial_forest=self.pretrivial_forest()
         if len(pretrivial_forest)>0:
-            tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose)
+            tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)
             if result_morph:
                 result_morph=tmp_morph*result_morph
             else:
                 result_morph=tmp_morph
 
-        heritage=self.update_strata(result_morph,verbose)
+        heritage=self.update_strata(result_morph,verbose=verbose and verbose>1 and verbose-1)
         if safe_strata:
             safe_strata=[i for s in safe_strata for i in heritage[s]]
 
@@ -2343,9 +2343,9 @@ class TopologicalRepresentative(GraphMap):
                     i=i+1
             if i>0:
                 trees=self._domain.connected_components([a for j in xrange(i) for a in self._strata[j]])
-                tmp_morph=self.contract_invariant_forest(trees,verbose)
+                tmp_morph=self.contract_invariant_forest(trees,verbose=verbose and verbose>1 and verbose-1)
                 self._strata=self._strata[i:]
-                heritage=self.update_strata(tmp_morph,verbose)
+                heritage=self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
 
 
                 if safe_strata:
@@ -2493,9 +2493,9 @@ class TopologicalRepresentative(GraphMap):
 
                     pretrivial_forest=self.pretrivial_forest()
                     if len(pretrivial_forest)>0:
-                        tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose)*tmp_morph
+                        tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)*tmp_morph
                     self._strata=strata
-                    self.update_strata(tmp_morph,verbose)
+                    self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
                     if result_morph:
                         result_morph=tmp_morph*result_morph
                     else:
@@ -2656,7 +2656,7 @@ class TopologicalRepresentative(GraphMap):
 
         return rresult
 
-    def fold_paths(self,paths,verbose):
+    def fold_paths(self,paths,verbose=False):
         """
         Recursively fold the ``paths`` of ``self``.
 
@@ -2733,13 +2733,13 @@ class TopologicalRepresentative(GraphMap):
 
         tails=self._domain.find_tails()
         if len(tails)>0:
-            result_morph=self.contract_tails(tails,verbose)*result_morph
+            result_morph=self.contract_tails(tails,verbose=verbose and verbose>1 and verbose-1)*result_morph
         forest=self.pretrivial_forest()
         if len(forest)>0:
             if result_morph:
-                result_morph=self.contract_invariant_forest(forest,verbose)*result_morph
+                result_morph=self.contract_invariant_forest(forest,verbose=verbose and verbose>1 and verbose-1)*result_morph
             else:
-                result_morph=self.contract_invariant_forest(forest,verbose)
+                result_morph=self.contract_invariant_forest(forest,verbose=verbose and verbose>1 and verbose-1)
         return result_morph
 
 
@@ -2803,7 +2803,7 @@ class TopologicalRepresentative(GraphMap):
 
         A=self._domain.alphabet()
 
-        result_morph=self.relative_reduce(safe_strata=range(len(self._strata)),verbose=verbose)
+        result_morph=self.relative_reduce(safe_strata=range(len(self._strata)),verbose=verbose and verbose>1 and verbose-1)
 
         done=False
 
@@ -2821,7 +2821,7 @@ class TopologicalRepresentative(GraphMap):
 
                         #Core subdivision
                         l=len(self._strata)
-                        result_morph=self.core_subdivide(s,verbose)*result_morph
+                        result_morph=self.core_subdivide(s,verbose=verbose and verbose>1 and verbose-1)*result_morph
                         number_of_new_strata=len(self._strata)-l #number of strata below s may have changed
                         s=s+number_of_new_strata
                         if number_of_new_strata>0:
@@ -2829,15 +2829,15 @@ class TopologicalRepresentative(GraphMap):
 
                         #Inesssential connecting paths
 
-                        paths=self.find_inessential_connecting_paths(s,verbose and (verbose-1))
+                        paths=self.find_inessential_connecting_paths(s,verbose=verbose and verbose>1 and verbose-1)
                         if len(paths)>0:
                             if verbose:
                                 print "Inessential connecting paths below stratum ",s,": ",paths
                             strata=self._strata
                             self._strata=False
-                            tmp_morph=self.fold_paths(paths,verbose)
+                            tmp_morph=self.fold_paths(paths,verbose=verbose and verbose>1 and verbose-1)
                             self._strata=strata
-                            heritage=self.update_strata(tmp_morph,verbose)
+                            heritage=self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
                             s=heritage[s][0] #folding inessential connecting paths keeps the stratum irreducible and exponential
 
                             result_morph=tmp_morph*result_morph
@@ -2848,21 +2848,21 @@ class TopologicalRepresentative(GraphMap):
                     # Foldings
 
                     folded_strata=[]
-                    turn=self.find_relative_folding(s,verbose)
+                    turn=self.find_relative_folding(s,verbose=verbose and verbose>1 and verbose-1)
 
                     if len(turn)>0:
                         strata=self._strata
                         self._strata=False
-                        tmp_morph=self.multifold(turn,verbose)
+                        tmp_morph=self.multifold(turn,verbose=verbose and verbose>1 and verbose-1)
 
                         self._strata=strata
-                        heritage=self.update_strata(tmp_morph,verbose)
+                        heritage=self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
                         folded_strata=heritage[s]
                         s=heritage[s][0]
 
                         result_morph=tmp_morph*result_morph
 
-                        result_morph=self.relative_reduce(folded_strata,verbose)*result_morph
+                        result_morph=self.relative_reduce(folded_strata,verbose=verbose and verbose>1 and verbose-1)*result_morph
                         done=False
                         break
 
@@ -2913,7 +2913,7 @@ class TopologicalRepresentative(GraphMap):
         G=self._domain
         A=G.alphabet()
 
-        result_morph=self.relative_reduce(safe_strata=range(len(self._strata)),verbose=verbose)
+        result_morph=self.relative_reduce(safe_strata=range(len(self._strata)),verbose=verbose and verbose>1 and verbose-1)
 
         s=len(self._strata)-1
         while s>=0:
@@ -2930,21 +2930,21 @@ class TopologicalRepresentative(GraphMap):
 
                         #Core subdivision
                         l=len(self._strata)
-                        result_morph=self.core_subdivide(s,verbose)*result_morph
+                        result_morph=self.core_subdivide(s,verbose=verbose and verbose>1 and verbose-1)*result_morph
                         number_of_new_strata=len(self._strata)-l #number of strata below s may have changed
                         s=s+number_of_new_strata
 
                         #Inesssential connecting paths
 
-                        paths=self.find_inessential_connecting_paths(s,verbose and (verbose-1))
+                        paths=self.find_inessential_connecting_paths(s,verbose=verbose and verbose>1 and verbose-1)
                         if len(paths)>0:
                             if verbose:
                                 print "Inessential connecting paths below stratum ",s,": ",paths
                             strata=self._strata
                             self._strata=False
-                            tmp_morph=self.fold_paths(paths,verbose)
+                            tmp_morph=self.fold_paths(paths,verbose=verbose and verbose>1 and verbose-1)
                             self._strata=strata
-                            heritage=self.update_strata(tmp_morph,verbose)
+                            heritage=self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
                             s=heritage[s][-1] #folding inessential connecting paths keeps the stratum irreducible and exponential
 
                             result_morph=tmp_morph*result_morph
@@ -2953,15 +2953,15 @@ class TopologicalRepresentative(GraphMap):
 
                     # Foldings
 
-                    turn=self.find_relative_folding(s,verbose)
+                    turn=self.find_relative_folding(s,verbose=verbose and verbose>1 and verbose-1)
                     if len(turn)>0:
                         done=False
 
                         strata=self._strata
                         self._strata=False
-                        tmp_morph=self.multifold(turn,verbose)
+                        tmp_morph=self.multifold(turn,verbose=verbose and verbose>1 and verbose-1)
                         self._strata=strata
-                        heritage=self.update_strata(tmp_morph,verbose)
+                        heritage=self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
 
                         folded_strata=heritage[s]
                         s=heritage[s][-1]
@@ -2969,7 +2969,7 @@ class TopologicalRepresentative(GraphMap):
                         result_morph=tmp_morph*result_morph
 
                         stratum=set(a for a in self._strata[s])
-                        tmp_morph=self.relative_reduce(folded_strata,verbose)
+                        tmp_morph=self.relative_reduce(folded_strata,verbose=verbose and verbose>1 and verbose-1)
                         result_morph=tmp_morph*result_morph
 
                         new_s=0 # we now consider the highest stratum that inherits from s
@@ -2985,7 +2985,7 @@ class TopologicalRepresentative(GraphMap):
                         if verbose:
                             print "Stratum",s,"satisfies RTT-iii (no illegal turns in the image of edges)."
 
-                        inps=self.relative_indivisible_nielsen_paths(s,verbose and (verbose-1))
+                        inps=self.relative_indivisible_nielsen_paths(s,verbose=verbose and verbose>1 and verbose-1)
                         if len(inps)==0:
                            if verbose:
                                print "No INP in stratum",s
@@ -2996,15 +2996,15 @@ class TopologicalRepresentative(GraphMap):
                                 inp_done=True
                                 if verbose:
                                     print "INPs in stratum",s,":",inps
-                                inp=self.inessential_inp(inps,s,verbose and (verbose-1))
+                                inp=self.inessential_inp(inps,s,verbose=verbose and verbose>1 and verbose-1)
                                 if inp:
                                     done=False
                                     if verbose:
                                         print "Inessential INP:",inp
-                                    folding_morph=self.fold_inp_in_relative_train_track(inp,s,verbose)
+                                    folding_morph=self.fold_inp_in_relative_train_track(inp,s,verbose=verbose and verbose>1 and verbose-1)
                                     result_morph=folding_morph*result_morph
 
-                                    heritage=self.update_strata(folding_morph,verbose)
+                                    heritage=self.update_strata(folding_morph,verbose=verbose and verbose>1 and verbose-1)
                                     s=heritage[s][-1]
                                 else:
                                     edges=[a for a in self._strata[s]]
@@ -3028,9 +3028,9 @@ class TopologicalRepresentative(GraphMap):
                                             if verbose: print "Fold illegal turn: ",turn
                                             u=self.image(turn[0])
                                             prefix=u[0:G.common_prefix_length(u,self.image(turn[1]))]
-                                            folding_morph=self.fold(turn,prefix,verbose)
+                                            folding_morph=self.fold(turn,prefix,verbose=verbose and verbose>1 and verbose-1)
 
-                                            heritage=self.update_strata(folding_morph,verbose)
+                                            heritage=self.update_strata(folding_morph,verbose=verbose and verbose>1 and verbose-1)
                                             s=heritage[s][-1]
                                             inps=[(folding_morph(t[0]),folding_morph(t[1])) for t in inps]
                                             for i in xrange(len(inps)):
@@ -3050,9 +3050,9 @@ class TopologicalRepresentative(GraphMap):
                                                 if verbose: print "Fold illegal turn :",tt
                                                 u=self.image(tt[0])
                                                 prefix=u[0:G.common_prefix_length(u,self.image(tt[1]))]
-                                                folding_morph=self.fold(tt,prefix,verbose)
+                                                folding_morph=self.fold(tt,prefix,verbose=verbose and verbose>1 and verbose-1)
 
-                                                heritage=self.update_strata(folding_morph,verbose)
+                                                heritage=self.update_strata(folding_morph,verbose=verbose and verbose>1 and verbose-1)
                                                 s=heritage[s][-1]
                                                 inps=[(folding_morph(t[0]),folding_morph(t[1])) for t in inps]
                                                 for i in xrange(len(inps)):

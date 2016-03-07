@@ -37,8 +37,8 @@ class FreeGroupMorphism(WordMorphism):
         self._domain = F
         self._codomain = F  # unuseful... consistency with WordMorphism
         for letter in self._morph.keys():
-            self._morph[letter]=F.reduce(self._morph[letter])
-            self._morph[A.inverse_letter(letter)] = F.inverse_word(self._morph[letter])
+            self._morph[letter]=F(self._morph[letter]).reduced()
+            self._morph[A.inverse_letter(letter)] = self._morph[letter].inverse()
 
     def __call__(self,w,order=1):
         """
@@ -84,7 +84,7 @@ class FreeGroupMorphism(WordMorphism):
             from sage.structure.element import generic_power
             return generic_power(self.inverse(), -n)
         else:
-            return self.domain().identity_automorphism()
+            return FreeGroupAutomorphism.identity_automorphism(self.domain())
 
     def __str__(self):
         """
@@ -236,7 +236,7 @@ class FreeGroupMorphism(WordMorphism):
             False
         """
         f = self
-        F = self._domain
+        F = self.domain()
         A = F.alphabet()
 
         while True:
@@ -254,7 +254,7 @@ class FreeGroupMorphism(WordMorphism):
                         if (x != y and x != A.inverse_letter(y)):
                             w2 = f.image(y)
                             w3 = w1*w2
-                            d = F.nielsen_strictly_less(w3,w1)
+                            d = w3.nielsen_strictly_less(w1)
                             if (delta<d and d>=0):
                                 delta = d
                                 a = x
@@ -263,7 +263,7 @@ class FreeGroupMorphism(WordMorphism):
                 if (delta==-1):
                     return False
 
-                f = f * F.dehn_twist(a,b)
+                f = f * FreeGroupAutomorphism.dehn_twist(F,a,b)
 
     def inverse(self):
         """
@@ -284,7 +284,7 @@ class FreeGroupMorphism(WordMorphism):
         F = self._domain
         A = F.alphabet()
 
-        other = F.identity_automorphism()
+        other = FreeGroupAutomorphism.identity_automorphism(F)
 
         while True:
             # trivial case
@@ -302,7 +302,7 @@ class FreeGroupMorphism(WordMorphism):
                         if (x!=y and x!=A.inverse_letter(y)):
                             w2=self.image(y)
                             w3=w1*w2
-                            d=F.nielsen_strictly_less(w3,w1)
+                            d=w3.nielsen_strictly_less(w1)
                             if (delta<d and d>=0):
                                 delta=d
                                 a=x
@@ -311,8 +311,8 @@ class FreeGroupMorphism(WordMorphism):
                 if (delta==-1):
                     raise ValueError("%s is non invertible" %str(self))
                 else:
-                    other = other*F.dehn_twist(a,b)
-                    self = self*F.dehn_twist(a,b)
+                    other = other*FreeGroupAutomorphism.dehn_twist(F,a,b)
+                    self = self*FreeGroupAutomorphism.dehn_twist(F,a,b)
 
     def length2_words(self):
         r"""
@@ -804,6 +804,299 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         return False
     
 
+
+    @staticmethod
+    def identity_automorphism(F):
+        """
+        Identity automorphism of the free group ``F``.
+        """
+        morph=dict((a,F([a])) for a in F.alphabet().positive_letters())
+
+        return FreeGroupAutomorphism(morph,group=F)
+
+    @staticmethod
+    def dehn_twist(F,a,b,on_left=False):
+        """
+        Dehn twist automorphism of the free group ``F``.
+
+        if ``on_left`` is ``False``: ``a -> ab``
+        if ``on_left`` is ``True``: ``a -> ba``
+
+        EXAMPLES
+
+            sage: F=FreeGroup(3)
+            sage: FreeGroupAutomorphism.dehnt_twist(F,'a','c')
+
+            a->ac, b->b, c->c
+
+            sage: FreeGroupAutomorphism.dehn_twist(F,'A','c')
+            a->Ca,b->b,c->c
+        """
+        A = F.alphabet()
+
+        if a not in A:
+            raise ValueError("Letter %s not in alphabet" %str(a))
+        if b not in A:
+            raise ValueError("Letter %s not in alphabet" %str(b))
+        if a == b:
+            raise ValueError("Letter a=%s should be different from b=%s"%(str(a),str(b)))
+        if A.are_inverse(a,b):
+            raise ValueError("Letter a=%s should be different from the inverse of b=%s" %(str(a),str(b)))
+
+        morphism = dict((letter,F([letter])) for letter in A.positive_letters())
+
+        if A.is_positive_letter(a):
+            if on_left:
+                morphism[a] = F([b,a])
+            else:
+                morphism[a] = F([a,b])
+        else:
+            a = A.inverse_letter(a)
+            b = A.inverse_letter(b)
+            if on_left:
+                morphism[a] = F([a,b])
+            else:
+                morphism[a] = F([b,a])
+                
+        return FreeGroupAutomorphism(morphism,group=F)
+
+    @staticmethod
+    def random_permutation(F):
+        r""" 
+        Return an automorphism of the free group ``F`` that is induced by
+        a random permutation of the letters of its alphabet.  
+        """
+        from sage.misc.prandom import randint
+        from sage.groups.perm_gps.permgroup_named import SymmetricGroup
+
+        A = F.alphabet()
+        P = A.positive_letters()
+        s = SymmetricGroup(P).random_element()
+        f = {}
+        for a in P:
+            if randint(0,1):
+                f[a] = F([s(a)])
+            else:
+                f[a] = F([A.inverse_letter(s(a))])
+
+        return FreeGroupAutomorphism(f, group=F)
+
+    @staticmethod
+    def random_automorphism(F,length=1):
+        """
+        Random automorphism of the free group ``F``.
+
+        This is obtained by a random walk (without backtrack) on the automorphism group of
+        ``F`` of ``length`` Dehn twist automorphisms.
+
+        """
+        if length==0: return FreeGroupAutomorphism.identity_automorphism(F)
+
+        A=F.alphabet()
+        a=A.random_letter()
+        b=A.random_letter([a,A.inverse_letter(a)])
+        result=FreeGroupAutomorphism.dehn_twist(F,a,b)
+        for i in xrange(length-1):
+            new_a=A.random_letter()
+            if new_a==a:
+                b=A.random_letter([a,A.inverse_letter(a),A.inverse_letter(b)])
+            else:
+                a=new_a
+                b=A.random_letter([a,A.inverse_letter(a)])
+            result *= FreeGroupAutomorphism.dehn_twist(F,a,b)
+        return result
+
+    @staticmethod
+    def _surface_dehn_twist_e(F,i):
+        A=F.alphabet()
+        a=A[2*i]
+        b=A[2*i+1]
+        return FreeGroupAutomorphism.dehn_twist(F,a,b,True)
+
+    @staticmethod
+    def _surface_dehn_twist_c(F,i):
+        A=F.alphabet()
+        result=dict((a,F([a])) for a in A.positive_letters())
+        result[A[2*i+1]]=F([A[2*i+2],A.inverse_letter(A[2*i]),A[2*i+1]])
+        result[A[2*i+3]]=F([A[2*i+3],A[2*i],A.inverse_letter(A[2*i+2])])
+
+        return FreeGroupAutomorphism(result,group=F)
+
+    @staticmethod
+    def _surface_dehn_twist_m(F,i):
+        A=F.alphabet()
+        result={}
+        for j in xrange(2*i+1):
+            result[A[j]]=F([A[j]])
+        a=A[2*i]
+
+        result[A[2*i+1]]=F([a,A[2*i+1]])
+        aa=A.inverse_letter(a)
+        for j in xrange(2*i+2,len(A)):
+            result[A[j]]=F([a,A[j],aa])
+
+        return FreeGroupAutomorphism(result,group=F)
+
+    @staticmethod
+    def surface_dehn_twist(F,k):
+        """
+        Dehn twist of the surface (with one boundary component) with
+        fundamental group the free group ``F``.
+
+        The surface is assumed to have genus g and 1 boundary
+        component. The fundamental group has rank 2g, thus ``F`` is
+        assumed to be of even rank.
+
+        ``k`` is an integer 0<=k<3g-1.
+
+        MCG(S_{g,1}) is generated by the Dehn twist along
+        the curves:
+
+        - g equators e_i,
+
+        - g meridian m_i
+
+        - g-1 circles c_i around two consecutive 'holes'.
+
+        for 0<=k<g returns the Dehn twist along e_i with i=k
+
+        for g<=k<2g returns the Dehn twist along m_i with i=k-g
+
+        for 2g<=k<3g-1 returns the Dehn twist along c_i with i=k-2g
+
+        The fundamental group has 2g generators. We fix the base point
+        on the boundary. The generators are:
+
+        - g x_i that turns around the i-th hole
+
+        - g y_i that goes inside the i-th hole
+
+        T_{e_i}: x_j-> x_j, x_i->y_ix_i, y_j->y_j
+
+        T_{m_i}: x_j->x_j, y_j->y_j, j<i
+                 x_i->x_i, y_i->x_iy_i
+                 x_j->x_ix_jx_i\inv, y_j->x_iy_jx_i\inv
+
+        T_{c_i}: x_j->x_j, y_j->y_j, y_i->x_{i+1}x_i\inv y_i, y_{i+1}->y_{i+1}x_{i+1}x_i\inv
+
+        WARNING:
+
+        ``F`` is assumed to be of even rank.
+
+        """
+        assert len(F._alphabet)%2==0
+
+        g=len(F._alphabet)/2
+        if (0<=k and k<g): result=FreeGroupAutomorphism._surface_dehn_twist_e(F,k)
+        elif (g<=k and k<2*g): result=FreeGroupAutomorphism._surface_dehn_twist_m(F,k-g)
+        elif (2*g<=k and k<3*g-1): result=FreeGroupAutomorphism._surface_dehn_twist_c(F,k-2*g)
+
+        return result
+
+
+
+    @staticmethod
+    def random_mapping_class(F,length=1,verbose=False):
+        """Automorphism of the free group ``F`` that is a random mapping class.
+
+        This is obtained by a random walk of ``length`` using surface
+        Dehn twists as generators without backtrack.
+        
+
+        WARNING:
+
+        The rank of ``F` is assumed to be even.
+
+        SEE ALSO:
+
+        FreeGroupAutomorphism.surface_dehn_twist()
+
+        """
+        from sage.misc.prandom import randint
+
+        assert len(F.alphabet())%2==0
+
+        if length==0:
+            return FreeGroupAutomorphism.identity_automorphism(F)
+
+        r=3*len(F.alphabet())/2-2
+        i=randint(0,r)
+        j=randint(0,1)
+        if j==0:
+            result=FreeGroupAutomorphism.surface_dehn_twist(F,i)
+        else:
+            result=FreeGroupAutomorphism.surface_dehn_twist(F,i).inverse()
+        used_dehn_twists=[(i,1-2*j)]
+        for ii in xrange(length-1):
+            l=randint(0,1)
+            if j==l:
+                i=randint(0,r)
+            else:
+                k=randint(0,r-1)
+                if k>=i: i=k+1
+                j=l
+            if j==0:
+                result=result*FreeGroupAutomorphism.surface_dehn_twist(F,i)
+            else:
+                result=result*FreeGroupAutomorphism.surface_dehn_twist(F,i).inverse()
+            used_dehn_twists.append((i,1-2*j))
+        if verbose:
+            print "List of surface Dehn twists used:",used_dehn_twists       
+        return result
+
+    @staticmethod
+    def braid_automorphism(F,i,inverse=False):
+        """
+        Automorphism of the free group ``F`` which corresponds to the generator
+        sigma_i of the braid group.
+
+        sigma_i: a_i -> a_i a_{i+1} a_i^{-1}
+                 a_j -> a_j, for j!=i
+
+        We assume 0<i<n, where n is the rank of ``F``.
+
+        If ``inverse`` is True returns the inverse of sigma_i.
+
+        """
+        A=F.alphabet()
+        result=dict((a,F([a])) for a in A.positive_letters())
+        if not inverse:
+            a=A[i-1]
+            result[a]=F([a,A[i],A.inverse_letter(a)])
+            result[A[i]]=F([a])
+        else:
+            a=A[i]
+            result[a]=F([A.inverse_letter(a),A[i-1],a])
+            result[A[i-1]]=F(a)
+
+        return FreeGroupAutomorphism(result,group=F)
+
+    @staticmethod
+    def random_braid(F,length=1):
+        """A random braid automorphism of the free group ``F``.
+
+        This is obtained by a uniform random walk with generators
+        given by ``braid_automorphism()`` without backtrack of length
+        ``length``.
+
+        """
+        from sage.misc.prandom import randint
+
+        A=F._alphabet
+        if length==0:
+            return FreeGroupAutomorphism.identity_automorphism(F)
+        i=randint(1,len(A)-1)
+        j=randint(0,1)
+        result=FreeGroupAutomorphism.braid_automorphism(F,i,j!=0)
+        for ii in xrange(length-1):
+            l=randint(0,1)
+            if l==j: i=randint(1,len(A)-1)
+            else:
+                k=randint(1,len(A)-2)
+                if j<=k: i=k+1
+            result *= FreeGroupAutomorphism.braid_automorphism(F,i,j)
+        return result
+
 class free_group_automorphisms:
     r"""
     Many examples of free group automorphisms.
@@ -951,7 +1244,7 @@ class free_group_automorphisms:
         F=FreeGroup(4)
         phi=FreeGroupAutomorphism("a->a,b->ba,c->caa,d->dc",F)
         if k>1:
-            phi=phi*pow(F.dehn_twist(c,a),k-1)
+            phi=phi*pow(FreeGroupAutomorphism.dehn_twist(F,c,a),k-1)
         return phi
 
     @staticmethod
