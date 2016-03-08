@@ -14,7 +14,7 @@ from free_group import FreeGroup
 class FreeGroupMorphism(WordMorphism):
     def __init__(self,data,group=None):
         """
-        Builds a FreeGroupAutomorphism from data.
+        Builds a FreeGroupMorphism from data.
 
         INPUT:
 
@@ -60,7 +60,9 @@ class FreeGroupMorphism(WordMorphism):
 
     def __mul__(self, other):
         """
-        Returns the composition self*other.
+        The composition ``self``o``other``.
+
+        Composition is in the usual order: ``self*other(u)=self(other(u))``. 
         """
         if isinstance(other,FreeGroupMorphism):
             m = dict((a,self(other.image(a))) for a in other.domain().alphabet().positive_letters())
@@ -69,7 +71,7 @@ class FreeGroupMorphism(WordMorphism):
 
     def __pow__(self, n):
         """
-        returns self^n, where other is an integer.
+        ``self``^``n``, where ``n`` is an integer.
 
         TESTS::
 
@@ -155,12 +157,9 @@ class FreeGroupMorphism(WordMorphism):
 
     def size(self):
         """
-        Size of the endomorphism: half the maximum length of the image of a two letter word.
+        Size of the endomorphism: half (floored) of the maximum length of the image of a two letter word.
 
-        .. TODO::
-
-            the definition is ambiguous, do we take floor or ceil ?
-
+        
         EXAMPLES::
 
             sage: FreeGroupMorphism('a->abc,b->,c->ccc').size()
@@ -179,7 +178,7 @@ class FreeGroupMorphism(WordMorphism):
 
     def is_permutation(self):
         """
-        True if self is a permutation of the alphabet.
+        ``True`` if ``self`` is a permutation of the alphabet.
 
         EXAMPLES::
 
@@ -192,7 +191,7 @@ class FreeGroupMorphism(WordMorphism):
             sage: FreeGroupMorphism('a->a,b->ba').is_permutation()
             False
         """
-        A = self._domain._alphabet
+        A = self.domain().alphabet()
         seen = set()
         for a in A.positive_letters():
             if len(self.image(a)) != 1 or a in seen:
@@ -203,7 +202,7 @@ class FreeGroupMorphism(WordMorphism):
 
     def _inverse_permutation(self):
         """
-        Return the inverse of ``self`` if it is a permutation
+        Inverse of ``self`` if it is a permutation of the alphabet.
         """
         F = self.domain()
         A = F.alphabet()
@@ -219,7 +218,10 @@ class FreeGroupMorphism(WordMorphism):
 
     def is_invertible(self):
         """
-        Use Dehn twists to successively to check wether ``self`` is invertible.
+        ``True`` if ``self`` is an invertible
+        morphism of the free groupe, that-is-to-say an automorphism.
+        
+        Uses Dehn twists iteratively to check wether ``self`` is invertible.
 
         EXAMPLES::
 
@@ -267,8 +269,14 @@ class FreeGroupMorphism(WordMorphism):
 
     def inverse(self):
         """
-        Use Dehn twists to successively put ``self`` as identity and ``other`` as the
-        inverse of ``self``.
+        Inverse of ``self``.
+
+        Uses Dehn twists to iteratively compute the inverse. Starting
+        with the pair (``self``,``other``) with ``other`` being the
+        identity automorphism, looks for Dehn twists to reduce the
+        size (in the sense of Nielsen ordering on tuples of words) of
+        ``self`` and increase ``other``.
+        
 
         EXAMPLES::
 
@@ -276,12 +284,19 @@ class FreeGroupMorphism(WordMorphism):
             sage: phi.inverse()
             Automorphism of the Free group over ['a', 'b', 'c']: a->c,b->Ca,c->Cb
 
-        .. ALGORITHM::
+        ALGORITHM:
 
-            Implements the Nielsen-Whitehead algorithm: search for a Dehn
-            twist that reduces the size of the automorphism.
-        """
-        F = self._domain
+            Implements the Nielsen-Whitehead algorithm: search for a
+            Dehn twist that reduces the size (in the sense of Nielsen
+            ordering on tuples of words) of the automorphism.
+
+        SEE ALSO:
+
+            FreeGroupWord.nielsen_strictly_less()
+
+            """
+
+        F = self.domain()
         A = F.alphabet()
 
         other = FreeGroupAutomorphism.identity_automorphism(F)
@@ -347,11 +362,11 @@ class FreeGroupMorphism(WordMorphism):
 
     def is_train_track(self, proof=False):
         r"""
-        Check wether ``self`` is train track (on the rose).
+        ``True`` if ``self`` is train track (on the rose).
 
         A morphism is `train-track` if there is no cancellation between the
         images in the iteration of ``self``. If ``proof`` is set to ``True``
-        then return a word also a word of length 2 in the attracting language of
+        then return also a word of length 2 in the attracting language of
         ``self`` such that there is a cancellation in its image under ``self``.
 
         EXAMPLES::
@@ -472,7 +487,8 @@ class FreeGroupMorphism(WordMorphism):
         attracting language of ``self`` that have exactly two occurrences of
         ``letter`` or its inverse at the begining and at the end.
 
-        The morphism must be train-track and irreducible.
+        The morphism must be train-track and irreducible (meaning that
+        the transition matrix is irreducible i.e it has a strictly positive power).
 
         EXAMPLES:
 
@@ -498,7 +514,7 @@ class FreeGroupMorphism(WordMorphism):
             [12, 12, 18]
         """
         if not self.is_train_track():
-            raise ValueError("self must be train-track")
+            raise ValueError("self must be train-track (on the rose)")
 
         # we first need to compute a power of self which is positive (all
         # letters appear in each image)
@@ -576,9 +592,12 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     AUTHORS:
 
-    - Thierry Coulbois (2013-05-16): beta.0 version
+    - Thierry Coulbois (2013-05-16)
     """
     def is_invertible(self):
+        """
+        ``True`` (as ``self`` is an automorphism).
+        """
         return True
 
     def __repr__(self):
@@ -588,7 +607,9 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     def __mul__(self, other):
         """
-        Returns the composition self*other.
+        Composition ``self``o``other``.
+
+        Composition is in the usual order ``self*other(u)=self(other(u))``.
         """
         if isinstance(other,FreeGroupMorphism):
             m = dict((a,self(other.image(a))) for a in other.domain().alphabet().positive_letters())
@@ -602,7 +623,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     def simple_outer_representative(self):
         """
-        Shortest representative of the outer class of self.
+        Shortest representative of the outer class of ``self``.
 
         OUTPUT:
 
@@ -645,13 +666,13 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     def rose_conjugacy_representative(self):
         """
-        Topological representative of the conjugacy class of ``self``.
+        Topological representative of the conjugacy class of ``self`` on the rose.
 
         SEE ALSO:
 
         This is the same as ``self.rose_representative()`` but the
         base graph of the ``TopologicalRepresentative`` is a
-        ``GraphWithInverses`` instead of a ``MarkedGraph``.
+        ``GraphWithInverses`` instead of a ``MarkedGraph``: we forget the marking.
         """
         from topological_representative import TopologicalRepresentative
         from inverse_graph import GraphWithInverses
@@ -763,8 +784,9 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             
     def index_list(self,verbose=False):
-        """Returns the index list of ``self`` provided it is an iwip
-        automorphism.
+        """
+
+        Index list of ``self`` provided it is an iwip automorphism.
 
         The index list is the list of indices of non-isogredient
         automorphisms in the outer class of ``self``. The index of an
@@ -774,7 +796,8 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         Some authors (Mosher, Pfaff), use -1/2 our index definition.
 
-        Some authors (Gaboriau, Jaeger, Levitt, Lustig), use 1/2 our index definition
+        Some authors (Gaboriau, Jaeger, Levitt, Lustig), use 1/2 our
+        index definition.
 
         REFERENCES:
 
@@ -788,7 +811,9 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
 
 
-        WARNING: ``self`` is assumed to be iwip (or at least to
+        WARNING:
+
+        ``self`` is assumed to be iwip (or at least to
         have an expanding absolute train-track representative).
 
         """
@@ -822,7 +847,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         if ``on_left`` is ``False``: ``a -> ab``
         if ``on_left`` is ``True``: ``a -> ba``
 
-        EXAMPLES
+        EXAMPLES::
 
             sage: F=FreeGroup(3)
             sage: FreeGroupAutomorphism.dehnt_twist(F,'a','c')
@@ -863,7 +888,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
     @staticmethod
     def random_permutation(F):
         r""" 
-        Return an automorphism of the free group ``F`` that is induced by
+        Automorphism of the free group ``F`` that is induced by
         a random permutation of the letters of its alphabet.  
         """
         from sage.misc.prandom import randint
@@ -997,7 +1022,9 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     @staticmethod
     def random_mapping_class(F,length=1,verbose=False):
-        """Automorphism of the free group ``F`` that is a random mapping class.
+        """
+
+        Automorphism of the free group ``F`` that is a random mapping class.
 
         This is obtained by a random walk of ``length`` using surface
         Dehn twists as generators without backtrack.

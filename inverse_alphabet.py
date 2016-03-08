@@ -139,22 +139,25 @@ class AlphabetWithInverses(Parent):
 
         WARNING:
 
-        This is equal to ``len()`.
+        This is equal to ``len()``.
         """
         return len(self._positive)
 
     def __contains__(self,letter):
         """
-        Test whether the letter is contained in self
+        Test whether the letter is contained in ``self``.
         """
         return letter in self._positive or letter in self._negative
 
     def __len__(self):
+        """
+        Number of positive letters in ``self``.
+        """
         return len(self._positive)
 
     def rank(self,letter):
         """
-        Return the rank of the letter
+        Return the rank of the ``letter``.
 
         from 0 to card(self)-1: positive letters
         from card(self) to 2card(self)-1: negative letters
@@ -166,7 +169,7 @@ class AlphabetWithInverses(Parent):
 
     def __getitem__(self,n):
         """
-        Return the letter with rank n.
+        Return the letter with rank ``n``.
 
         from 0 to card(self)-1: positive letters
         from card(self) to 2card(self)-1: negative letters
@@ -187,25 +190,25 @@ class AlphabetWithInverses(Parent):
 
     def are_inverse(self,a,b):
         """
-        Test if the two letters are inverse of each other.
+        ``True`` if the two letters are inverse of each other.
         """
         return self._inverse[a] == b
 
     def is_positive_letter(self,letter):
         """
-        Test if the letter is a positive letter.
+        ``True`` if ``letter`` is a positive letter.
         """
         return letter in self._positive
 
     def is_negative_letter(self,letter):
         """
-        Test if the letter is a negative letter.
+        ``True`` if ``letter`` is a negative letter.
         """
         return letter in self._negative
 
     def to_positive_letter(self,letter):
         """
-        Given letter a or a^-1 returns a.
+        The positive letter in the pair ``(letter,A.inverse_letter(letter))``.
 
         EXAMPLES::
 
@@ -224,20 +227,24 @@ class AlphabetWithInverses(Parent):
 
     def positive_letters(self):
         """
-        The list of positive letters of this alphabet.
+        List of positive letters of ``self``.
         """
         return self._positive
 
     def negative_letters(self):
         """
-        The list of negative letters
+        List of negative letters of ``self``.
         """
         return self._negative
 
     def less_letter(self,a,b):
         """
-        ``True`` if ``a`` is before ``b`` in the alphabet.
+        ``True`` if ``a`` is before ``b`` in ``self``.
+
+        The order is computed according to the rank of letters. In
+        particular positive letters are smaller than negative letters.
         """
+
         return (self.rank(a)<=self.rank(b))
 
     def compare_letters(self,a,b):
@@ -270,12 +277,13 @@ class AlphabetWithInverses(Parent):
         A pair [positive_letter, negative_letter] not already in the
         alphabet.
 
-        The new_letter is constructed from the type of the
-        alphabet. If the type is 'abc' and all 26 ASCII letters are
-        used, looks for ['a0','A0'] etc.
+        The new letter is constructed from the type of ``self``. If
+        the type is 'abc' and all 26 ASCII letters are used, looks for
+        ['a0','A0'] etc.
+
         """
-        i=0
-        done=False
+
+        i=0 done=False
 
         if self._type=='abc':
             while i<26 and not done:
@@ -346,9 +354,17 @@ class AlphabetWithInverses(Parent):
         """
         Adds a new letter to the alphabet.
 
+        The new letter is constructed from the type of ``self``. If
+        the type is ``'abc'`` and all 26 ASCII letters are used, looks
+        for ['a0','A0'] etc.
+
         OUTPUT:
 
         The pair[positive_letter,negative_letter].
+
+        SEE ALSO:
+
+        AlphabetWihInverses._new_letter()
         """
         new_letter=self._new_letter()
         self._positive.append(new_letter[0])
@@ -361,6 +377,11 @@ class AlphabetWithInverses(Parent):
     def add_new_letters(self,n=1):
         """
         Adds ``n`` new letters to the alphabet.
+
+        The new letters are constructed from the type ``self``. If the
+        type is 'abc' and all 26 ASCII letters are used, looks for
+        ``['a0','A0']`` etc.
+
 
         OUTPUT:
 
@@ -375,7 +396,7 @@ class AlphabetWithInverses(Parent):
 
     def remove_letter(self,a):
         """
-        Remove the letter a (and its inverse) from the alphabet.
+        Remove the letter ``a`` (and its inverse) from ``self``.
 
         EXAMPLES::
 
