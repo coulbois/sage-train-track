@@ -31,7 +31,7 @@ class MarkedGraph(GraphWithInverses):
 
      AUTHORS:
 
-     - Thierry Coulbois (2013-05-16): beta.0 version
+     - Thierry Coulbois (2013-05-16)
      """
      def __init__(self,graph=None,marking=None,alphabet=None,marking_alphabet=None):
          if isinstance(marking,GraphMap):
@@ -110,6 +110,12 @@ class MarkedGraph(GraphWithInverses):
      def difference_of_marking(self,other):
           """
           A ``GraphMap`` from ``self`` to ``other`` that makes the markings commute.
+
+          WARNING:
+
+          The difference of marking is not unique. In particular no
+          tightening is permformed.
+          
           """
 
           return other.marking()*self.marking().inverse()
@@ -232,6 +238,10 @@ class MarkedMetricGraph(MarkedGraph,MetricGraph):
      """
      A ``MarkedGraph`` together with a length function on edges.
 
+
+     Edges may have 0 length. This is intended to code for simplicial
+     metric graph at the boundary of outer space.
+     
      EXAMPLES::
 
      sage: G=MarkedMetricGraph({'a':(0,0),'b':(0,1),'c':(1,0)})

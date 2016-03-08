@@ -17,7 +17,7 @@ class GraphMap():
 
     AUTHORS:
 
-    - Thierry Coulbois (2013-05-16): beta.0 version
+    - Thierry Coulbois (2013-05-16)
     """
 
     def __init__(self,*args):
@@ -67,6 +67,9 @@ class GraphMap():
     def __mul__(self,other):
         """
         Compose ``self`` with ``other``.
+
+        Composition is in the usual order: ``self*other(e)=self(other(e))``.
+
         """
         A=other._domain.alphabet()
         result_map={}
@@ -126,6 +129,12 @@ class GraphMap():
         Compose ``self`` with the morphism ``edge_morph``.
 
         Update the edge_map of ``self`` with (``edge_morph`` o ``self``).
+
+        INPUT:
+
+        ``edge_morph`` is a ``WordMorphism`` from the codomain of
+        ``self`` to itself.
+        
         """
         edge_map=dict((a,edge_morph(self._edge_map.image(a))) for a in self._domain._alphabet.positive_letters())
         self.set_edge_map(edge_map)
@@ -161,7 +170,9 @@ class GraphMap():
             return self._codomain.reduce_path(self._edge_map(self._edge_map(letter),iter-1))
 
     def inverse(self):
-        """A homotopy inverse of ``self``.
+        """
+
+        A homotopy inverse of ``self``.
 
         For ``t1=self.domain().spanning_tree()`` and
         ``t2=self.codomain().spanning_tree()``. The alphabet ``A`` is
@@ -177,6 +188,8 @@ class GraphMap():
         WARNING:
 
         ``self`` is assumed to be a homotopy equivalence.
+
+        The inverse is not unique, in particular no tightening is performed.
 
         """
 

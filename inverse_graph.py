@@ -11,8 +11,8 @@ from sage.combinat.words.word import Word
 
 class GraphWithInverses(DiGraph):
      """
-     A GraphWithInverses is a simplicial oriented graph, with labeled
-     edges. Labels form an AlphabetWithInverses.  Each edge has a
+     A ``GraphWithInverses`` is a simplicial oriented graph, with labeled
+     edges. Labels form an ``AlphabetWithInverses``.  Each edge has a
      reversed edge. This is intended to be consistent with Serre's
      definition of graph in [Trees].
 
@@ -35,7 +35,7 @@ class GraphWithInverses(DiGraph):
 
      AUTHORS:
 
-     - Thierry Coulbois (2013-05-16): beta.0 version
+     - Thierry Coulbois (2013-05-16)
      """
      def __init__(self,data=None,alphabet=None):
 
@@ -92,7 +92,7 @@ class GraphWithInverses(DiGraph):
 
      def copy(self):
           """
-          A copy of ``self``.
+          Copy of ``self``.
 
           WARNING:
 
@@ -321,10 +321,6 @@ class GraphWithInverses(DiGraph):
 
         ``p`` and ``q`` are assumed to be reduced.
 
-        EXAMPLES::
-
-        sage: rose_graph(AlphabetWithInverses(3)).common_prefix_length("aBaa","aBcb")
-        2
         """
         k=0
         while(k<len(p) and k<len(q) and p[k]==q[k]): k=k+1
@@ -427,8 +423,10 @@ class GraphWithInverses(DiGraph):
         """
         List of turns of the graph.
 
-        A turn is a tuple (a,b) of edges outgoing from the same
-        vertex. a is less than b in the ``self.alphabet()`` order.
+        A turn is a tuple ``(a,b)`` of edges outgoing from the same
+        vertex. ``a`` is less than ``b`` in the ``self.alphabet()``
+        order.
+
         """
         A=self._alphabet
         return [(a,b) for a in A for b in A if a!=b and A.less_letter(a,b) and self.initial_vertex(a)==self.initial_vertex(b)]
@@ -436,7 +434,7 @@ class GraphWithInverses(DiGraph):
 
      def extensions(self,u,turns):
           """
-          List of edges a such that the turn between ``u`` and a is in ``turns``. 
+          List of edges a such that the turn between ``u`` and ``a`` is in ``turns``. 
 
           This is the list of edges outgoing from the terminal vertex
           of ``u`` minus the inverse of the last letter of ``u``.
@@ -925,6 +923,8 @@ class GraphWithInverses(DiGraph):
 class MetricGraph(GraphWithInverses):
      """
      Graph with edges labeled by an AlphabetWithInverses, with length on edges.
+
+     Edges may have 0 length.
      """
 
      def length(self,a):

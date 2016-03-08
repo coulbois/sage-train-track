@@ -128,7 +128,7 @@ class FreeGroupWord(FiniteWord_list):
 
     def __invert__(self):
         """
-        Inverse of self.
+        Inverse of ``self``.
 
         EXAMPLES::
 
@@ -151,9 +151,8 @@ class FreeGroupWord(FiniteWord_list):
 
             sage: F=FreeGroup(['a','b','c'])
             sage: w=F("abcAab")
-            sage: w.reduce()
-            sage: print w
-            abcb
+            sage: w.reduced()
+            word: abcb
         """
         result = list(self)
 
@@ -176,7 +175,7 @@ class FreeGroupWord(FiniteWord_list):
 
     def is_reduced(self):
         """
-        ``True`` if ``self`` is reduced.
+        ``True`` if ``self`` is a reduced word.
 
         EXAMPLES::
 
@@ -196,13 +195,15 @@ class FreeGroupWord(FiniteWord_list):
             sage: F= FreeGroup(3)
             sage: w=F("abcACBAb")
             sage: w.is_identity()
-            True
+            False
 
         """
         return len(w.reduced()) == 0
 
     def common_prefix_length(self,other):
-        """Length of the common prefix of ``self`` and ``other``.
+        """
+
+        Length of the common prefix of ``self`` and ``other``.
 
         WARNING:
 
