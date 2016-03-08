@@ -6,6 +6,7 @@
 #*****************************************************************************
 
 from sage.combinat.words.word import FiniteWord_list
+from sage.combinat.words.word import Word_class
 
 
 class FreeGroupWord(FiniteWord_list):
@@ -113,11 +114,14 @@ class FreeGroupWord(FiniteWord_list):
         True
 
         """
+        if not isinstance(other, Word_class):
+            return NotImplemented
         result=False
         k=0
         while(k<len(self) and k<len(other) and self[k]==other[k]): k=k+1
         if (k==len(self) and k==len(other)): result=0
         elif (k==len(self)): result=-1
+        elif (k==len(other)): result=1
         else: result=self.parent().alphabet().compare_letters(self[k],other[k])
         return result
 
