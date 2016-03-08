@@ -20,4 +20,5 @@ After this command, you can play with free groups and their automorphisms
     sage: FreeGroupAutomorphism('a->bCb,b->Bc,c->BcBa')
     Automorphism of the Free group over ['a', 'b', 'c']: a->bCb,b->Bc,c->BcBa
     sage: free_group_automorphisms.Cohen_Lustig_1_6()
-    Automorphism of the Free group over ['a', 'b', 'c']: a->cccaCCC,b->CaccAbC,c->accAbccaCCBaCCAccccACCC
+    Automorphism of the Free group 
+    over ['a', 'b', 'c']: a->cccaCCC,b->CaccAbC,c->accAbccaCCBaCCAccccACCC
