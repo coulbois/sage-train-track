@@ -918,8 +918,11 @@ class TrainTrackMap(TopologicalRepresentative):
         using ``TrainTrackMap.periodic_nielsen_paths(self)``.  Thus
         assumes that ``self`` is an expanding train-track.
         """
-        from sage.arith.all import lcm
-
+        try:
+            from sage.arith.all import lcm # from sage 7.0
+        except ImportError:
+            from sage.rings.arith import lcm # before sage 6.10
+        
         G=self.domain()
         A=G.alphabet()
 
