@@ -1,20 +1,19 @@
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#*****************************************************************************
-
+# *****************************************************************************
+# - modified by Dominique 03/03/20016 :  major changes pep8 correction
 from inverse_alphabet import AlphabetWithInverses
 from sage.combinat.words.morphism import WordMorphism
 from free_group import FreeGroup
 
 
-
 class FreeGroupMorphism(WordMorphism):
-    def __init__(self,data,group=None):
+    def __init__(self, data, group=None):
         """
-        Builds a FreeGroupMorphism from data.
+        Builds a FreeGroupAutomorphism from data.
 
         INPUT:
 
@@ -23,9 +22,9 @@ class FreeGroupMorphism(WordMorphism):
         - ``group`` - an optional free group
         """
         if group is not None and not isinstance(group, FreeGroup):
-            raise ValueError, "the group must be a Free Group"
+            raise ValueError("the group must be a Free Group")
 
-        WordMorphism.__init__(self,data)
+        WordMorphism.__init__(self, data)
 
         if group is None:
             A = AlphabetWithInverses(self.domain().alphabet())
@@ -37,41 +36,42 @@ class FreeGroupMorphism(WordMorphism):
         self._domain = F
         self._codomain = F  # unuseful... consistency with WordMorphism
         for letter in self._morph.keys():
-            self._morph[letter]=F(self._morph[letter]).reduced()
-            self._morph[A.inverse_letter(letter)] = self._morph[letter].inverse()
+            self._morph[letter] = F(self._morph[letter]).reduced()
+            self._morph[A.inverse_letter(letter)] = \
+                self._morph[letter].inverse()
 
-    def __call__(self,w,order=1):
+    def __call__(self, w, order=1):
         """
         Apply the automorphism to the word w.
 
         .. WARNING::
 
-        if w is a letter of the alphabet which is iterable it will be considered
+        if w is a letter of the alphabet which is iterable
+         it will be considered
         as a word. If you want the image of a letter use :meth:`image` instead.
         """
-        F=self.codomain()
-        while order>0:
-            result=F()
-            order=order-1
+        F = self.codomain()
+        while order > 0:
+            result = F()
+            order = order - 1
             for a in w:
-                result=result*self.image(a)
-            w=result
+                result = result * self.image(a)
+            w = result
         return result
 
     def __mul__(self, other):
         """
-        The composition ``self``o``other``.
-
-        Composition is in the usual order: ``self*other(u)=self(other(u))``. 
+        Returns the composition self*other.
         """
-        if isinstance(other,FreeGroupMorphism):
-            m = dict((a,self(other.image(a))) for a in other.domain().alphabet().positive_letters())
-            return FreeGroupMorphism(m,self.domain())
+        if isinstance(other, FreeGroupMorphism):
+            m = dict((a, self(other.image(a))) for a in
+                     other.domain().alphabet().positive_letters())
+            return FreeGroupMorphism(m, self.domain())
         return super(FreeGroupMorphism, self).__mul__(other)
 
     def __pow__(self, n):
         """
-        ``self``^``n``, where ``n`` is an integer.
+        returns self^n, where other is an integer.
 
         TESTS::
 
@@ -81,10 +81,9 @@ class FreeGroupMorphism(WordMorphism):
         """
         if n > 0:
             from sage.structure.element import generic_power
-            return generic_power(self,n)
+            return generic_power(self, n)
         elif n < 0:
             from sage.structure.element import generic_power
-            return generic_power(self.inverse(), -n)
         else:
             return FreeGroupAutomorphism.identity_automorphism(self.domain())
 
@@ -92,17 +91,17 @@ class FreeGroupMorphism(WordMorphism):
         """
         String representation.
         """
-        result=""
+        result = ""
         for letter in self.domain().alphabet().positive_letters():
             result += letter + "->"
             for a in self.image(letter):
-                result+=a
-            result+=","
+                result += a
+            result += ","
         return result[:-1]
 
     def __repr__(self):
-        result="Morphism of the %s: " %str(self._domain)
-        result=result+"%s" %str(self)
+        result = "Morphism of the %s: " % str(self._domain)
+        result = result + "%s" % str(self)
         return result
 
     def __cmp__(self, other):
@@ -122,12 +121,17 @@ class FreeGroupMorphism(WordMorphism):
     def to_automorphism(self):
         if not self.is_invertible():
             raise ValueError("the morphism is not invertible")
-        return FreeGroupAutomorphism(dict((a,self.image(a)) for a in self.domain().alphabet().positive_letters()),
-            domain=self.domain())
+        return FreeGroupAutomorphism(
+            dict((a, self.image(a)) for a in
+                 self.domain().alphabet().positive_letters()),
+            domain = self.domain())
 
     def to_word_morphism(self, forget_inverse=False):
         r"""
         Return a word morphism.
+        INPUT:
+        - ``forget_inverse`` -- (default: False) forget the inverse or not.
+
 
         .. NOTE::
 
@@ -145,6 +149,7 @@ class FreeGroupMorphism(WordMorphism):
               word: bddaCAdacccADDBdacADbdbddacADbdbddacADbd...],
              [word: CCADaCCADacADDBdaCCCADaCCADacADDBdaCAdac...,
               word: DBDBdaCADDBDBdaCADbddaCCCADacADDBDBDBdaC...]]
+
         """
         if forget_inverse:
             A = self.domain().alphabet()
@@ -153,24 +158,29 @@ class FreeGroupMorphism(WordMorphism):
                 f[a] = map(A.to_positive_letter, self.image(a))
             return WordMorphism(f)
 
-        return WordMorphism(dict((a,list(self.image(a))) for a in self.domain().alphabet()))
+        return WordMorphism(dict((a, list(self.image(a)))
+                                 for a in self.domain().alphabet()))
 
     def size(self):
         """
-        Size of the endomorphism: half (floored) of the maximum length of the image of a two letter word.
+        Size of the endomorphism: half the maximum length of
+        the image of a two letter word.
 
-        
+        .. TODO::
+
+            the definition is ambiguous, do we take floor or ceil ?
+
         EXAMPLES::
 
             sage: FreeGroupMorphism('a->abc,b->,c->ccc').size()
             3
         """
-        result=0
+        result = 0
         D = self.domain()
-        A=self._domain._alphabet
+        A = self._domain._alphabet
         for a in A:
             for b in A:
-                if not A.are_inverse(a,b):
+                if not A.are_inverse(a, b):
                     l = (self.image(a) * self.image(b)).length()
                     if result < l:
                         result = l
@@ -178,7 +188,7 @@ class FreeGroupMorphism(WordMorphism):
 
     def is_permutation(self):
         """
-        ``True`` if ``self`` is a permutation of the alphabet.
+        True if self is a permutation of the alphabet.
 
         EXAMPLES::
 
@@ -191,7 +201,7 @@ class FreeGroupMorphism(WordMorphism):
             sage: FreeGroupMorphism('a->a,b->ba').is_permutation()
             False
         """
-        A = self.domain().alphabet()
+        A = self._domain._alphabet
         seen = set()
         for a in A.positive_letters():
             if len(self.image(a)) != 1 or a in seen:
@@ -202,7 +212,7 @@ class FreeGroupMorphism(WordMorphism):
 
     def _inverse_permutation(self):
         """
-        Inverse of ``self`` if it is a permutation of the alphabet.
+        Return the inverse of ``self`` if it is a permutation
         """
         F = self.domain()
         A = F.alphabet()
@@ -214,14 +224,11 @@ class FreeGroupMorphism(WordMorphism):
             else:
                 result[A.inverse_letter(b)] = F([A.inverse_letter(a)])
 
-        return FreeGroupAutomorphism(result,group=self._domain)
+        return FreeGroupAutomorphism(result, group=self._domain)
 
     def is_invertible(self):
         """
-        ``True`` if ``self`` is an invertible
-        morphism of the free groupe, that-is-to-say an automorphism.
-        
-        Uses Dehn twists iteratively to check wether ``self`` is invertible.
+        Use Dehn twists to successively to check wether ``self`` is invertible.
 
         EXAMPLES::
 
@@ -255,48 +262,36 @@ class FreeGroupMorphism(WordMorphism):
                     for y in A:
                         if (x != y and x != A.inverse_letter(y)):
                             w2 = f.image(y)
-                            w3 = w1*w2
+                            w3 = w1 * w2
                             d = w3.nielsen_strictly_less(w1)
-                            if (delta<d and d>=0):
+                            if (delta < d and d >= 0):
                                 delta = d
                                 a = x
                                 b = y
 
-                if (delta==-1):
+                if (delta == -1):
                     return False
 
-                f = f * FreeGroupAutomorphism.dehn_twist(F,a,b)
+                f = f * FreeGroupAutomorphism.dehn_twist(F, a, b)
 
     def inverse(self):
         """
-        Inverse of ``self``.
-
-        Uses Dehn twists to iteratively compute the inverse. Starting
-        with the pair (``self``,``other``) with ``other`` being the
-        identity automorphism, looks for Dehn twists to reduce the
-        size (in the sense of Nielsen ordering on tuples of words) of
-        ``self`` and increase ``other``.
-        
+        Use Dehn twists to successively put ``self`` as identity and ``other``
+         as the inverse of ``self``.
 
         EXAMPLES::
 
             sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: phi.inverse()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->c,b->Ca,c->Cb
+            Automorphism of the Free group over ['a', 'b', 'c']:
+             a->c,b->Ca,c->Cb
 
-        ALGORITHM:
+        .. ALGORITHM::
 
-            Implements the Nielsen-Whitehead algorithm: search for a
-            Dehn twist that reduces the size (in the sense of Nielsen
-            ordering on tuples of words) of the automorphism.
-
-        SEE ALSO:
-
-            FreeGroupWord.nielsen_strictly_less()
-
-            """
-
-        F = self.domain()
+            Implements the Nielsen-Whitehead algorithm: search for a Dehn
+            twist that reduces the size of the automorphism.
+        """
+        F = self._domain
         A = F.alphabet()
 
         other = FreeGroupAutomorphism.identity_automorphism(F)
@@ -311,23 +306,23 @@ class FreeGroupMorphism(WordMorphism):
                 delta = -1
 
                 for x in A:
-                    w1=self.image(x)
+                    w1 = self.image(x)
 
                     for y in A:
-                        if (x!=y and x!=A.inverse_letter(y)):
-                            w2=self.image(y)
-                            w3=w1*w2
-                            d=w3.nielsen_strictly_less(w1)
-                            if (delta<d and d>=0):
-                                delta=d
-                                a=x
-                                b=y
+                        if (x != y and x != A.inverse_letter(y)):
+                            w2 = self.image(y)
+                            w3 = w1 * w2
+                            d = w3.nielsen_strictly_less(w1)
+                            if (delta < d and d >= 0):
+                                delta = d
+                                a = x
+                                b = y
 
-                if (delta==-1):
-                    raise ValueError("%s is non invertible" %str(self))
+                if (delta == -1):
+                    raise ValueError("%s is non invertible" % str(self))
                 else:
-                    other = other*FreeGroupAutomorphism.dehn_twist(F,a,b)
-                    self = self*FreeGroupAutomorphism.dehn_twist(F,a,b)
+                    other = other * FreeGroupAutomorphism.dehn_twist(F, a, b)
+                    self = self * FreeGroupAutomorphism.dehn_twist(F, a, b)
 
     def length2_words(self):
         r"""
@@ -352,8 +347,8 @@ class FreeGroupMorphism(WordMorphism):
         while wait:
             u = self(wait.pop())
 
-            for i in xrange(len(u)-1):
-                v = u[i:i+2]
+            for i in xrange(len(u) - 1):
+                v = u[i:i + 2]
                 if v not in result:
                     result.add(v)
                     wait.append(v)
@@ -362,19 +357,28 @@ class FreeGroupMorphism(WordMorphism):
 
     def is_train_track(self, proof=False):
         r"""
-        ``True`` if ``self`` is train track (on the rose).
+        Check wether ``self`` is train track (on the rose).
 
         A morphism is `train-track` if there is no cancellation between the
         images in the iteration of ``self``. If ``proof`` is set to ``True``
-        then return also a word of length 2 in the attracting language of
-        ``self`` such that there is a cancellation in its image under ``self``.
+        then return a word also a word of length 2 in the attracting language
+        of ``self`` such that there is a cancellation in its image under
+        ``self``.
+        INPUT:
+
+        - ``proof`` -- (default: False) .
+
+        OUTPUT:
+
+        - return True if the  morphism is train-track
 
         EXAMPLES::
 
 
             sage: FreeGroupAutomorphism('a->ab, b->a').is_train_track()
             True
-            sage: f = FreeGroupAutomorphism('a->c,b->bba,c->baDABebadABEbac,d->baDABebadAB,e->CABebadABEbac')
+            sage: f = FreeGroupAutomorphism('a->c,b->bba,c->baDABebadABEbac,
+            d->baDABebadAB,e->CABebadABEbac')
             sage: f.is_train_track()
             True
 
@@ -395,7 +399,8 @@ class FreeGroupMorphism(WordMorphism):
 
             sage: tt = f.train_track()
             sage: tt.edge_map()
-            WordMorphism: A->GA, B->FAGA, F->BG, G->F, a->AG, b->Agaf, f->bg, g->f
+            WordMorphism: A->GA, B->FAGA, F->BG, G->F, a->AG, b->Agaf, f->bg,
+             g->f
             sage: tt_aut = FreeGroupAutomorphism('a->AG,b->Agaf,f->bg,g->f')
             sage: tt_aut.is_train_track()
             True
@@ -406,7 +411,7 @@ class FreeGroupMorphism(WordMorphism):
             # TODO: the job is done twice
             u1 = self.image(u[0])
             u2 = self.image(u[1])
-            if A.are_inverse(u1[-1],u2[0]):
+            if A.are_inverse(u1[-1], u2[0]):
                 if proof:
                     return False, u
                 return False
@@ -487,21 +492,27 @@ class FreeGroupMorphism(WordMorphism):
         attracting language of ``self`` that have exactly two occurrences of
         ``letter`` or its inverse at the begining and at the end.
 
-        The morphism must be train-track and irreducible (meaning that
-        the transition matrix is irreducible i.e it has a strictly positive power).
+        The morphism must be train-track and irreducible.
+        INPUT:
+
+        - ``letter`` -- input `letter`` to be returned
 
         EXAMPLES:
 
-        It is well known that for Tribonacci and its flipped version, the return
-        words form a basis of the free group. Hence there are 6 of them::
+        It is well known that for Tribonacci and its flipped version,
+        the return words form a basis of the free group. Hence there
+        are 6 of them::
 
             sage: f = FreeGroupAutomorphism('a->ab,b->ac,c->a')
             sage: Ra = f.complete_return_words('a'); Ra
-            set([word: ACA, word: AA, word: aca, word: aba, word: ABA, word: aa])
+            set([word: ACA, word: AA, word: aca, word: aba, word: ABA,
+             word: aa])
             sage: Rb = f.complete_return_words('b'); Rb
-            set([word: bacab, word: bab, word: BAB, word: baab, word: BACAB, word: BAAB])
+            set([word: bacab, word: bab, word: BAB, word: baab, word: BACAB,
+             word: BAAB])
             sage: Rc = f.complete_return_words('c'); Rc
-            set([word: CABAABAC, word: cabac, word: CABABAC, word: cababac, word: cabaabac, word: CABAC])
+            set([word: CABAABAC, word: cabac, word: CABABAC, word: cababac,
+             word: cabaabac, word: CABAC])
 
             sage: f = FreeGroupAutomorphism('a->ab,b->ca,c->a')
             sage: [len(f.complete_return_words(letter)) for letter in 'abc']
@@ -514,7 +525,7 @@ class FreeGroupMorphism(WordMorphism):
             [12, 12, 18]
         """
         if not self.is_train_track():
-            raise ValueError("self must be train-track (on the rose)")
+            raise ValueError("self must be train-track")
 
         # we first need to compute a power of self which is positive (all
         # letters appear in each image)
@@ -542,13 +553,13 @@ class FreeGroupMorphism(WordMorphism):
             i = 0
             while u[i] != letter and u[i] != inv_letter:
                 i += 1
-            first_and_last[a] = [i,None]
-            first_and_last[b] = [None,len(u)-i-1]
+            first_and_last[a] = [i, None]
+            first_and_last[b] = [None, len(u) - i - 1]
 
             j = i + 1
             while j < len(u):
                 if u[j] == letter or u[j] == inv_letter:
-                    r = u[i:j+1]
+                    r = u[i:j + 1]
                     complete_return_words.add(r)
                     complete_return_words.add(~r)
                     i = j
@@ -557,20 +568,18 @@ class FreeGroupMorphism(WordMorphism):
             first_and_last[a][1] = i
             first_and_last[b][0] = len(u) - i - 1
 
-
-        for a0,a1 in self.length2_words():
+        for a0, a1 in self.length2_words():
             u0 = f.image(a0)
             u1 = f.image(a1)
 
             i = first_and_last[a0][1]
             j = first_and_last[a1][0]
 
-            r = u0[i:] * u1[:j+1]
+            r = u0[i:] * u1[:j + 1]
             complete_return_words.add(r)
             complete_return_words.add(~r)
 
         return complete_return_words
-
 
 
 class FreeGroupAutomorphism(FreeGroupMorphism):
@@ -592,30 +601,28 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     AUTHORS:
 
-    - Thierry Coulbois (2013-05-16)
+    - Thierry Coulbois (2013-05-16): beta.0 version
     """
+
     def is_invertible(self):
-        """
-        ``True`` (as ``self`` is an automorphism).
-        """
         return True
 
     def __repr__(self):
-        result="Automorphism of the %s: " %str(self._domain)
-        result=result+"%s" %str(self)
+        result = "Automorphism of the %s: " % str(self._domain)
+        result = result + "%s" % str(self)
         return result
 
     def __mul__(self, other):
         """
-        Composition ``self``o``other``.
-
-        Composition is in the usual order ``self*other(u)=self(other(u))``.
+        Returns the composition self*other.
         """
-        if isinstance(other,FreeGroupMorphism):
-            m = dict((a,self(other.image(a))) for a in other.domain().alphabet().positive_letters())
+        if isinstance(other, FreeGroupMorphism):
+            m = dict((a, self(other.image(a)))
+                     for a in other.domain().alphabet().positive_letters())
 
-            if isinstance(other,FreeGroupAutomorphism) or other.is_invertible():
-                return FreeGroupAutomorphism(m,self.domain())
+            if isinstance(other, FreeGroupAutomorphism) \
+                    or other.is_invertible():
+                return FreeGroupAutomorphism(m, self.domain())
 
             return FreeGroupMorphism(m, self.domain())
 
@@ -623,7 +630,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     def simple_outer_representative(self):
         """
-        Shortest representative of the outer class of ``self``.
+        Shortest representative of the outer class of self.
 
         OUTPUT:
 
@@ -633,52 +640,53 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: phi=FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: phi.simple_outer_representative()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->c,b->Ca,c->Cb
+            Automorphism of the Free group over ['a', 'b', 'c']:
+             a->c,b->Ca,c->Cb
         """
-        F=self._domain
-        A=F._alphabet
-        l=len(A)
-        result=dict(((a,self.image(a)) for a in A.positive_letters()))
-        done=False
+        F = self._domain
+        A = F._alphabet
+        l = len(A)
+        result = dict(((a, self.image(a)) for a in A.positive_letters()))
+        done = False
         while not done:
-            done=True
-            gain=dict(((a,0) for a in A))
+            done = True
+            gain = dict(((a, 0) for a in A))
             for a in A.positive_letters():
-                gain[result[a][0]]+=1
-                gain[A.inverse_letter(result[a][-1])]+=1
+                gain[result[a][0]] += 1
+                gain[A.inverse_letter(result[a][-1])] += 1
             for a in A:
-                if gain[a]>l:
-                    done=False
-                    b=a
+                if gain[a] > l:
+                    done = False
+                    b = a
             if not done:
-                B=A.inverse_letter(b)
+                B = A.inverse_letter(b)
                 for a in A.positive_letters():
-                    if result[a][0]==b and result[a][-1]==B:
-                        result[a]=result[a][1:-1]
-                    elif result[a][0]==b:
-                        result[a]=result[a][1:]*F([b])
-                    elif result[a][-1]==B:
-                        result[a]=F([B])*result[a][:-1]
+                    if result[a][0] == b and result[a][-1] == B:
+                        result[a] = result[a][1:-1]
+                    elif result[a][0] == b:
+                        result[a] = result[a][1:] * F([b])
+                    elif result[a][-1] == B:
+                        result[a] = F([B]) * result[a][:-1]
                     else:
-                        result[a]=F([B])*result[a]*F([b])
+                        result[a] = F([B]) * result[a] * F([b])
 
-        return FreeGroupAutomorphism(result,F)
+        return FreeGroupAutomorphism(result, F)
 
     def rose_conjugacy_representative(self):
         """
-        Topological representative of the conjugacy class of ``self`` on the rose.
+        Topological representative of the conjugacy class of ``self``.
 
         SEE ALSO:
 
         This is the same as ``self.rose_representative()`` but the
         base graph of the ``TopologicalRepresentative`` is a
-        ``GraphWithInverses`` instead of a ``MarkedGraph``: we forget the marking.
+        ``GraphWithInverses`` instead of a ``MarkedGraph``.
         """
         from topological_representative import TopologicalRepresentative
         from inverse_graph import GraphWithInverses
 
-        return TopologicalRepresentative(GraphWithInverses.rose_graph(self._domain.alphabet()),self)
-
+        return TopologicalRepresentative(
+            GraphWithInverses.rose_graph(self._domain.alphabet()), self)
 
     def rose_representative(self):
         """
@@ -687,9 +695,10 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         from topological_representative import TopologicalRepresentative
         from marked_graph import MarkedGraph
 
-        return TopologicalRepresentative(MarkedGraph.rose_marked_graph(self._domain.alphabet()),self)
+        return TopologicalRepresentative(
+            MarkedGraph.rose_marked_graph(self._domain.alphabet()), self)
 
-    def train_track(self,stable=True,relative=True,verbose=False):
+    def train_track(self, stable=True, relative=True, verbose=False):
         """
         Computes a train-track representative of ``self``.
 
@@ -716,28 +725,33 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         from train_track_map import TrainTrackMap
 
-        f=self.rose_representative()
+        f = self.rose_representative()
         f.train_track(verbose)
-        if len(f._strata)==1:
-            f=TrainTrackMap(f)
-            if stable:
-                f.stabilize(verbose)
-        if relative and len(f._strata)>1:
+        if len(f._strata) == 1:
+            f = TrainTrackMap(f)
+        if stable:
+            f.stabilize(verbose)
+        if relative and len(f._strata) > 1:
             if stable:
                 f.stable_relative_train_track(verbose)
             else:
                 f.relative_train_track(verbose)
         return f
 
-    def is_iwip(self,verbose=False):
+    def is_iwip(self, verbose=False):
         """
         ``True`` if ``self`` is an iwip automorphism.
+
+        INPUT:
+
+        - ``verbose`` -- ``True`` if ``self`` is an iwip automorphism.
 
         ALGORITHM:
 
         0/ Look for a train-track representaive ``f`` for ``self``.
 
-        1/ Try to reduce ``f`` (removing valence 1 or 2 vertices, invariant forests)
+        1/ Try to reduce ``f`` (removing valence 1 or 2 vertices,
+          invariant forests)
 
         2/ Check that the matrix has a power with strictly positive entries
 
@@ -754,7 +768,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         non-trivial free factor.
 
         SEE ALSO::
-        
+
         TrainTrackMap.is_iwip()
 
         REFERENCES
@@ -763,30 +777,25 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         automorphisms, 2012, arXiv:1209.3732
         """
         from train_track_map import TrainTrackMap
-        
 
-        f=self.train_track(stable=True,relative=False,verbose=(verbose and verbose<1 and verbose-1))
-
+        f = self.train_track(stable=True, relative=False,
+                             verbose=(verbose and verbose < 1 and verbose - 1))
 
         if verbose:
             print f
-        
 
-        if len(f._strata)>1:
+        if len(f._strata) > 1:
             if verbose:
                 print "Reducible"
             return False
-        
-        f=TrainTrackMap(f)
 
+        f = TrainTrackMap(f)
 
         return f.is_iwip(verbose)
 
-            
-    def index_list(self,verbose=False):
-        """
-
-        Index list of ``self`` provided it is an iwip automorphism.
+    def index_list(self, verbose=False):
+        """Returns the index list of ``self`` provided it is an iwip
+        automorphism.
 
         The index list is the list of indices of non-isogredient
         automorphisms in the outer class of ``self``. The index of an
@@ -796,8 +805,8 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         Some authors (Mosher, Pfaff), use -1/2 our index definition.
 
-        Some authors (Gaboriau, Jaeger, Levitt, Lustig), use 1/2 our
-        index definition.
+        Some authors (Gaboriau, Jaeger, Levitt, Lustig), use 1/2 our index
+        definition
 
         REFERENCES:
 
@@ -811,43 +820,42 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
 
 
-        WARNING:
-
-        ``self`` is assumed to be iwip (or at least to
+        WARNING: ``self`` is assumed to be iwip (or at least to
         have an expanding absolute train-track representative).
 
         """
-        
+
         from train_track_map import TrainTrackMap
 
-        f=self.train_track(relative=False,stable=False,verbose=(verbose and verbose>1 and verbose-1))
-        if f.is_train_track(verbose=(verbose and verbose>1 and verbose-1)):
-            f=TrainTrackMap(f)
-            return f.index_list(verbose=(verbose and verbose>1 and verbose-1))
+        f = self.train_track(relative=False, stable=False,
+                             verbose=(verbose and verbose > 1 and verbose - 1))
+        if f.is_train_track(verbose=(verbose and verbose > 1 and verbose - 1)):
+            f = TrainTrackMap(f)
+            return f.index_list(
+                verbose=(verbose and verbose > 1 and verbose - 1))
         else:
-            if verbose: print "self is not iwip, not implemented yet in this case"
+            if verbose:
+                print "self is not iwip, not implemented yet in this case"
         return False
-    
-
 
     @staticmethod
     def identity_automorphism(F):
         """
         Identity automorphism of the free group ``F``.
         """
-        morph=dict((a,F([a])) for a in F.alphabet().positive_letters())
+        morph = dict((a, F([a])) for a in F.alphabet().positive_letters())
 
-        return FreeGroupAutomorphism(morph,group=F)
+        return FreeGroupAutomorphism(morph, group=F)
 
     @staticmethod
-    def dehn_twist(F,a,b,on_left=False):
+    def dehn_twist(F, a, b, on_left=False):
         """
         Dehn twist automorphism of the free group ``F``.
 
         if ``on_left`` is ``False``: ``a -> ab``
         if ``on_left`` is ``True``: ``a -> ba``
 
-        EXAMPLES::
+        EXAMPLES
 
             sage: F=FreeGroup(3)
             sage: FreeGroupAutomorphism.dehnt_twist(F,'a','c')
@@ -860,36 +868,39 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         A = F.alphabet()
 
         if a not in A:
-            raise ValueError("Letter %s not in alphabet" %str(a))
+            raise ValueError("Letter %s not in alphabet" % str(a))
         if b not in A:
-            raise ValueError("Letter %s not in alphabet" %str(b))
+            raise ValueError("Letter %s not in alphabet" % str(b))
         if a == b:
-            raise ValueError("Letter a=%s should be different from b=%s"%(str(a),str(b)))
-        if A.are_inverse(a,b):
-            raise ValueError("Letter a=%s should be different from the inverse of b=%s" %(str(a),str(b)))
+            raise ValueError("Letter a=%s should be different from b=%s"
+                             % (str(a), str(b)))
+        if A.are_inverse(a, b):
+            raise ValueError("Letter a=%s should be different from the"
+                             " inverse of b=%s" % (str(a), str(b)))
 
-        morphism = dict((letter,F([letter])) for letter in A.positive_letters())
+        morphism = dict((letter, F([letter]))
+                        for letter in A.positive_letters())
 
         if A.is_positive_letter(a):
             if on_left:
-                morphism[a] = F([b,a])
+                morphism[a] = F([b, a])
             else:
-                morphism[a] = F([a,b])
+                morphism[a] = F([a, b])
         else:
             a = A.inverse_letter(a)
             b = A.inverse_letter(b)
             if on_left:
-                morphism[a] = F([a,b])
+                morphism[a] = F([a, b])
             else:
-                morphism[a] = F([b,a])
-                
-        return FreeGroupAutomorphism(morphism,group=F)
+                morphism[a] = F([b, a])
+
+        return FreeGroupAutomorphism(morphism, group=F)
 
     @staticmethod
     def random_permutation(F):
-        r""" 
-        Automorphism of the free group ``F`` that is induced by
-        a random permutation of the letters of its alphabet.  
+        r"""
+        Return an automorphism of the free group ``F`` that is induced by
+        a random permutation of the letters of its alphabet.
         """
         from sage.misc.prandom import randint
         from sage.groups.perm_gps.permgroup_named import SymmetricGroup
@@ -899,7 +910,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         s = SymmetricGroup(P).random_element()
         f = {}
         for a in P:
-            if randint(0,1):
+            if randint(0, 1):
                 f[a] = F([s(a)])
             else:
                 f[a] = F([A.inverse_letter(s(a))])
@@ -907,63 +918,68 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         return FreeGroupAutomorphism(f, group=F)
 
     @staticmethod
-    def random_automorphism(F,length=1):
+    def random_automorphism(F, length=1):
         """
         Random automorphism of the free group ``F``.
 
-        This is obtained by a random walk (without backtrack) on the automorphism group of
+        This is obtained by a random walk (without backtrack) on
+         the automorphism group of
         ``F`` of ``length`` Dehn twist automorphisms.
 
         """
-        if length==0: return FreeGroupAutomorphism.identity_automorphism(F)
+        if length == 0:
+            return FreeGroupAutomorphism.identity_automorphism(F)
 
-        A=F.alphabet()
-        a=A.random_letter()
-        b=A.random_letter([a,A.inverse_letter(a)])
-        result=FreeGroupAutomorphism.dehn_twist(F,a,b)
-        for i in xrange(length-1):
-            new_a=A.random_letter()
-            if new_a==a:
-                b=A.random_letter([a,A.inverse_letter(a),A.inverse_letter(b)])
+        A = F.alphabet()
+        a = A.random_letter()
+        b = A.random_letter([a, A.inverse_letter(a)])
+        result = FreeGroupAutomorphism.dehn_twist(F, a, b)
+        for i in xrange(length - 1):
+            new_a = A.random_letter()
+            if new_a == a:
+                b = A.random_letter([a, A.inverse_letter(a),
+                                     A.inverse_letter(b)])
             else:
-                a=new_a
-                b=A.random_letter([a,A.inverse_letter(a)])
-            result *= FreeGroupAutomorphism.dehn_twist(F,a,b)
+                a = new_a
+                b = A.random_letter([a, A.inverse_letter(a)])
+            result *= FreeGroupAutomorphism.dehn_twist(F, a, b)
         return result
 
     @staticmethod
-    def _surface_dehn_twist_e(F,i):
-        A=F.alphabet()
-        a=A[2*i]
-        b=A[2*i+1]
-        return FreeGroupAutomorphism.dehn_twist(F,a,b,True)
+    def _surface_dehn_twist_e(F, i):
+        A = F.alphabet()
+        a = A[2 * i]
+        b = A[2 * i + 1]
+        return FreeGroupAutomorphism.dehn_twist(F, a, b, True)
 
     @staticmethod
-    def _surface_dehn_twist_c(F,i):
-        A=F.alphabet()
-        result=dict((a,F([a])) for a in A.positive_letters())
-        result[A[2*i+1]]=F([A[2*i+2],A.inverse_letter(A[2*i]),A[2*i+1]])
-        result[A[2*i+3]]=F([A[2*i+3],A[2*i],A.inverse_letter(A[2*i+2])])
+    def _surface_dehn_twist_c(F, i):
+        A = F.alphabet()
+        result = dict((a, F([a])) for a in A.positive_letters())
+        result[A[2 * i + 1]] = F([A[2 * i + 2],
+                                  A.inverse_letter(A[2 * i]), A[2 * i + 1]])
+        result[A[2 * i + 3]] = F([A[2 * i + 3], A[2 * i],
+                                  A.inverse_letter(A[2 * i + 2])])
 
-        return FreeGroupAutomorphism(result,group=F)
-
-    @staticmethod
-    def _surface_dehn_twist_m(F,i):
-        A=F.alphabet()
-        result={}
-        for j in xrange(2*i+1):
-            result[A[j]]=F([A[j]])
-        a=A[2*i]
-
-        result[A[2*i+1]]=F([a,A[2*i+1]])
-        aa=A.inverse_letter(a)
-        for j in xrange(2*i+2,len(A)):
-            result[A[j]]=F([a,A[j],aa])
-
-        return FreeGroupAutomorphism(result,group=F)
+        return FreeGroupAutomorphism(result, group=F)
 
     @staticmethod
-    def surface_dehn_twist(F,k):
+    def _surface_dehn_twist_m(F, i):
+        A = F.alphabet()
+        result = {}
+        for j in xrange(2 * i + 1):
+            result[A[j]] = F([A[j]])
+        a = A[2 * i]
+
+        result[A[2 * i + 1]] = F([a, A[2 * i + 1]])
+        aa = A.inverse_letter(a)
+        for j in xrange(2 * i + 2, len(A)):
+            result[A[j]] = F([a, A[j], aa])
+
+        return FreeGroupAutomorphism(result, group=F)
+
+    @staticmethod
+    def surface_dehn_twist(F, k):
         """
         Dehn twist of the surface (with one boundary component) with
         fundamental group the free group ``F``.
@@ -1002,33 +1018,33 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
                  x_i->x_i, y_i->x_iy_i
                  x_j->x_ix_jx_i\inv, y_j->x_iy_jx_i\inv
 
-        T_{c_i}: x_j->x_j, y_j->y_j, y_i->x_{i+1}x_i\inv y_i, y_{i+1}->y_{i+1}x_{i+1}x_i\inv
+        T_{c_i}: x_j->x_j, y_j->y_j, y_i->x_{i+1}x_i\inv y_i,
+         y_{i+1}->y_{i+1}x_{i+1}x_i\inv
 
         WARNING:
 
         ``F`` is assumed to be of even rank.
 
         """
-        assert len(F._alphabet)%2==0
+        assert len(F._alphabet) % 2 == 0
 
-        g=len(F._alphabet)/2
-        if (0<=k and k<g): result=FreeGroupAutomorphism._surface_dehn_twist_e(F,k)
-        elif (g<=k and k<2*g): result=FreeGroupAutomorphism._surface_dehn_twist_m(F,k-g)
-        elif (2*g<=k and k<3*g-1): result=FreeGroupAutomorphism._surface_dehn_twist_c(F,k-2*g)
+        g = len(F._alphabet) / 2
+        if (0 <= k and k < g):
+            result = FreeGroupAutomorphism._surface_dehn_twist_e(F, k)
+        elif (g <= k and k < 2 * g):
+            result = FreeGroupAutomorphism._surface_dehn_twist_m(F, k - g)
+        elif (2 * g <= k and k < 3 * g - 1):
+            result = FreeGroupAutomorphism._surface_dehn_twist_c(F, k - 2 * g)
 
         return result
 
-
-
     @staticmethod
-    def random_mapping_class(F,length=1,verbose=False):
-        """
-
-        Automorphism of the free group ``F`` that is a random mapping class.
+    def random_mapping_class(F, length=1, verbose=False):
+        """Automorphism of the free group ``F`` that is a random mapping class.
 
         This is obtained by a random walk of ``length`` using surface
         Dehn twists as generators without backtrack.
-        
+
 
         WARNING:
 
@@ -1041,38 +1057,40 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         from sage.misc.prandom import randint
 
-        assert len(F.alphabet())%2==0
+        assert len(F.alphabet()) % 2 == 0
 
-        if length==0:
+        if length == 0:
             return FreeGroupAutomorphism.identity_automorphism(F)
 
-        r=3*len(F.alphabet())/2-2
-        i=randint(0,r)
-        j=randint(0,1)
-        if j==0:
-            result=FreeGroupAutomorphism.surface_dehn_twist(F,i)
+        r = 3 * len(F.alphabet()) / 2 - 2
+        i = randint(0, r)
+        j = randint(0, 1)
+        if j == 0:
+            result = FreeGroupAutomorphism.surface_dehn_twist(F, i)
         else:
-            result=FreeGroupAutomorphism.surface_dehn_twist(F,i).inverse()
-        used_dehn_twists=[(i,1-2*j)]
-        for ii in xrange(length-1):
-            l=randint(0,1)
-            if j==l:
-                i=randint(0,r)
+            result = FreeGroupAutomorphism.surface_dehn_twist(F, i).inverse()
+        used_dehn_twists = [(i, 1 - 2 * j)]
+        for ii in xrange(length - 1):
+            l = randint(0, 1)
+            if j == l:
+                i = randint(0, r)
             else:
-                k=randint(0,r-1)
-                if k>=i: i=k+1
-                j=l
-            if j==0:
-                result=result*FreeGroupAutomorphism.surface_dehn_twist(F,i)
+                k = randint(0, r - 1)
+                if k >= i: i = k + 1
+                j = l
+            if j == 0:
+                result = result * FreeGroupAutomorphism.surface_dehn_twist(
+                    F, i)
             else:
-                result=result*FreeGroupAutomorphism.surface_dehn_twist(F,i).inverse()
-            used_dehn_twists.append((i,1-2*j))
+                result = result * FreeGroupAutomorphism.surface_dehn_twist(
+                    F, i).inverse()
+            used_dehn_twists.append((i, 1 - 2 * j))
         if verbose:
-            print "List of surface Dehn twists used:",used_dehn_twists       
+            print "List of surface Dehn twists used:",used_dehn_twists
         return result
 
     @staticmethod
-    def braid_automorphism(F,i,inverse=False):
+    def braid_automorphism(F, i, inverse=False):
         """
         Automorphism of the free group ``F`` which corresponds to the generator
         sigma_i of the braid group.
@@ -1085,21 +1103,21 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         If ``inverse`` is True returns the inverse of sigma_i.
 
         """
-        A=F.alphabet()
-        result=dict((a,F([a])) for a in A.positive_letters())
+        A = F.alphabet()
+        result = dict((a, F([a])) for a in A.positive_letters())
         if not inverse:
-            a=A[i-1]
-            result[a]=F([a,A[i],A.inverse_letter(a)])
-            result[A[i]]=F([a])
+            a = A[i - 1]
+            result[a] = F([a, A[i], A.inverse_letter(a)])
+            result[A[i]] = F([a])
         else:
-            a=A[i]
-            result[a]=F([A.inverse_letter(a),A[i-1],a])
-            result[A[i-1]]=F(a)
+            a = A[i]
+            result[a] = F([A.inverse_letter(a), A[i - 1], a])
+            result[A[i - 1]] = F(a)
 
         return FreeGroupAutomorphism(result,group=F)
 
     @staticmethod
-    def random_braid(F,length=1):
+    def random_braid(F, length=1):
         """A random braid automorphism of the free group ``F``.
 
         This is obtained by a uniform random walk with generators
@@ -1109,31 +1127,35 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         from sage.misc.prandom import randint
 
-        A=F._alphabet
-        if length==0:
+        A = F._alphabet
+        if length == 0:
             return FreeGroupAutomorphism.identity_automorphism(F)
-        i=randint(1,len(A)-1)
-        j=randint(0,1)
-        result=FreeGroupAutomorphism.braid_automorphism(F,i,j!=0)
+        i = randint(1, len(A) - 1)
+        j = randint(0, 1)
+        result = FreeGroupAutomorphism.braid_automorphism(F, i, j != 0)
         for ii in xrange(length-1):
-            l=randint(0,1)
-            if l==j: i=randint(1,len(A)-1)
+            l = randint(0, 1)
+            if l == j:
+                i = randint(1, len(A) - 1)
             else:
-                k=randint(1,len(A)-2)
-                if j<=k: i=k+1
-            result *= FreeGroupAutomorphism.braid_automorphism(F,i,j)
+                k = randint(1, len(A) - 2)
+                if j <= k:
+                    i = k + 1
+            result *= FreeGroupAutomorphism.braid_automorphism(F, i, j)
         return result
+
 
 class free_group_automorphisms:
     r"""
     Many examples of free group automorphisms.
     """
+
     @staticmethod
     def tribonacci():
         """
         Tribonacci automorphism.
         """
-        return FreeGroupAutomorphism("a->ab,b->ac,c->a",FreeGroup(3))
+        return FreeGroupAutomorphism("a->ab,b->ac,c->a", FreeGroup(3))
 
     @staticmethod
     def Handel_Mosher_inverse_with_same_lambda():
@@ -1149,16 +1171,15 @@ class free_group_automorphisms:
         automorphisms of free groups, Transactions of
         Amer. Math. Soc. 359, 3153-3183, 2007.
         """
-        F=FreeGroup(3)
-        theta=pow(FreeGroupAutomorphism("a->b,b->c,c->Ba",F),4)
-        psi=FreeGroupAutomorphism("a->b,b->a,c->c",F)
-        return psi*theta*psi*theta.inverse()
-
+        F = FreeGroup(3)
+        theta = pow(FreeGroupAutomorphism("a->b,b->c,c->Ba", F), 4)
+        psi = FreeGroupAutomorphism("a->b,b->a,c->c", F)
+        return psi * theta * psi * theta.inverse()
 
     @staticmethod
     def Bestvina_Handel_train_track_1_1():
         """
-        Automorphism given as Example 1.1 in [BH-train-track]. 
+        Automorphism given as Example 1.1 in [BH-train-track].
 
         This automorphism is iwip and not geometric nor
         parageometric. Its representative on the rose is
@@ -1169,7 +1190,7 @@ class free_group_automorphisms:
         [BH-train-track] M. Bestvina, M.  Handel, Train tracks and
         automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
         """
-        return FreeGroupAutomorphism("a->b,b->c,c->d,d->ADBC",FreeGroup(4))
+        return FreeGroupAutomorphism("a->b,b->c,c->d,d->ADBC", FreeGroup(4))
 
     @staticmethod
     def Bestvina_Handel_train_track_1_9():
@@ -1184,7 +1205,7 @@ class free_group_automorphisms:
         [BH-train-track] M. Bestvina, M.  Handel, Train tracks and
         automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
         """
-        return FreeGroupAutomorphism("a->ba,b->bba,c->cAbaB",FreeGroup(3))
+        return FreeGroupAutomorphism("a->ba,b->bba,c->cAbaB", FreeGroup(3))
 
     @staticmethod
     def Bestvina_Handel_train_track_3_6():
@@ -1200,7 +1221,7 @@ class free_group_automorphisms:
         automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
 
         """
-        return FreeGroupAutomorphism("a->ba,b->bba",FreeGroup(2))
+        return FreeGroupAutomorphism("a->ba,b->bba", FreeGroup(2))
 
     @staticmethod
     def Bestvina_Handel_train_track_5_16():
@@ -1216,7 +1237,8 @@ class free_group_automorphisms:
         automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
 
         """
-        return FreeGroupAutomorphism("a->a,b->CAbac,c->CAbacacACABac",FreeGroup(3))
+        return FreeGroupAutomorphism("a->a,b->CAbac,c->CAbacacACABac",
+                                     FreeGroup(3))
 
     @staticmethod
     def Handel_Mosher_axes_3_4():
@@ -1234,8 +1256,8 @@ class free_group_automorphisms:
         in Outer space, Mem. Amer. Math. Soc. 213, 2011.
 
         """
-        A = AlphabetWithInverses(['a','g','f'],['A','G','F'])
-        return FreeGroupAutomorphism("a->afgfgf,f->fgf,g->gfafg",FreeGroup(A))
+        A = AlphabetWithInverses(['a', 'g', 'f'], ['A', 'G', 'F'])
+        return FreeGroupAutomorphism("a->afgfgf,f->fgf,g->gfafg", FreeGroup(A))
 
     @staticmethod
     def Handel_Mosher_axes_5_5():
@@ -1253,7 +1275,8 @@ class free_group_automorphisms:
         in Outer space, Mem. Amer. Math. Soc. 213, 2011.
 
         """
-        return FreeGroupAutomorphism("a->bacaaca,b->baca,c->caaca",FreeGroup(3))
+        return FreeGroupAutomorphism("a->bacaaca,b->baca,c->caaca",
+                                     FreeGroup(3))
 
     @staticmethod
     def Hilion_parabolic(k=1):
@@ -1268,10 +1291,11 @@ class free_group_automorphisms:
         libres, Thesis (Toulouse, 2004).
 
         """
-        F=FreeGroup(4)
-        phi=FreeGroupAutomorphism("a->a,b->ba,c->caa,d->dc",F)
-        if k>1:
-            phi=phi*pow(FreeGroupAutomorphism.dehn_twist(F,c,a),k-1)
+
+        F = FreeGroup(4)
+        phi = FreeGroupAutomorphism("a->a,b->ba,c->caa,d->dc", F)
+        if k > 1:
+            phi = phi * pow(FreeGroupAutomorphism.dehn_twist(F, c, a), k - 1)
         return phi
 
     @staticmethod
@@ -1291,7 +1315,7 @@ class free_group_automorphisms:
         Amer. Math. Soc. 359, 3153-3183, 2007.
 
         """
-        return FreeGroupAutomorphism("a->ac,b->a,c->b",FreeGroup(3))
+        return FreeGroupAutomorphism("a->ac,b->a,c->b", FreeGroup(3))
 
     @staticmethod
     def Cohen_Lustig_1_6():
@@ -1308,7 +1332,8 @@ class free_group_automorphisms:
         Math. 96, 613-638, 1989.
 
         """
-        return FreeGroupAutomorphism("a->cccaCCC,b->CaccAbC,c->accAbccaCCBaCCAccccACCC",FreeGroup(3))
+        return FreeGroupAutomorphism("a->cccaCCC,b->CaccAbC,\
+                   c->accAbccaCCBaCCAccccACCC", FreeGroup(3))
 
     @staticmethod
     def Cohen_Lustig_7_2():
@@ -1316,7 +1341,7 @@ class free_group_automorphisms:
 
         Automorphism given as example 7.2 in [CL-dynamics].
 
-        this is an atoroidal iwip. 
+        this is an atoroidal iwip.
 
         REFERENCES:
 
@@ -1326,7 +1351,7 @@ class free_group_automorphisms:
 
 
         """
-        return FreeGroupAutomorphism("a->aabc,b->abc,c->abcc",FreeGroup(3))
+        return FreeGroupAutomorphism("a->aabc,b->abc,c->abcc", FreeGroup(3))
 
     @staticmethod
     def Cohen_Lustig_7_3():
@@ -1343,7 +1368,7 @@ class free_group_automorphisms:
         Math. 96, 613-638, 1989.
 
         """
-        return FreeGroupAutomorphism("a->cabaa,b->baa,c->caba",FreeGroup(3))
+        return FreeGroupAutomorphism("a->cabaa,b->baa,c->caba", FreeGroup(3))
 
     @staticmethod
     def Turner_Stallings():
@@ -1351,7 +1376,7 @@ class free_group_automorphisms:
         Automorphism of F_4 given in [Turner].
 
         This automorphism comes from an idea of Stallings and although
-        it is very short, it has a very long fixed word. 
+        it is very short, it has a very long fixed word.
 
         It is a reducible automorphism.
 
@@ -1362,7 +1387,8 @@ class free_group_automorphisms:
         Edinburg, 1993 (Lond. Math. Soc. Lect. Note Ser., 204), Cambridge,
         Cambridge Univ. Press., 1995, 300-313.
         """
-        return FreeGroupAutomorphism("a->dac,b->CADac,c->CABac,d->CAbc",FreeGroup(4))
+        return FreeGroupAutomorphism("a->dac,b->CADac,c->CABac,d->CAbc",
+                                     FreeGroup(4))
 
     @staticmethod
     def Bestvina_Handel_surface_homeo():
@@ -1374,7 +1400,7 @@ class free_group_automorphisms:
         on the rose in train-track.
 
         REFERENCES:
-        
+
         [BH] M. Bestvina, and M. Handel, Train-tracks for surface
         homeomorphisms. Topology 34 (1995), no. 1, 109-140
 
@@ -1383,8 +1409,7 @@ class free_group_automorphisms:
 
         """
 
-        return FreeGroupAutomorphism("a->b,b->c,c->dA,d->DC",FreeGroup(4))
-    
+        return FreeGroupAutomorphism("a->b,b->c,c->dA,d->DC", FreeGroup(4))
 
     @staticmethod
     def Levitt_Lustig_periodic():
@@ -1395,12 +1420,12 @@ class free_group_automorphisms:
         on the rose.
 
         REFERENCES:
-        
+
         [LL-periodic] G. Levitt, and M. Lustig, Automorphisms of free
         groups have asymptotically periodic dynamics,
 
         """
-        return FreeGroupAutomorphism("a->cb,b->a,c->ba",FreeGroup(3))
+        return FreeGroupAutomorphism("a->cb,b->a,c->ba", FreeGroup(3))
 
     @staticmethod
     def Clay_Pettet_twisting_out():
@@ -1411,12 +1436,12 @@ class free_group_automorphisms:
         on the rose.
 
         REFERENCES:
-        
+
         [CP-twisting] M. Clay, and A. Pettet, Twisting out fully
         irreducible automorphisms, ArXiv:0906.4050
 
         """
-        return FreeGroupAutomorphism("a->b,b->c,c->ab",FreeGroup(3))
+        return FreeGroupAutomorphism("a->b,b->c,c->ab", FreeGroup(3))
 
     @staticmethod
     def Hokkaido():
@@ -1434,9 +1459,9 @@ class free_group_automorphisms:
         return FreeGroupAutomorphism("a->ab,b->c,c->d,d->e,e->a")
 
     @staticmethod
-    def Akiyama():    
+    def Akiyama():
         """
-        Automorphism of F_3 attributed to Shigeki Akiyama by X. Bressaud. 
+        Automorphism of F_3 attributed to Shigeki Akiyama by X. Bressaud.
 
         This is a non-geometric, non-parageometric atoroidal iwip. It
         is positive thus train-track on the rose.
@@ -1444,7 +1469,7 @@ class free_group_automorphisms:
         This is a Pisot substitution.
 
         REFERENCES:
-        
+
         [Akiyama] reference needed
 
         """
@@ -1452,15 +1477,16 @@ class free_group_automorphisms:
         return FreeGroupAutomorphism("a->b,b->ac,c->a")
 
     @staticmethod
-    def Bressaud():    
+    def Bressaud():
         """
-        Automorphism of F_4 suggested by Xavier Bressaud [personal communication]
+        Automorphism of F_4 suggested by Xavier Bressaud
+         [personal communication]
 
         It is positive thus train-track on the rose. This is a
-        non-iwip automorphism. 
+        non-iwip automorphism.
 
         REFERENCES:
-        
+
         reference needed
 
         """
@@ -1468,7 +1494,7 @@ class free_group_automorphisms:
         return FreeGroupAutomorphism("a->db,b->dc,c->d,d->a")
 
     @staticmethod
-    def Jolivet():    
+    def Jolivet():
         """Automorphism of F_4 suggested by Timo Jolivet [personal
         communication]
 
@@ -1480,9 +1506,9 @@ class free_group_automorphisms:
         pseudo-Anosov on the surface of genus 2 with 1 boundary
         component.
 
-        
+
         REFERENCES:
-        
+
         reference needed
 
         """
@@ -1499,7 +1525,7 @@ class free_group_automorphisms:
         This is the inverse of a parageometric iwip.
 
         REFERENCES:
-        
+
         [BK] M. Boshernitzan and M. Kornfeld, TODO
         """
         return FreeGroupAutomorphism("a->b,b->caaa,c->caa")
