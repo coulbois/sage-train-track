@@ -4,13 +4,9 @@
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
-<<<<<<< HEAD
+# - modified by Dominique 03/03/20016 :  major changes pep8 correction
 
 from topological_representative import GraphSelfMap
-=======
-# - modified by Dominique 03/03/20016 :  major changes pep8 correction
-from topological_representative import TopologicalRepresentative
->>>>>>> 8f08249492e53621814bf561ee2e75b1b802d859
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.combinat.words.words import FiniteWords
@@ -18,12 +14,8 @@ from sage.graphs.graph import Graph
 from sage.rings.qqbar import AA
 from sage.matrix.constructor import matrix
 
-<<<<<<< HEAD
-class TrainTrackMap(GraphSelfMap):
-=======
 
-class TrainTrackMap(TopologicalRepresentative):
->>>>>>> 8f08249492e53621814bf561ee2e75b1b802d859
+class TrainTrackMap(GraphSelfMap):
     """
     A train-track map is a map from a (possibly marked, possibly
     metric) graph to itself which is train track: vertices are mapped
@@ -70,11 +62,8 @@ class TrainTrackMap(TopologicalRepresentative):
           ``edge_map``).
         """
         
-<<<<<<< HEAD
         GraphSelfMap.__init__(self,*args)
-=======
-        TopologicalRepresentative.__init__(self, *args)
->>>>>>> 8f08249492e53621814bf561ee2e75b1b802d859
+
  
     def __str__(self):
         """
@@ -135,12 +124,9 @@ class TrainTrackMap(TopologicalRepresentative):
         Edge map: a->ec, b->Ea, c->b, e->C
         """
 
-<<<<<<< HEAD
-        return TrainTrackMap(GraphSelfMap.from_edge_map(edge_map,alphabet,path))
-=======
         return TrainTrackMap(
-            TopologicalRepresentative.from_edge_map(edge_map, alphabet, path))
->>>>>>> 8f08249492e53621814bf561ee2e75b1b802d859
+            GraphSelfMap.from_edge_map(edge_map,alphabet,path))
+
 
     def is_expanding(self):
         """
