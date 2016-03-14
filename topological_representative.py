@@ -978,7 +978,7 @@ class GraphSelfMap(GraphMap):
         done = False
         while not done:
             done = True
-            union = ()
+            union = set()
             for a in filtration[0]:
                 q = union.union(span[a])
                 if len(q) < len(filtration[0]):

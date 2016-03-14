@@ -731,8 +731,8 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         f.train_track(verbose)
         if len(f._strata) == 1:
             f = TrainTrackMap(f)
-        if stable:
-            f.stabilize(verbose)
+            if stable:
+                f.stabilize(verbose)
         if relative and len(f._strata) > 1:
             if stable:
                 f.stable_relative_train_track(verbose)

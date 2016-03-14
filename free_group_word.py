@@ -24,9 +24,10 @@ Free group over ['a', 'b']
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
 # - modified by Dominique 03/03/20016 :  major changes pep8 correction
+
 from sage.combinat.words.word import FiniteWord_list
 from sage.combinat.words.word import Word_class
-from free_group import FreeGroup
+#from free_group import FreeGroup
 
 class FreeGroupWord(FiniteWord_list):
     """

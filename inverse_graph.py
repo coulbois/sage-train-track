@@ -226,7 +226,7 @@ class GraphWithInverses(DiGraph):
         while not done:
             if i not in self.vertices():
                 done = True
-                i = i + 1
+            i = i + 1
         return i - 1
 
     def new_vertices(self, n):

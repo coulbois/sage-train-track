@@ -1680,4 +1680,4 @@ class TrainTrackMap(GraphSelfMap):
 
 
 class RelativeTrainTrackMap(GraphSelfMap):
-    path
+    pass
