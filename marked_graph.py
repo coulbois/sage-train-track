@@ -1,9 +1,10 @@
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#*****************************************************************************
+# *****************************************************************************
+# - modified by Dominique 03/03/20016 :  major changes pep8 correction
 
 from inverse_graph import GraphWithInverses, MetricGraph
 from graph_map import GraphMap
@@ -11,191 +12,197 @@ from sage.combinat.words.morphism import WordMorphism
 from inverse_alphabet import AlphabetWithInverses
 from sage.combinat.words.word import Word
 
+
 class MarkedGraph(GraphWithInverses):
-     """
-     A ``MarkedGraph`` is a ``GraphWithInverses`` together with a marking.
+    """
+    A ``MarkedGraph`` is a ``GraphWithInverses`` together with a marking.
 
-     A marking is a homotopy equivalence (here a ``GraphMap``)
-     from the rose to the graph.
+    A marking is a homotopy equivalence (here a ``GraphMap``)
+    from the rose to the graph.
 
-     A ``MarkedGraph`` can be created from a ``GraphWithInverses`` by
-     computing (randomly) a rose equivalent to the graph.
+    A ``MarkedGraph`` can be created from a ``GraphWithInverses`` by
+    computing (randomly) a rose equivalent to the graph.
 
-     EXAMPLES::
+    EXAMPLES::
 
-     sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-     sage: print MarkedGraph(G)
-     Marked graph:
-     a: 0->0, b: 0->1, c: 1->0
-     Marking: a->a, b->bc
+    sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+    sage: print MarkedGraph(G)
+    Marked graph:
+    a: 0->0, b: 0->1, c: 1->0
+    Marking: a->a, b->bc
 
-     AUTHORS:
+    AUTHORS:
 
-     - Thierry Coulbois (2013-05-16): beta.0 version
-     """
-     def __init__(self,graph=None,marking=None,alphabet=None,marking_alphabet=None):
-         if isinstance(marking,GraphMap):
-              GraphWithInverses.__init__(self,marking.codomain(),marking.codomain().alphabet())
-              self._marking=marking
-         else:
-              if isinstance(graph,GraphWithInverses):
-                   alphabet=graph._alphabet
-              GraphWithInverses.__init__(self,graph,alphabet)
+    - Thierry Coulbois (2013-05-16): beta.0 version
+    """
 
-              if marking is None: #computes a (random) marking from a rose equivalent to graph
+    def __init__(self, graph=None, marking=None, alphabet=None,
+                 marking_alphabet=None):
+        if isinstance(marking, GraphMap):
+            GraphWithInverses.__init__(self,
+                                       marking.codomain(),
+                                       marking.codomain().alphabet())
+            self._marking = marking
+        else:
+            if isinstance(graph, GraphWithInverses):
+                alphabet = graph._alphabet
+            GraphWithInverses.__init__(self, graph, alphabet)
 
-                   A=graph.alphabet()
-                   tree=graph.spanning_tree()
+            if marking is None:  # computes a (random) marking
+                # from a rose equivalent to graph
 
-                   j=0
-                   letter=dict()
-                   for a in A.positive_letters():
-                        vi=graph.initial_vertex(a)
-                        vt=graph.terminal_vertex(a)
-                        if (len(tree[vi])==0 or tree[vi][-1]!=A.inverse_letter(a)) and\
-                                 (len(tree[vt])==0 or tree[vt][-1]!=a):
-                             letter[j]=a
-                             j=j+1
+                A = graph.alphabet()
+                tree = graph.spanning_tree()
 
+                j = 0
+                letter = dict()
+                for a in A.positive_letters():
+                    vi = graph.initial_vertex(a)
+                    vt = graph.terminal_vertex(a)
+                    if (len(tree[vi]) == 0 or
+                            tree[vi][-1] != A.inverse_letter(a)) \
+                            and (len(tree[vt]) == 0 or tree[vt][-1] != a):
+                        letter[j] = a
+                        j = j + 1
 
+                B = AlphabetWithInverses(j)
+                RB = GraphWithInverses.rose_graph(B)
 
-                   B=AlphabetWithInverses(j)
-                   RB=GraphWithInverses.rose_graph(B)
+                edge_map = dict()
 
-                   edge_map=dict()
+                for i in xrange(j):
+                    a = letter[i]
+                    edge_map[B[i]] = graph.reduce_path(
+                        tree[graph.initial_vertex(a)] * Word([a]) *
+                        graph.reverse_path(tree[graph.terminal_vertex(a)]))
+                    marking = GraphMap(RB, graph, edge_map)
+            else:
+                marking = GraphMap(
+                    GraphWithInverses.rose_graph(marking_alphabet),
+                    self, marking)
+                self._marking = marking
 
-                   for i in xrange(j):
-                        a=letter[i]
-                        edge_map[B[i]]=graph.reduce_path(tree[graph.initial_vertex(a)]\
-                                                           *Word([a])\
-                                                           *graph.reverse_path(tree[graph.terminal_vertex(a)]))
+    def __str__(self):
+        """
+        String representation of ``self``.
+        """
+        result = "Marked graph: "
+        for a in self._alphabet.positive_letters():
+            result = result + a + ": {0}->{1}, ".format(
+                self.initial_vertex(a), self.terminal_vertex(a))
+        result = result[:-2] + "\n"
+        result += "Marking: "
+        for a in self._marking._domain._alphabet.positive_letters():
+            result += a + "->" + self._marking.image(a).__str__() + ", "
+        result = result[:-2]
 
-                        marking=GraphMap(RB,graph,edge_map)
-              else:
-                   marking=GraphMap(GraphWithInverses.rose_graph(marking_alphabet),self,marking)
-              self._marking=marking
+        return result
 
-     def __str__(self):
-          """
-          String representation of ``self``.
-          """
-          result="Marked graph: "
-          for a in self._alphabet.positive_letters():
-               result=result+a+": {0}->{1}, ".format(self.initial_vertex(a),self.terminal_vertex(a))
-          result=result[:-2]+"\n"
-          result+="Marking: "
-          for a in self._marking._domain._alphabet.positive_letters():
-               result+=a+"->"+self._marking.image(a).__str__()+", "
-          result=result[:-2]
+    def marking(self):
+        """
+        A ``GraphMap`` from the rose to ``self``.
+        """
+        return self._marking
 
-          return result
+    def precompose(self, automorphism):
+        """
+        Precompose the marking by ``automorphism``.
+        """
+        edge_map = dict()
+        for a in self._marking.domain().alphabet().positive_letters():
+            edge_map[a] = self._marking(automorphism.image(a))
+        self._marking.set_edge_map(edge_map)
+        return self
 
-     def marking(self):
-          """
-          A ``GraphMap`` from the rose to ``self``.
-          """
-          return self._marking
+    def difference_of_marking(self, other):
+        """
+        A ``GraphMap`` from ``self`` to ``other`` that makes
+        the markings commute.
+        """
 
-     def precompose(self,automorphism):
-          """
-          Precompose the marking by ``automorphism``.
-          """
-          edge_map=dict()
-          for a in self._marking.domain().alphabet().positive_letters():
-               edge_map[a]=self._marking(automorphism.image(a))
-          self._marking.set_edge_map(edge_map)
-          return self
+        return other.marking() * self.marking().inverse()
 
+    def subdivide(self, edge_list):
+        """
+        Subdivides each edge in the edge_list into two edges.
 
-     def difference_of_marking(self,other):
-          """
-          A ``GraphMap`` from ``self`` to ``other`` that makes the markings commute.
-          """
+        WARNING:
 
-          return other.marking()*self.marking().inverse()
+        each edge in ``edge_list`` must appear only once.
 
+        SEE ALSO::
 
-     def subdivide(self,edge_list):
-          """
-          Subdivides each edge in the edge_list into two edges.
+        GraphWithInverses.subdivide()
+        """
 
-          WARNING:
+        subdivide_map = GraphWithInverses.subdivide(self, edge_list)
+        subdivide_morph = WordMorphism(subdivide_map)
+        self._marking.set_edge_map(subdivide_morph * self._marking._edge_map)
+        return subdivide_map
 
-          each edge in ``edge_list`` must appear only once.
+    def fold(self, edges_full, edges_partial):
+        """
+        Folds the list of edges.
 
-          SEE ALSO::
+        Some edges are fully folded and some are only partially
+        folded. All edges are assumed to start form the same vertex.
+        Edges are given by their label. In the terminology of
+        Stallings folds the partially fold edges are subdivided and
+        then fold.
 
-          GraphWithInverses.subdivide()
-          """
+        The first element of ``edges_full`` is allowed to be a tuple
+        ``(path,'path')`` and not an ``edge_label``. Then the other
+        edges will be folded to the whole ``path``. In Stallings
+        terminology, this is a sequence of folds of the successive
+        edges of ``path``.
 
-          subdivide_map=GraphWithInverses.subdivide(self,edge_list)
-          subdivide_morph=WordMorphism(subdivide_map)
-          self._marking.set_edge_map(subdivide_morph*self._marking._edge_map)
-          return subdivide_map
-
-     def fold(self,edges_full,edges_partial):
-          """
-          Folds the list of edges.
-
-          Some edges are fully folded and some are only partially
-          folded. All edges are assumed to start form the same vertex.
-          Edges are given by their label. In the terminology of
-          Stallings folds the partially fold edges are subdivided and
-          then fold.
-
-          The first element of ``edges_full`` is allowed to be a tuple
-          ``(path,'path')`` and not an ``edge_label``. Then the other
-          edges will be folded to the whole ``path``. In Stallings
-          terminology, this is a sequence of folds of the successive
-          edges of ``path``.
-
-          INPUT:
+        INPUT:
           
-          ``edges_full``, ``edges_partial`` are list of edges (each
-          possibly empty, but the union must have at least two edges).
+        ``edges_full``, ``edges_partial`` are list of edges (each
+        possibly empty, but the union must have at least two edges).
 
 
-          OUTPUT:
+        OUTPUT:
 
-          A dictionnary that maps old edges to new graph paths.
+        A dictionnary that maps old edges to new graph paths.
 
-          SEE ALSO:
+        SEE ALSO:
 
-          ``GraphWithInverses.fold()``
-          """
+        ``GraphWithInverses.fold()``
+        """
 
-          fold_map=GraphWithInverses.fold(self,edges_full,edges_partial)
-          fold_morph=WordMorphism(fold_map)
-          self._marking.set_edge_map(fold_morph*self._marking._edge_map)
-          return fold_map
+        fold_map = GraphWithInverses.fold(self, edges_full, edges_partial)
+        fold_morph = WordMorphism(fold_map)
+        self._marking.set_edge_map(fold_morph * self._marking._edge_map)
+        return fold_map
 
-     def contract_forest(self,forest):
-          """
-          Contract the forest.
+    def contract_forest(self, forest):
+        """
+        Contract the forest.
 
-          Each tree of the forest is contracted to the initial vertex of its first
-          edge.
+        Each tree of the forest is contracted to the initial vertex
+        of its first edge.
 
-          INPUT:
+        INPUT:
 
-          ``forest`` is a list of disjoint subtrees each given as
-          lists of edges.
+        ``forest`` is a list of disjoint subtrees each given as
+        lists of edges.
 
-          OUTPUT:
+        OUTPUT:
 
-          A dictionnary that maps old edges to new edges.
+        A dictionnary that maps old edges to new edges.
 
-          SEE ALSO:
+        SEE ALSO:
 
-          ``GraphWithInverses.contract_forest()``
-          """
+        ``GraphWithInverses.contract_forest()``
+        """
 
-          contract_map=GraphWithInverses.contract_forest(self,forest)
-          contract_morph=WordMorphism(contract_map)
-          self._marking.set_edge_map(contract_morph*self._marking._edge_map)
-          return contract_map
+        contract_map = GraphWithInverses.contract_forest(self, forest)
+        contract_morph = WordMorphism(contract_map)
+        self._marking.set_edge_map(contract_morph * self._marking._edge_map)
+        return contract_map
 
-     def blow_up_vertices(self,germ_components):
+    def blow_up_vertices(self, germ_components):
         """
         Blow-up ``self`` according to classes of germs given in
         ``germ_components``.
@@ -210,129 +217,131 @@ class MarkedGraph(GraphWithInverses):
         A dictionnay that maps an old edge to the path in the new
         graph.
         """
-        
-        blow_up_map=GraphWithInverses.blow_up_vertices(self,germ_components)
-        blow_up_morph=WordMorphism(blow_up_map)
-        self._marking.set_edge_map(blow_up_morph*self.marking().edge_map())
+
+        blow_up_map = GraphWithInverses.blow_up_vertices(self, germ_components)
+        blow_up_morph = WordMorphism(blow_up_map)
+        self._marking.set_edge_map(blow_up_morph * self.marking().edge_map())
         return blow_up_map
 
-     @staticmethod
-     def rose_marked_graph(alphabet):
-          """
-          The rose on ``alphabet`` marked with the identity.
-          """
+    @staticmethod
+    def rose_marked_graph(alphabet):
+        """
+        The rose on ``alphabet`` marked with the identity.
+        """
 
-          marking=dict((a,Word([a])) for a in alphabet.positive_letters())
-          return MarkedGraph(graph=GraphWithInverses.rose_graph(alphabet),marking=marking,marking_alphabet=alphabet)
-
-
-
-
-class MarkedMetricGraph(MarkedGraph,MetricGraph):
-     """
-     A ``MarkedGraph`` together with a length function on edges.
-
-     EXAMPLES::
-
-     sage: G=MarkedMetricGraph({'a':(0,0),'b':(0,1),'c':(1,0)})
-     Marked metric graph:
-     a: 0->0, b: 0->1, c: 1->0
-     Marking: a->a, b->bc
-     Length: a: 1, b: 1, c: 1
-     """
-     def __init__(self,graph=None,marking=None,length=None,alphabet=None,marking_alphabet=None):
-          MarkedGraph.__init__(self,graph=graph,marking=marking,alphabet=alphabet,marking_alphabet=marking_alphabet)
-
-          if length is None:
-               length=dict((a,1) for a in self.alphabet())
-          else:
-               for a in length.keys():
-                    length[self.alphabet().inverse_letter(a)]=length[a]
-
-          self._length=length
+        marking = dict((a, Word([a])) for a in alphabet.positive_letters())
+        return MarkedGraph(graph=GraphWithInverses.rose_graph(alphabet),
+                           marking=marking, marking_alphabet=alphabet)
 
 
-     def __str__(self):
-          """
+class MarkedMetricGraph(MarkedGraph, MetricGraph):
+    """
+    A ``MarkedGraph`` together with a length function on edges.
+
+    EXAMPLES::
+
+    sage: G=MarkedMetricGraph({'a':(0,0),'b':(0,1),'c':(1,0)})
+    Marked metric graph:
+    a: 0->0, b: 0->1, c: 1->0
+    Marking: a->a, b->bc
+    Length: a: 1, b: 1, c: 1
+    """
+
+    def __init__(self, graph=None, marking=None, length=None, alphabet=None,
+                 marking_alphabet=None):
+        MarkedGraph.__init__(self, graph=graph,
+                             marking=marking,
+                             alphabet=alphabet,
+                             marking_alphabet=marking_alphabet)
+
+        if length is None:
+            length = dict((a, 1) for a in self.alphabet())
+        else:
+            for a in length.keys():
+                length[self.alphabet().inverse_letter(a)] = length[a]
+
+        self._length = length
+
+    def __str__(self):
+        """
           String representation for ``self``.
           """
-          result=MarkedGraph.__str__(self)+"\n"
-          result+="Length: "
-          for a in self.alphabet().positive_letters():
-               result+=a+":{0}".format(self.length(a))+", "
-          result=result[:-2]
-          return result
+        result = MarkedGraph.__str__(self) + "\n"
+        result += "Length: "
+        for a in self.alphabet().positive_letters():
+            result += a + ":{0}".format(self.length(a)) + ", "
+        result = result[:-2]
+        return result
 
+    def length(self, a):
+        """
+        The length of the edge labeled by ``a``
+        """
+        return self._length[a]
 
-     def length(self,a):
-          """
-          The length of the edge labeled by ``a``
-          """
-          return self._length[a]
+    def set_length(self, a, l):
+        """
+        Sets the length of the edge ``a`` to ``l``.
+        """
+        self._length[a] = l
+        self._length[self.alphabet().inverse_letter(a)] = l
 
-     def set_length(self,a,l):
-          """
-          Sets the length of the edge ``a`` to ``l``.
-          """
-          length[a]=l
-          length[self.alphabet().inverse_letter(a)]=l
+    @staticmethod
+    def splitting(i, A):
+        """
+        The ``MarkedMetricGraph`` that corresponds to the splitting
+        ``F(A)=F(A[:i])*F(A[i:])``.
 
+        This is a graph with two vertices linked by an edge e and a
+        loop for each letter in A. Letters in A[:i] are attached to
+        the first vertex while letters in A[:i] are attached to the
+        second vertex.
 
+        All loops have length 0, the splitting edge ``e`` has length
+        1.
+        """
 
-     @staticmethod
-     def splitting(i,A):
-          """
-          The ``MarkedMetricGraph`` that corresponds to the splitting
-          ``F(A)=F(A[:i])*F(A[i:])``.
+        graph = dict()
+        length = dict()
+        marking = dict()
 
-          This is a graph with two vertices linked by an edge e and a
-          loop for each letter in A. Letters in A[:i] are attached to
-          the first vertex while letters in A[:i] are attached to the
-          second vertex.
+        B = A.copy()
+        [e, ee] = B.add_new_letter()
 
-          All loops have length 0, the splitting edge ``e`` has length
-          1.
-          """
+        for j in xrange(i):
+            a = A[j]
+            graph[a] = (0, 0)
+            length[a] = 0
+            marking[a] = Word([a])
 
-          graph=dict()
-          length=dict()
-          marking=dict()
+        for j in xrange(i, len(A)):
+            a = A[j]
+            graph[a] = (1, 1)
+            length[a] = 0
+            marking[a] = Word([e, a, ee])
 
-          B=A.copy()
-          [e,ee]=B.add_new_letter()
+        graph[e] = (0, 1)
+        length[e] = 1
 
-          for j in xrange(i):
-               a=A[j]
-               graph[a]=(0,0)
-               length[a]=0
-               marking[a]=Word([a])
+        return MarkedMetricGraph(graph, marking, length, B, A)
 
-          for j in xrange(i,len(A)):
-               a=A[j]
-               graph[a]=(1,1)
-               length[a]=0
-               marking[a]=Word([e,a,ee])
+    @staticmethod
+    def HNN_splitting(A):
+        """
+        The marked metric graph corresponding to the HNN splitting
+        F_N=F_{N-1}*<t>.
 
-          graph[e]=(0,1)
-          length[e]=1
+        The rose marked graph with all edges of length 0 except ``A[0]``
+        which is of length 1.
+        """
 
-          return MarkedMetricGraph(graph,marking,length,B,A)
+        length = dict((a, 0) for a in A.positive_letters())
+        length[A[0]] = 1
 
-     @staticmethod
-     def HNN_splitting(A):
-          """
-          The marked metric graph corresponding to the HNN splitting
-          F_N=F_{N-1}*<t>.
+        RA = GraphWithInverses.rose_graph(A)
+        RAA = GraphWithInverses.rose_graph(A)
+        marking = GraphMap(RA, RAA,
+                           edge_map=dict(
+                               (a, Word([a])) for a in A.positive_letters()))
 
-          The rose marked graph with all edges of length 0 except ``A[0]``
-          which is of length 1.
-          """
-
-          length=dict((a,0) for a in A.positive_letters())
-          length[A[0]]=1
-
-          RA=GraphWithInverses.rose_graph(A)
-          RAA=GraphWithInverses.rose_graph(A)
-          marking=GraphMap(RA,RAA,edge_map=dict((a,Word([a])) for a in A.positive_letters()))
-
-          return MarkedMetricGraph(marking=marking,length=length)
+        return MarkedMetricGraph(marking=marking, length=length)
