@@ -650,23 +650,25 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         SEE ALSO:
 
         This is the same as ``self.rose_representative()`` but the
-        base graph of the ``TopologicalRepresentative`` is a
+        base graph of the ``GraphSelfMap`` is a
         ``GraphWithInverses`` instead of a ``MarkedGraph``.
         """
-        from topological_representative import TopologicalRepresentative
+        from topological_representative import GraphSelfMap
         from inverse_graph import GraphWithInverses
 
-        return TopologicalRepresentative(GraphWithInverses.rose_graph(self._domain.alphabet()),self)
+        return GraphSelfMap(GraphWithInverses.rose_graph(self._domain.alphabet()),self)
 
 
     def rose_representative(self):
         """
-        Topological representative on the rose on the alphabet.
+        ``GraphSelfMap``which is a topological representative of ``self``
+        on the rose on the alphabet.
+
         """
-        from topological_representative import TopologicalRepresentative
+        from topological_representative import GraphSelfMap
         from marked_graph import MarkedGraph
 
-        return TopologicalRepresentative(MarkedGraph.rose_marked_graph(self._domain.alphabet()),self)
+        return GraphSelfMap(MarkedGraph.rose_marked_graph(self._domain.alphabet()),self)
 
     def train_track(self,stable=True,relative=True,verbose=False):
         """

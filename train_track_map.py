@@ -5,7 +5,7 @@
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-from topological_representative import TopologicalRepresentative
+from topological_representative import GraphSelfMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.combinat.words.words import FiniteWords
@@ -13,7 +13,7 @@ from sage.graphs.graph import Graph
 from sage.rings.qqbar import AA
 from sage.matrix.constructor import matrix
 
-class TrainTrackMap(TopologicalRepresentative):
+class TrainTrackMap(GraphSelfMap):
     """
     A train-track map is a map from a (possibly marked, possibly
     metric) graph to itself which is train track: vertices are mapped
@@ -24,7 +24,7 @@ class TrainTrackMap(TopologicalRepresentative):
     may have a stratified structure.
 
     Train-tracks are intended to be constructed by promoting
-    topological representative that satisfies the train-track
+    graph self maps that satisfy the train-track
     definition.
 
     EXAMPLES::
@@ -50,7 +50,7 @@ class TrainTrackMap(TopologicalRepresentative):
         The following forms are accepted:
         
         - ``TrainTrackMap(f)`` where ``f`` is a
-        TopologicalRepresentative which is train-track (no check is
+        GraphSelfMap which is train-track (no check is
         done)
 
         - ``TrainTrackMap(graph,edge_map,vertex_map=None)`` where
@@ -61,7 +61,7 @@ class TrainTrackMap(TopologicalRepresentative):
           ``edge_map``).
         """
         
-        TopologicalRepresentative.__init__(self,*args)
+        GraphSelfMap.__init__(self,*args)
  
     def __str__(self):
         """
@@ -122,7 +122,7 @@ class TrainTrackMap(TopologicalRepresentative):
         Edge map: a->ec, b->Ea, c->b, e->C
         """
 
-        return TrainTrackMap(TopologicalRepresentative.from_edge_map(edge_map,alphabet,path))
+        return TrainTrackMap(GraphSelfMap.from_edge_map(edge_map,alphabet,path))
 
     def is_expanding(self):
         """
@@ -346,7 +346,7 @@ class TrainTrackMap(TopologicalRepresentative):
 
         SEE ALSO::
 
-        TopologicalRepresentative.relative_indivisible_nielsen_paths()
+        GraphSelfMap.relative_indivisible_nielsen_paths()
         TrainTrackMap.periodic_nielsen_paths()
         """
 
@@ -1070,7 +1070,7 @@ class TrainTrackMap(TopologicalRepresentative):
 
         As an artefact we add 2 x rank(Stab) vertices to connected
         components of the ideal Whitehead graphs with a non trivial
-        stabilizer. This allows to compute the index as the some of
+        stabilizer. This allows to compute the index as the sum of
         the number of vertices of connected components minus two (see
         also ``TrainTrackMap.index_lis()`` and
         ``TrainTrackMap.index()``).
@@ -1556,3 +1556,7 @@ class TrainTrackMap(TopologicalRepresentative):
                 print "No Nielsen loops"
                 print "Atoroidal iwip"
             return True
+
+
+class RelativeTrainTrackMap(GraphSelfMap):
+    path
