@@ -67,6 +67,17 @@ class GraphSelfMap(GraphMap):
         - ``GraphSelfMap(f)`` where ``f`` is a ``GraphMap`` from a graph to itself.
 
         - ``GraphSelfMap(graph,edge_map,vertex_map=None)`` 
+
+        EXAMPLES::
+
+        sage: A = AlphabetWithInverses(3)
+        sage: R = GraphWithInverses.rose_graph(A)
+        sage: print GraphSelfMap(R,"a->ab,b->ac,c->a")
+        Graph self map:
+        Graph with inverses: a: 0->0, b: 0->0, c: 0->0
+        Edge map: a->ab, b->ac, c->a
+
+        
         """
         if len(args) == 1:
             GraphMap.__init__(self, *args)
@@ -224,7 +235,11 @@ class GraphSelfMap(GraphMap):
         sage: A=AlphabetWithInverses(5)
         sage: f=GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae",A)
         sage: f.matrix()
-
+        [1 0 0 1 3]
+        [0 1 0 0 1]
+        [0 0 1 1 2]
+        [0 0 0 1 2]
+        [0 0 0 2 5]
         """
         from sage.matrix.constructor import matrix
 
@@ -245,6 +260,16 @@ class GraphSelfMap(GraphMap):
         - ``stratum`` -- (default:None) if not None an integer
            that is the index of a stratum of self.
 
+        EXAMPLES::
+
+        sage: A = AlphabetWithInverses(3)
+        sage: R = GraphWithInverses.rose_graph(A)
+        sage: f = GraphSelfMap(R,"a->ab,b->ac,c->a")
+        sage: f.expansion_factor()
+        1.839286755214161?
+
+        
+
         """
         if stratum is None:
             eigenvalues = self.matrix().charpoly().roots(AA)
@@ -263,17 +288,25 @@ class GraphSelfMap(GraphMap):
         It is required that ``self`` is an invertible graph map, that
         is to say a homotopy equivalence.
 
+        sage: A = AlphabetWithInverses(3)
+        sage: R = GraphWithInverses.rose_graph(A)
+        sage: f = GraphSelfMap(R,"a->ab,b->ac,c->a")
+        sage: f.automorphism()
+        Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+
+
+
         """
         from marked_graph import MarkedGraph
 
-        if isinstance(self._domain, MarkedGraph):
-            G = self._domain
+        if isinstance(self.domain(), MarkedGraph):
+            G = self.domain()
         else:
-            G = MarkedGraph(self._domain)
+            G = MarkedGraph(self.domain())
         A = G.marking().domain().alphabet()
         B = self.domain().alphabet()
 
-        tree = self._domain.maximal_tree()
+        tree = G.maximal_tree()
         if verbose:
             print "Spanning tree: ", tree
         rename_dict = {}
@@ -314,6 +347,13 @@ class GraphSelfMap(GraphMap):
         ``self(edge)``
 
         The empty list if ``self`` is train-track.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: f = phi.inverse().rose_representative()
+        sage: f.find_folding()
+        [['c', 1], ('b', 'c')]
 
         """
         A = self._domain._alphabet
@@ -385,6 +425,15 @@ class GraphSelfMap(GraphMap):
         This has no effect on the possible strata of
         self.
 
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: f = phi.rose_conjugacy_representative()
+        sage: print f.subdivide(['a'])
+        Graph self map:
+        Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
+        Edge map: a->ad, b->adc, c->ad, d->b
+
         """
 
         if verbose:
@@ -430,7 +479,19 @@ class GraphSelfMap(GraphMap):
 
         WARNING:
 
-        This has no effect on the possible strata of self.
+        This has no effect on the possible strata of ``self``.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->aba,b->ac,c->a")
+        sage: f = phi.rose_conjugacy_representative()
+        sage: f.subdivide_edge('a',2)
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
+        Edge map: a->adb, b->adc, c->ad, d->ad
+        
+
         """
 
         if verbose:
@@ -491,6 +552,22 @@ class GraphSelfMap(GraphMap):
         WARNING:
 
         Beware this has no effect on the possible strata of self.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->aba,b->ac,c->a")
+        sage: f = phi.inverse().rose_conjugacy_representative()
+        sage: f.multifold([['c', 1], ('b', 'c')])
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 0->0, b: 2->0, c: 1->0, d: 1->2, e: 0->2
+        Edge map: a->eDc, b->dEaCdE, c->b, d->D, e->C
+
+
+        SEE ALSO::
+        
+        GraphSelfMap.fold()
+        GraphWithInverses.fold()
 
         REFERENCES:
 
@@ -727,6 +804,21 @@ class GraphSelfMap(GraphMap):
         WARNING:
 
         Beware this has no effect on the possible strata of self.
+        
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->aba,b->ac,c->a")
+        sage: f = phi.inverse().rose_conjugacy_representative()
+        sage: f.fold(('b', 'c'),Word('C'))
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 0->0, b: 1->0, c: 1->0, d: 0->1
+        Edge map: a->dc, b->aCD, c->db, d->CD
+
+        SEE ALSO::
+
+        GraphSelfMap.multifold()
+        GraphWithInverses.fold()
 
         REFERENCES:
 
