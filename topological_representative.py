@@ -1,10 +1,32 @@
+r"""
+topological_representative.py module
+
+Define a GraphSelfMap Class
+
+AUTHORS:
+
+- Thierry COULBOIS (2013-01-01): initial version
+
+- Dominique BENIELLI (2016-02_15):
+AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+
+EXAMPLES::
+
+sage: A = AlphabetWithInverses(5)
+sage: f = GraphSelfMap.from_edge_map("a->a,b->b,c->c,
+d->eCEAd,e->eCEAdbDaecEae", A)
+sage: print f
+Graph with inverses: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
+Marking: a->a, b->dbD, c->ecE
+Edge map: a->a, b->b, c->c, d->eCEAd, e->eCEAdbDaecEae
+"""
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
-# - modified by Dominique 03/03/20016 :  major changes pep8 correction
+
 from graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
@@ -47,8 +69,9 @@ class GraphSelfMap(GraphMap):
     Marking: a->a, b->b, c->c
     Edge map: a->ab, b->ac, c->a
 
-    sage: A=AlphabetWithInverses(5)
-    sage: f=GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae",A)
+    sage: A = AlphabetWithInverses(5)
+    sage: f = GraphSelfMap.from_edge_map(
+    "a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae",A)
     sage: print f
     Graph with inverses: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
     Marking: a->a, b->dbD, c->ecE
@@ -64,7 +87,8 @@ class GraphSelfMap(GraphMap):
         """
         The following forms are accepted:
 
-        - ``GraphSelfMap(f)`` where ``f`` is a ``GraphMap`` from a graph to itself.
+        - ``GraphSelfMap(f)`` where ``f`` is a ``GraphMap`` from a graph
+        to itself.
 
         - ``GraphSelfMap(graph,edge_map,vertex_map=None)`` 
 
@@ -82,9 +106,9 @@ class GraphSelfMap(GraphMap):
         if len(args) == 1:
             GraphMap.__init__(self, *args)
         else:
-            GraphMap.__init__(self,args[0],*args)
-        if isinstance(args[0],GraphSelfMap):
-            self._strata=args[0]._strata
+            GraphMap.__init__(self, args[0], *args)
+        if isinstance(args[0], GraphSelfMap):
+            self._strata = args[0]._strata
         else:
             self._strata = None
 
@@ -92,9 +116,9 @@ class GraphSelfMap(GraphMap):
         """
         String representation of ``self``.
         """
-        result="Graph self map:\n"
-        result+=self._domain.__str__()+"\n"
-        result+="Edge map: "
+        result = "Graph self map:\n"
+        result += self._domain.__str__()+"\n"
+        result += "Edge map: "
 
         for a in self._domain._alphabet.positive_letters():
             result += a + "->"
@@ -135,13 +159,15 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-        sage: print GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae")
+        sage: print GraphSelfMap.from_edge_map(
+        "a->a,b->b,c->c,d->eCEAd,e->dbDae")
         Graph self map:
         Graph with inverses: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
         Marking: a->a, b->dbD, c->ecE
         Edge map: a->a, b->b, c->c, d->eCEAd, e->dbDae
 
-        sage: print GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae",path="ab")
+        sage: print GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,
+        e->dbDae",path="ab")
         Graph self map:
         Graph with inverses: a: 0->0, b: 0->0, c: 1->1, d: 0->0, e: 0->1
         Marking: a->a, b->b, c->ecE, d->d
@@ -222,8 +248,7 @@ class GraphSelfMap(GraphMap):
         G = GraphWithInverses(result, alphabet=alphabet)
 
         marked_G = MarkedGraph(G)
-        return GraphSelfMap(marked_G,edge_map)
-
+        return GraphSelfMap(marked_G, edge_map)
 
     def matrix(self):
         """Incidence matrix of ``self``.
@@ -282,7 +307,7 @@ class GraphSelfMap(GraphMap):
                 result = x
         return result
 
-    def automorphism(self,verbose=False):
+    def automorphism(self, verbose=False):
         """Automorphism represented by ``self``.
 
         It is required that ``self`` is an invertible graph map, that
@@ -623,7 +648,7 @@ class GraphSelfMap(GraphMap):
                         else:
                             partial = True
                     elif turn[1] == redge and \
-                                            len(w) - position == prefix_length:
+                            len(w) - position == prefix_length:
                         if prefix_length > 1:
                             prefix_length = prefix_length - 1
                         else:
@@ -631,15 +656,14 @@ class GraphSelfMap(GraphMap):
 
             else:
                 avoid_vertex = self._domain.initial_vertex(turns[0][0])
-                if prefix_length == len(u) and \
-                                self._domain.terminal_vertex(
-                                    turn[0]) == avoid_vertex:
+                if prefix_length == len(u) and self._domain.terminal_vertex(
+                        turn[0]) == avoid_vertex:
                     if prefix_length > 1:
                         prefix_length = prefix_length - 1
                     else:
                         partial = True
                 if prefix_length == len(v) and \
-                                self._domain.terminal_vertex(
+                    self._domain.terminal_vertex(
                                     turn[1]) == avoid_vertex:
                     if prefix_length > 1:
                         prefix_length = prefix_length - 1
@@ -1146,36 +1170,44 @@ class GraphSelfMap(GraphMap):
         The WordMorphism that maps old edges to the new edges.
         """
 
-        tails=self._domain.find_tails()
-        if len(tails)>0:
+        tails = self._domain.find_tails()
+        if len(tails) > 0:
             if verbose:
-                print "Contracting tails:",tails
-            result_morph=self.contract_tails(tails,verbose=verbose and verbose>1 and verbose-1)
-        else: result_morph=False
+                print "Contracting tails:", tails
+            result_morph = self.contract_tails(
+                tails, verbose=verbose and verbose > 1 and verbose - 1)
+        else:
+            result_morph = False
 
-        pretrivial_forest=self.pretrivial_forest()
-        if len(pretrivial_forest)>0:
+        pretrivial_forest = self.pretrivial_forest()
+        if len(pretrivial_forest) > 0:
             if verbose:
-                print "Contracting pretrivial forest:",pretrivial_forest
-            tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)
+                print "Contracting pretrivial forest:", pretrivial_forest
+            tmp_morph = self.contract_invariant_forest(
+                pretrivial_forest,
+                verbose=verbose and verbose > 1 and verbose - 1)
 
             if result_morph:
                 result_morph = tmp_morph * result_morph
             else:
-                result_morph=tmp_morph
+                result_morph = tmp_morph
 
-        filtration=self.maximal_filtration(verbose=verbose and verbose>1 and verbose-1)
-        if len(filtration)>1:
+        filtration = self.maximal_filtration(
+            verbose=verbose and verbose > 1 and verbose - 1)
+        if len(filtration) > 1:
             if verbose:
-                print "Non-trivial filtration:",filtration
-            i=0
-            while i<len(filtration)-1 and len(self._domain.core_subgraph(filtration[i]))==0:
-                i=i+1
-            if i>0:
-                trees=self._domain.connected_components(filtration[i-1])
+                print "Non-trivial filtration:", filtration
+            i = 0
+            while i < len(filtration)-1 and len(
+                    self._domain.core_subgraph(filtration[i])) == 0:
+                i = i + 1
+            if i > 0:
+                trees = self._domain.connected_components(filtration[i-1])
                 if verbose:
-                    print "Strata under",i,"are contracatable... contracting",trees
-                tmp_morph=self.contract_invariant_forest(trees,verbose=verbose and verbose>1 and verbose-1)
+                    print "Strata under", i, "are contracatable..." \
+                                            " contracting", trees
+                tmp_morph = self.contract_invariant_forest(
+                    trees, verbose=verbose and verbose > 1 and verbose - 1)
 
                 if result_morph:
                     result_morph = tmp_morph * result_morph
@@ -1189,33 +1221,42 @@ class GraphSelfMap(GraphMap):
                         dict((a, a) for a in self._domain._alphabet))
                 return result_morph
 
-        lines=self._domain.find_valence_2_vertices()
-        if len(lines)>0:
+        lines = self._domain.find_valence_2_vertices()
+        if len(lines) > 0:
             if verbose:
-                print "Valence 2 vertices",lines
-            tmp_morph=self.fusion_lines(lines,None,verbose=verbose and verbose>1 and verbose-1)
+                print "Valence 2 vertices", lines
+            tmp_morph = self.fusion_lines(
+                lines, None, verbose=verbose and verbose > 1 and verbose-1)
 
             if result_morph:
                 result_morph = tmp_morph * result_morph
             else:
-                result_morph=tmp_morph
+                result_morph = tmp_morph
 
-            pretrivial_forest=self.pretrivial_forest()
-            if len(pretrivial_forest)>0:
+            pretrivial_forest = self.pretrivial_forest()
+            if len(pretrivial_forest) > 0:
                 if verbose:
-                    print "Pretrivial forest",pretrivial_forest
-                result_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)*result_morph
+                    print "Pretrivial forest", pretrivial_forest
+                result_morph = self.contract_invariant_forest(
+                    pretrivial_forest,
+                    verbose=verbose and verbose > 1 and verbose-1) * \
+                    result_morph
 
-            filtration=self.maximal_filtration()
-            if len(filtration)>1:
-                i=0
-                while i<len(filtration)-1 and len(self._domain.core_subgraph(filtration[i]))==0:
-                    i=i+1
-                if i>0:
-                    trees=self._domain.connected_components(filtration[i-1])
+            filtration = self.maximal_filtration()
+            if len(filtration) > 1:
+                i = 0
+                while i < len(filtration)-1 and len(
+                        self._domain.core_subgraph(filtration[i])) == 0:
+                    i = i + 1
+                if i > 0:
+                    trees = self._domain.connected_components(filtration[i-1])
                     if verbose:
-                        print "Strata under",i,"are contracatable... contracting",trees
-                    result_morph=self.contract_invariant_forest(trees,verbose=verbose and verbose>1 and verbose-1)*result_morph
+                        print "Strata under", i, "are contracatable... " \
+                                                 "contracting", trees
+                    result_morph = self.contract_invariant_forest(
+                        trees,
+                        verbose=verbose and verbose > 1 and verbose-1) * \
+                        result_morph
 
                     if result_morph:
                         result_morph = tmp_morph * result_morph
@@ -1260,19 +1301,19 @@ class GraphSelfMap(GraphMap):
 
         while not done:
             if verbose:
-                print "Expansion factor:",self.expansion_factor()
-            turns=self.find_folding()
-            if len(turns)==0:
-                done=True
+                print "Expansion factor:", self.expansion_factor()
+            turns = self.find_folding()
+            if len(turns) == 0:
+                done = True
                 if verbose:
                     print "Absolute train-track !"
             else:
-                self._strata=None
+                self._strata = None
                 if verbose:
-                    print "Not yet train-track. Possible foldings:",turns
-                tmp_morph=self.multifold(turns,verbose=verbose and verbose>1 and verbose-1)
-                result_morph=tmp_morph*result_morph
-
+                    print "Not yet train-track. Possible foldings:", turns
+                tmp_morph = self.multifold(
+                    turns, verbose=verbose and verbose > 1 and verbose - 1)
+                result_morph = tmp_morph*result_morph
 
                 tmp_morph = self.reduce(
                     verbose=verbose and verbose > 1 and verbose - 1)
@@ -1446,8 +1487,8 @@ class GraphSelfMap(GraphMap):
         for t in turns:
             if (stratum is None or
                     (A.to_positive_letter(t[0]) in self._strata[stratum] and
-                             A.to_positive_letter(t[1])
-                         in self._strata[stratum])) and self.image(t[0])[0] \
+                        A.to_positive_letter(t[1])
+                        in self._strata[stratum])) and self.image(t[0])[0] \
                     == self.image(t[1])[0]:
                 fold_turns.append(t)
 
@@ -1761,8 +1802,7 @@ class GraphSelfMap(GraphMap):
 
         return result
 
-
-    def inessential_inp(self,inps,s,verbose):
+    def inessential_inp(self, inps, s, verbose):
         """
 
         From the list ``inps`` returns either an inessential inp in the
@@ -1906,7 +1946,7 @@ class GraphSelfMap(GraphMap):
                 prefix_length = \
                     self._domain.common_prefix_length(image[0], image[1])
                 if len(image[0]) == prefix_length or \
-                                len(image[1]) == prefix_length:
+                        len(image[1]) == prefix_length:
                     if verbose:
                         print "Full fold"
                     done = False
@@ -1996,7 +2036,6 @@ class GraphSelfMap(GraphMap):
         self._strata = strata
         return result_morph
 
-
     def is_exponential_stratum(self,stratum):
         """
         ``True`` if the ``stratum`` of ``self`` is exponential.
@@ -2004,7 +2043,7 @@ class GraphSelfMap(GraphMap):
         It is assumed that this stratum is irreducible.
         """
 
-        M=self.relative_matrix(stratum)
+        M = self.relative_matrix(stratum)
         for l in M:
             m = 0
             for c in l:
@@ -2151,7 +2190,7 @@ class GraphSelfMap(GraphMap):
         for s in xrange(len(self._strata)):
             n = self.filtre_stratum(s + shift,
                                     verbose=verbose and verbose > 1 and
-                                            verbose - 1)
+                                    verbose - 1)
             heritage[s] = [s + shift + i for i in xrange(n)]
             shift += n - 1
 
@@ -2235,7 +2274,8 @@ class GraphSelfMap(GraphMap):
     def core_subdivide(self, s, verbose):
         """
 
-        Core subdivision of the ``s`` stratum of ``self`` as defined in [BH-train-track].
+        Core subdivision of the ``s`` stratum of ``self`` as defined
+         in [BH-train-track].
 
         After a core subdivision, the graph self map satisfies RTT-i:
         the image of each edge of the ``s`` stratum starts and ends
@@ -2446,20 +2486,24 @@ class GraphSelfMap(GraphMap):
 
         #Contract tails
 
-        tails=self._domain.find_tails()
-        if len(tails)>0:
+        tails = self._domain.find_tails()
+        if len(tails) > 0:
             if verbose:
-                print "Contracting tails:",tails
-            result_morph=self.contract_tails(tails,verbose=verbose and verbose>1 and verbose-1)
-        else: result_morph=False
+                print "Contracting tails:", tails
+            result_morph = self.contract_tails(
+                tails, verbose=verbose and verbose > 1 and verbose - 1)
+        else:
+            result_morph = False
 
         # Contract pretrivial forest
 
-        pretrivial_forest=self.pretrivial_forest()
-        if len(pretrivial_forest)>0:
+        pretrivial_forest = self.pretrivial_forest()
+        if len(pretrivial_forest) > 0:
             if verbose:
-                print "Contracting pretrivial forest:",pretrivial_forest
-            tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)
+                print "Contracting pretrivial forest:", pretrivial_forest
+            tmp_morph=self.contract_invariant_forest(
+                pretrivial_forest,
+                verbose=verbose and verbose > 1 and verbose - 1)
 
             if result_morph:
                 result_morph = tmp_morph * result_morph
@@ -2499,14 +2543,18 @@ class GraphSelfMap(GraphMap):
                         done = True
                         break
                 if not done:
-                    i=i+1
-            if i>0:
-                trees=self._domain.connected_components([a for j in xrange(i) for a in self._strata[j]])
+                    i = i + 1
+            if i > 0:
+                trees = self._domain.connected_components(
+                    [a for j in xrange(i) for a in self._strata[j]])
                 if verbose:
-                    print "Strata under",i,"are contractable... Contracting this forest:",trees
-                tmp_morph=self.contract_invariant_forest(trees,verbose=verbose and verbose>1 and verbose-1)
-                self._strata=self._strata[i:]
-                heritage=self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
+                    print "Strata under", i, "are contractable... " \
+                                             "Contracting this forest:", trees
+                tmp_morph = self.contract_invariant_forest(
+                    trees, verbose=verbose and verbose > 1 and verbose - 1)
+                self._strata = self._strata[i:]
+                heritage = self.update_strata(
+                    tmp_morph, verbose=verbose and verbose > 1 and verbose - 1)
 
                 if result_morph:
                     result_morph = tmp_morph * result_morph
@@ -2566,20 +2614,24 @@ class GraphSelfMap(GraphMap):
 
         # Contract tails
 
-        tails=self._domain.find_tails()
-        if len(tails)>0:
+        tails = self._domain.find_tails()
+        if len(tails) > 0:
             if verbose:
-                print "Contracting tails",tails
-            result_morph=self.contract_tails(tails,verbose=verbose and verbose>1 and verbose-1)
-        else: result_morph=False
+                print "Contracting tails", tails
+            result_morph = self.contract_tails(
+                tails, verbose=verbose and verbose > 1 and verbose - 1)
+        else:
+            result_morph = False
 
         # Contract pretrivial forest
 
-        pretrivial_forest=self.pretrivial_forest()
-        if len(pretrivial_forest)>0:
+        pretrivial_forest = self.pretrivial_forest()
+        if len(pretrivial_forest) > 0:
             if verbose:
-                print "Contracting pretrivial forest",forest
-            tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)
+                print "Contracting pretrivial forest", pretrivial_forest
+            tmp_morph = self.contract_invariant_forest(
+                pretrivial_forest,
+                verbose=verbose and verbose > 1 and verbose - 1)
             if result_morph:
                 result_morph = tmp_morph * result_morph
             else:
@@ -2623,15 +2675,19 @@ class GraphSelfMap(GraphMap):
                         done = True
                         break
                 if not done:
-                    i=i+1
-            if i>0:
-                trees = self._domain.connected_components([a for j in xrange(i) for a in self._strata[j]])
+                    i = i + 1
+            if i > 0:
+                trees = self._domain.connected_components(
+                    [a for j in xrange(i) for a in self._strata[j]])
                 if verbose:
-                    print "Strata under",i,"are contractible... Contracting this forest",trees
-                tmp_morph=self.contract_invariant_forest(trees,verbose=verbose and verbose>1 and verbose-1)
-                self._strata=self._strata[i:]
-                heritage=self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
-
+                    print "Strata under", i, "are contractible... " \
+                                             "Contracting " \
+                                           "this forest", trees
+                tmp_morph = self.contract_invariant_forest(
+                    trees, verbose=verbose and verbose > 1 and verbose - 1)
+                self._strata = self._strata[i:]
+                heritage = self.update_strata(
+                    tmp_morph, verbose=verbose and verbose > 1 and verbose - 1)
 
                 if safe_strata:
                     new_safe_strata = []
@@ -2803,21 +2859,28 @@ class GraphSelfMap(GraphMap):
 
                     i = i + 1
 
+                if len(lines) > 0:
+                    strata = self._strata
+                    self._strata = False
+                    tmp_morph = self.fusion_lines(
+                        lines, target_edge_index,
+                        verbose=verbose and verbose > 1 and verbose - 1)
 
-                if len(lines)>0:
-                    strata=self._strata
-                    self._strata=False
-                    tmp_morph=self.fusion_lines(lines,target_edge_index,verbose=verbose and verbose>1 and verbose-1)
+                    # If there was fusionned lines, contract pretrivial forest
 
-                    #If there was fusionned lines, contract pretrivial forest
-
-                    pretrivial_forest=self.pretrivial_forest()
-                    if len(pretrivial_forest)>0:
+                    pretrivial_forest = self.pretrivial_forest()
+                    if len(pretrivial_forest) > 0:
                         if verbose:
-                            print "Contracting pretrivial forest",pretrivial_forest
-                        tmp_morph=self.contract_invariant_forest(pretrivial_forest,verbose=verbose and verbose>1 and verbose-1)*tmp_morph
-                    self._strata=strata
-                    self.update_strata(tmp_morph,verbose=verbose and verbose>1 and verbose-1)
+                            print "Contracting pretrivial forest", \
+                                pretrivial_forest
+                        tmp_morph = self.contract_invariant_forest(
+                            pretrivial_forest,
+                            verbose=verbose and verbose > 1 and verbose - 1) *\
+                            tmp_morph
+                    self._strata = strata
+                    self.update_strata(
+                        tmp_morph,
+                        verbose=verbose and verbose > 1 and verbose - 1)
                     if result_morph:
                         result_morph = tmp_morph * result_morph
                     else:
@@ -3166,8 +3229,8 @@ class GraphSelfMap(GraphMap):
                         l = len(self._strata)
                         result_morph = self.core_subdivide(
                             s,
-                            verbose=verbose and verbose > 1 and verbose - 1) * \
-                                       result_morph
+                            verbose=verbose and verbose > 1 and verbose - 1) *\
+                            result_morph
                         number_of_new_strata = \
                             len(self._strata) - l  # number of strata below
                         # s may have changed
@@ -3188,12 +3251,12 @@ class GraphSelfMap(GraphMap):
                             tmp_morph = self.fold_paths(
                                 paths,
                                 verbose=verbose and verbose > 1 and
-                                        verbose - 1)
+                                verbose - 1)
                             self._strata = strata
                             heritage = self.update_strata(
                                 tmp_morph,
                                 verbose=verbose and verbose > 1 and
-                                        verbose - 1)
+                                verbose - 1)
                             s = heritage[s][0]  # folding inessential
                             #  connecting paths keeps the stratum irreducible
                             #  and exponential
@@ -3202,7 +3265,8 @@ class GraphSelfMap(GraphMap):
                             done = False
                         elif verbose:
                             print "Stratum", s, "satisfies RTT-ii " \
-                                                "(no inessential connecting paths below)."
+                                                "(no inessential connecting " \
+                                                "paths below)."
 
                     # Foldings
 
@@ -3229,13 +3293,14 @@ class GraphSelfMap(GraphMap):
                         result_morph = self.relative_reduce(
                             folded_strata,
                             verbose=verbose and verbose > 1 and
-                                    verbose - 1) * result_morph
+                            verbose - 1) * result_morph
                         done = False
                         break
 
                     elif verbose:
                         print "Stratum", s, "satisfies RTT-iii " \
-                                            "(no illegal turns in the image of edges)."
+                                            "(no illegal turns in the " \
+                                            "image of edges)."
 
                 s = s - 1
 
@@ -3300,7 +3365,7 @@ class GraphSelfMap(GraphMap):
                         result_morph = self.core_subdivide(
                             s,
                             verbose=verbose and verbose > 1 and
-                                    verbose - 1) * result_morph
+                            verbose - 1) * result_morph
                         number_of_new_strata = len(
                             self._strata) - l  # number of strata
                         # below s may have changed
@@ -3319,12 +3384,12 @@ class GraphSelfMap(GraphMap):
                             tmp_morph = self.fold_paths(
                                 paths,
                                 verbose=verbose and verbose > 1 and
-                                        verbose - 1)
+                                verbose - 1)
                             self._strata = strata
                             heritage = self.update_strata(
                                 tmp_morph,
                                 verbose=verbose and verbose > 1 and
-                                        verbose - 1)
+                                verbose - 1)
                             s = heritage[s][-1]  # folding inessential
                             # connecting paths keeps the stratum
                             # irreducible and exponential
@@ -3332,7 +3397,8 @@ class GraphSelfMap(GraphMap):
                             result_morph = tmp_morph * result_morph
                         elif verbose:
                             print "Stratum", s, "satisfies RTT-ii " \
-                                                "(no inessential connecting paths below)."
+                                                "(no inessential connecting " \
+                                                "paths below)."
 
                     # Foldings
 
@@ -3374,7 +3440,8 @@ class GraphSelfMap(GraphMap):
                     else:  # now stratum s satisfies RTT
                         if verbose:
                             print "Stratum", s, "satisfies RTT-iii" \
-                                                " (no illegal turns in the image of edges)."
+                                                " (no illegal turns in " \
+                                                "the image of edges)."
 
                         inps = self.relative_indivisible_nielsen_paths(
                             s, verbose=verbose and verbose > 1 and verbose - 1)
@@ -3391,7 +3458,7 @@ class GraphSelfMap(GraphMap):
                                 inp = self.inessential_inp(
                                     inps, s,
                                     verbose=verbose and verbose > 1 and
-                                            verbose - 1)
+                                    verbose - 1)
                                 if inp:
                                     done = False
                                     if verbose:
@@ -3400,13 +3467,13 @@ class GraphSelfMap(GraphMap):
                                         self.fold_inp_in_relative_train_track(
                                             inp, s,
                                             verbose=verbose and
-                                                    verbose > 1 and verbose - 1)
+                                            verbose > 1 and verbose - 1)
                                     result_morph = folding_morph * result_morph
 
                                     heritage = self.update_strata(
                                         folding_morph,
                                         verbose=verbose and verbose > 1 and
-                                                verbose - 1)
+                                        verbose - 1)
                                     s = heritage[s][-1]
                                 else:
                                     edges = [a for a in self._strata[s]]
@@ -3428,7 +3495,7 @@ class GraphSelfMap(GraphMap):
                                         tt = self.image_turn(turn)
                                         if tt[0] == tt[1] and any(
                                                 (turn[0] != inp[0][0] or
-                                                         turn[1] != inp[1][0])
+                                                    turn[1] != inp[1][0])
                                                 for inp in inps):
                                             done = False
                                             inp_done = False
@@ -3471,7 +3538,7 @@ class GraphSelfMap(GraphMap):
                                         for turn in turns:
                                             tt = self.image_turn(turn)
                                             if any((tt[0] == inp[0][0] and
-                                                            tt[1] == inp[1][0])
+                                                    tt[1] == inp[1][0])
                                                    for inp in inps):
                                                 done = False
                                                 inp_done = False

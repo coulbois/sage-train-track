@@ -13,9 +13,10 @@ AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
 
 EXAMPLES::
 
-sage: A = AlphabetWithInverses(['a','b'])
-sage: FreeGroupWord(A)
-Free group over ['a', 'b']
+sage: A =  AlphabetWithInverses(['a','b'])
+sage: fw = FiniteWords(A)
+sage: FreeGroupWord(fw,['a','b','c','d'])
+word: abcd
 """
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
@@ -24,10 +25,9 @@ Free group over ['a', 'b']
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
 # - modified by Dominique 03/03/20016 :  major changes pep8 correction
-
 from sage.combinat.words.word import FiniteWord_list
 from sage.combinat.words.word import Word_class
-#from free_group import FreeGroup
+
 
 class FreeGroupWord(FiniteWord_list):
     """
@@ -35,9 +35,10 @@ class FreeGroupWord(FiniteWord_list):
 
     EXAMPLES::
 
-        sage: F=FreeGroupWord(3)
-        sage: w=F('aba')
-        word: 'aba'
+        sage: A =  AlphabetWithInverses(6)
+        sage: fw = FiniteWords(A)
+        sage: FreeGroupWord(fw,['a','b','c','d'])
+        word: abcd
 
     AUTHORS:
 
@@ -63,6 +64,16 @@ class FreeGroupWord(FiniteWord_list):
         OUTPUT:
 
         - return the string represention of FreeGroupWord
+
+
+
+        EXAMPLES::
+
+        sage: A =  AlphabetWithInverses(6)
+        sage: fw = FiniteWords(A)
+        sage: FGW = FreeGroupWord(fw,['a','b','c','d'])
+        sage: FGW.__str__()
+        'abcd'
         """
 
         result = ""
@@ -94,11 +105,13 @@ class FreeGroupWord(FiniteWord_list):
 
         EXAMPLES::
 
-        sage: F=FreeGroupWord(3)
-        sage: u=F('abAc')
-        sage: v=F('Caa')
-        sage: u*v
-          word: aba
+        sage: A =  AlphabetWithInverses(3)
+        sage: fw = FiniteWords(A)
+        sage: FGW = FreeGroupWord(fw,['a','b','c'])
+        sage: u = FGW('abAc')
+        sage: v = F('Caa')
+        sage: u * v
+        word: aba
 
         """
         A = self.parent().alphabet()
@@ -172,7 +185,6 @@ class FreeGroupWord(FiniteWord_list):
         sage: F=FreeGroup(3)
         sage: F("aba")<F("abbb")
         True
-
         sage: F("aba")==F("aba")
         True
 
@@ -203,7 +215,7 @@ class FreeGroupWord(FiniteWord_list):
             sage: F = FreeGroup('abc')
             sage: w = F('abCbA')
             sage: w.inverse()
-            aBcBA
+            word: aBcBA
         """
         F = self.parent()
         A = F.alphabet()
@@ -217,7 +229,7 @@ class FreeGroupWord(FiniteWord_list):
 
         EXAMPLES::
 
-            sage: F=FreeGroup(['a','b','c'])
+            sage: F = FreeGroup(['a','b','c'])
             sage: w=F("abcAab")
             sage: w.reduced()
             word: abcb
@@ -249,7 +261,7 @@ class FreeGroupWord(FiniteWord_list):
 
         EXAMPLES::
 
-            sage: F= FreeGroup(3)
+            sage: F= FreeGroupWord(3)
             sage: w=F("abcAab")
             sage: w.is_reduced()
             False

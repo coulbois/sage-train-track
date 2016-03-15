@@ -1,9 +1,28 @@
-#*****************************************************************************
+r"""
+train_track_map.py module
+
+Define a TrainTrackMap Class
+
+AUTHORS:
+
+- Thierry COULBOIS (2013-01-01): initial version
+
+- Dominique BENIELLI (2016-02_15):
+AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+
+EXAMPLES::
+
+sage: phi = FreeGroupAutomorphism("a->ab, b->ac, c->a")
+sage: phi = phi.inverse()
+sage: tt = phi.train_track()
+sage: print tt
+"""
+# *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#*****************************************************************************
+# *****************************************************************************
 # - modified by Dominique 03/03/20016 :  major changes pep8 correction
 
 from topological_representative import GraphSelfMap
@@ -62,7 +81,7 @@ class TrainTrackMap(GraphSelfMap):
           ``edge_map``).
         """
         
-        GraphSelfMap.__init__(self,*args)
+        GraphSelfMap.__init__(self, *args)
 
  
     def __str__(self):
@@ -125,8 +144,7 @@ class TrainTrackMap(GraphSelfMap):
         """
 
         return TrainTrackMap(
-            GraphSelfMap.from_edge_map(edge_map,alphabet,path))
-
+            GraphSelfMap.from_edge_map(edge_map, alphabet, path))
 
     def is_expanding(self):
         """
@@ -149,7 +167,7 @@ class TrainTrackMap(GraphSelfMap):
             else:
                 i += 1
                 
-        #only not expanded edges are left in edges
+        # only not expanded edges are left in edges
         while not done:
             done = True
             i = 0
@@ -179,7 +197,7 @@ class TrainTrackMap(GraphSelfMap):
         """
         if len(self.stratify()) > 1:
             return False
-        #Now, we know that self is irreducible
+        # Now, we know that self is irreducible
         
         A = self.domain().alphabet()
         image = dict([])  # set of edges that appears in the image of an edge
@@ -213,7 +231,7 @@ class TrainTrackMap(GraphSelfMap):
         if len(image[a]) < len(A):
             return False
 
-        #we now look for letters from which we can reach a
+        # we now look for letters from which we can reach a
 
         good_letters = set(
             [b for b in A.positive_letters() if a in image[b]])
@@ -314,7 +332,7 @@ class TrainTrackMap(GraphSelfMap):
         directions = lwg.vertices()
         images = directions
 
-        #Looking for a period for the vertex v
+        # Looking for a period for the vertex v
         
         reached_vertices = set([v])
         w = v
@@ -625,9 +643,9 @@ class TrainTrackMap(GraphSelfMap):
                 stable.remove(j)
           
         if end_points:
-            #the end of an inp is either a vertex of self or a point
-            #inside an edge which is denoted by (e,period,portion) or
-            #(e,period,left,right)
+            # the end of an inp is either a vertex of self or a point
+            # inside an edge which is denoted by (e,period,portion) or
+            # (e,period,left,right)
         
             if verbose:
                 print "Looking for endpoints"
@@ -661,11 +679,11 @@ class TrainTrackMap(GraphSelfMap):
                         new_prefix_ab = matrix(N, 1)
                         for a in uu[:p]:
                             new_prefix_ab[A.rank(a) % N, 0] += 1
-                        #new_prefix_ab=uu[:p].abelian_vector()
-                        #new_prefix_ab=matrix(len(A),1,[new_prefix_ab[k]+
+                        # new_prefix_ab=uu[:p].abelian_vector()
+                        # new_prefix_ab=matrix(len(A),1,[new_prefix_ab[k]+
                         # new_prefix_ab[k+len(A)] for k in xrange(len(A))])
-                        #new_prefix_ab=uu[:p].parikh_vector(A)
-                        #new_prefix_ab=matrix(len(A),1,[new_prefix_ab[k]+
+                        # new_prefix_ab=uu[:p].parikh_vector(A)
+                        # new_prefix_ab=matrix(len(A),1,[new_prefix_ab[k]+
                         # new_prefix_ab[k+len(A)] for k in xrange(len(A))])
 
                         prefix_ab = M * prefix_ab + new_prefix_ab
@@ -678,12 +696,12 @@ class TrainTrackMap(GraphSelfMap):
                     u_ab = matrix(N, 1)
                     for a in u:
                         u_ab[A.rank(a) % N, 0] += 1
-                    #u_ab=u.abelian_vector()
-                    #u_ab=matrix(len(A),1,[u_ab[k]+u_ab[k+len(A)] for k in
+                    # u_ab=u.abelian_vector()
+                    # u_ab=matrix(len(A),1,[u_ab[k]+u_ab[k+len(A)] for k in
                     #  xrange(len(A))])
 
-                    #u_ab = u.parikh_vector(A)
-                    #u_ab = matrix(
+                    # u_ab = u.parikh_vector(A)
+                    # u_ab = matrix(
                     #    len(A), 1,
                     #    [u_ab[k] + u_ab[k + len(A)] for k in xrange(len(A))])
                     uu_ab = Mperiod * u_ab
@@ -691,12 +709,12 @@ class TrainTrackMap(GraphSelfMap):
                     v_ab = matrix(N, 1)
                     for a in v:
                         v_ab[A.rank(a) % N, 0] += 1
-                    #v_ab=v.abelian_vector()
-                    #v_ab=matrix(len(A),1,[v_ab[k]+v_ab[k+len(A)] for k in
+                    # v_ab=v.abelian_vector()
+                    # v_ab=matrix(len(A),1,[v_ab[k]+v_ab[k+len(A)] for k in
                     # xrange(len(A))])
 
-                    #v_ab = v.parikh_vector(A)
-                    #v_ab = matrix(
+                    # v_ab = v.parikh_vector(A)
+                    # v_ab = matrix(
                     #    len(A), 1,
                     #   [v_ab[k] + v_ab[k + len(A)] for k in xrange(len(A))])
                     vv_ab = Mperiod * v_ab
@@ -1104,7 +1122,7 @@ class TrainTrackMap(GraphSelfMap):
                 components_tree[v1] = (v1, Word([]), 1)
                 components_tree[v2] = (v1, G.reverse_path(u1) * u2, period)
 
-        #We order loops to remove multiple occurences of the same loop
+        # We order loops to remove multiple occurences of the same loop
 
         if verbose:
             print "Looking for multiple loops: Ordering the loops..."
