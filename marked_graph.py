@@ -33,7 +33,7 @@ class MarkedGraph(GraphWithInverses):
 
     AUTHORS:
 
-    - Thierry Coulbois (2013-05-16): beta.0 version
+    - Thierry Coulbois (2013-05-16)
     """
 
     def __init__(self, graph=None, marking=None, alphabet=None,
@@ -45,7 +45,7 @@ class MarkedGraph(GraphWithInverses):
             self._marking = marking
         else:
             if isinstance(graph, GraphWithInverses):
-                alphabet = graph._alphabet
+                alphabet = graph.alphabet()
             GraphWithInverses.__init__(self, graph, alphabet)
 
             if marking is None:  # computes a (random) marking
@@ -75,12 +75,12 @@ class MarkedGraph(GraphWithInverses):
                     edge_map[B[i]] = graph.reduce_path(
                         tree[graph.initial_vertex(a)] * Word([a]) *
                         graph.reverse_path(tree[graph.terminal_vertex(a)]))
-                    marking = GraphMap(RB, graph, edge_map)
+                marking = GraphMap(RB, graph, edge_map)
             else:
                 marking = GraphMap(
                     GraphWithInverses.rose_graph(marking_alphabet),
                     self, marking)
-                self._marking = marking
+            self._marking = marking
 
     def __str__(self):
         """
