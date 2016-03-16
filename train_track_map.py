@@ -1697,5 +1697,3 @@ class TrainTrackMap(GraphSelfMap):
             return True
 
 
-class RelativeTrainTrackMap(GraphSelfMap):
-    pass
