@@ -179,8 +179,14 @@ class GraphSelfMap(GraphMap):
         edge_morph = WordMorphism(edge_map)
         if alphabet is None:
             alphabet = AlphabetWithInverses(edge_morph.domain().alphabet())
+        edge_map=dict()
+        for a in edge_morph.domain().alphabet():
+            aa = alphabet.inverse_letter(a)
+            edge_map[a] = edge_morph.image(a)
+            edge_map[aa] = Word([ alphabet.inverse_letter(b) for b in reversed(edge_map[a])])
+        edge_morph = WordMorphism(edge_map)
         equiv = dict((a, i) for i, a in enumerate(alphabet))
-
+                
         # images of edges must be edge paths
         for a in edge_morph.domain().alphabet():
             w = edge_morph.image(a)
@@ -209,17 +215,23 @@ class GraphSelfMap(GraphMap):
         while not done:
             done = True
             for i in xrange(len(alphabet) * 2 - 1):
+                a = alphabet[i]
+                im_a = edge_morph.image(a)
+                if len(im_a) == 0:
+                    continue
                 for j in xrange(i + 1, len(alphabet) * 2):
-                    a = alphabet[i]
                     b = alphabet[j]
+                    im_b = edge_morph.image(b)
+                    if len(im_b) == 0:
+                        continue
                     if equiv[a] == equiv[b]:
                         if i < len(alphabet):
-                            x = edge_morph.image(a)[0]
+                            x = im_a[0]
                         else:
                             x = alphabet.inverse_letter(edge_morph.image(
                                 alphabet.inverse_letter(a))[-1])
                         if j < len(alphabet):
-                            y = edge_morph.image(b)[0]
+                            y = im_b[0]
                         else:
                             y = alphabet.inverse_letter(edge_morph.image(
                                 alphabet.inverse_letter(b))[-1])
@@ -915,6 +927,48 @@ class GraphSelfMap(GraphMap):
         WARNING:
 
         This has no effect on the possible strata of self.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: f = phi.inverse().rose_conjugacy_representative()
+        sage: f.subdivide(['a'])
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
+        Edge map: a->ad, b->adc, c->ad, d->b
+
+        sage: f.fusion_line([['a','d']])
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 1->1, b: 1->1, c: 1->1
+        Edge map: a->ab, b->ac, c->a
+
+
+        SEE ALSO::
+
+        GraphWithInverses.contract_edges()
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: f = phi.inverse().rose_conjugacy_representative()
+        sage: f.subdivide(['a'])
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
+        Edge map: a->ad, b->adc, c->ad, d->b
+
+        sage: f.fusion_line([['a','d']])
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 1->1, b: 1->1, c: 1->1
+        Edge map: a->ab, b->ac, c->a
+
+
+        SEE ALSO::
+
+        GraphWithInverses.contract_edges()
+
         """
         if verbose:
             print "Fusion lines: ", lines
@@ -983,6 +1037,14 @@ class GraphSelfMap(GraphMap):
         OUTPUT:
 
         A list of trees, each tree is a list of edges.
+
+        EXAMPLES::
+
+        sage: f = GraphSelfMap.from_edge_map("a->adbD,b->adcD,c->a,d->")
+        sage: f.pretrivial_forest()
+        [{'d'}]
+
+
         """
         A = self._domain.alphabet()
         pretrivial_edges = \
@@ -1033,6 +1095,22 @@ class GraphSelfMap(GraphMap):
         WARNING:
 
         This has no effect on the possible strata of self.
+
+        EXAMPLES::
+
+        sage: f = GraphSelfMap.from_edge_map("a->adbD,b->adcD,c->a,d->")
+        sage: f.contract_invariant_forest([['d']])
+        sage: print f
+        Graph self map:
+        Marked graph: a: 0->0, b: 0->0, c: 0->0
+        Marking: a->a, b->b, c->c
+        Edge map: a->ab, b->ac, c->a
+
+        SEE ALSO::
+
+        GraphWithInverses.contract_forest()
+
+
         """
 
         if verbose:
@@ -1067,6 +1145,14 @@ class GraphSelfMap(GraphMap):
         WARNING:
 
         Does not do anything to the possible strata of ``self``
+
+        EXAMPLES::
+
+        sage: f = GraphSelfMap.from_edge_map("a->adbD,b->adcD,c->a,d->")
+        sage: f.maximal_filtration()
+        [{'d'}, {'a', 'b', 'c', 'd'}]
+
+
         """
         A = self._domain._alphabet
         filtration = [set(A.positive_letters())]
@@ -1109,6 +1195,10 @@ class GraphSelfMap(GraphMap):
         """
         Contracts the ``tails`` of ``self``.
 
+        A tail of a connected graph is a subgraph outside the core graph, that
+        is to say a subgraph made of edges that do not belong to any
+        loop.
+
         INPUT:
 
         ``tails`` is a list of lists of edges. One list for each
@@ -1121,6 +1211,22 @@ class GraphSelfMap(GraphMap):
         WARNING:
 
         This has no effect on the possible strata of self.
+
+        EXAMPLES::
+
+        sage: f = GraphSelfMap.from_edge_map("a->abaa,b->aca,c->a,d->da")
+        sage: f.contract_tails([['D']])
+        sage: print f
+        Graph self map:
+        Marked graph: a: 0->0, b: 0->0, c: 0->0
+        Marking: a->a, b->b, c->c
+        Edge map: a->abaa, b->aca, c->a
+
+        SEE ALSO:
+
+        GraphWithInverses.tails()
+        GraphWithInverses.contract_forest()
+
         """
 
         if verbose:
@@ -1168,9 +1274,22 @@ class GraphSelfMap(GraphMap):
         OUPUT:
 
         The WordMorphism that maps old edges to the new edges.
+
+        EXAMPLES::
+
+        sage: f = GraphSelfMap.from_edge_map("a->abaa,b->aca,c->a,d->da")
+        sage: f.reduce()
+        sage: print f
+        Graph self map:
+        Marked graph: a: 0->0, b: 0->0, c: 0->0
+        Marking: a->a, b->b, c->c
+        Edge map: a->abaa, b->aca, c->a
+        Irreducible representative
+
+
         """
 
-        tails = self._domain.find_tails()
+        tails = self._domain.tails()
         if len(tails) > 0:
             if verbose:
                 print "Contracting tails:", tails
@@ -1221,7 +1340,7 @@ class GraphSelfMap(GraphMap):
                         dict((a, a) for a in self._domain._alphabet))
                 return result_morph
 
-        lines = self._domain.find_valence_2_vertices()
+        lines = self._domain.valence_2_vertices()
         if len(lines) > 0:
             if verbose:
                 print "Valence 2 vertices", lines
@@ -1284,7 +1403,19 @@ class GraphSelfMap(GraphMap):
 
         * go to 1.
 
+        OUTPUT:
 
+        The ``WordMorphism`` that maps old edges to the new edges.
+        
+        EXAMPLES::
+        
+        sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a').inverse()
+        sage: f = phi.rose_conjugacy_representative()
+        sage: f.train_track()
+        Graph self map:
+        Graph with inverses: a: 0->0, b: 1->0, c: 1->0, e: 0->1
+        Edge map: a->ec, b->Ea, c->b, e->C
+        Irreducible representative
 
         """
         done = False
@@ -1338,6 +1469,13 @@ class GraphSelfMap(GraphMap):
 
         * there are no foldings in iterated images of edges.
 
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: f=phi.rose_representative()
+        sage: f.is_train_track()
+        True
+
         """
 
         G = self.domain()
@@ -1350,7 +1488,7 @@ class GraphSelfMap(GraphMap):
                 print "Not connected"
             return False
 
-        if len(G.find_tails()) == 0:
+        if len(G.tails()) == 0:
             if verbose:
                 print "No vertices of valence 1"
         else:
@@ -1358,7 +1496,7 @@ class GraphSelfMap(GraphMap):
                 print "There are vertices of valence 1"
             return False
 
-        if len(G.find_valence_2_vertices()) == 0:
+        if len(G.valence_2_vertices()) == 0:
             if verbose:
                 print "No vertices of valence 2"
         else:
@@ -1388,6 +1526,14 @@ class GraphSelfMap(GraphMap):
         The image of this turn ``t``, that is to say the turn made of the
         first edges of ``self(e)`` and ``self(f)``. The resut turn is ordered
         with respect to the less_letter function of the alphabet.
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: f=phi.rose_representative()
+        sage: f.image_turn(('A','B'))
+        ('B','C')
+
         """
         e = self.image(t[0])[0]
         f = self.image(t[1])[0]
@@ -1404,6 +1550,14 @@ class GraphSelfMap(GraphMap):
         If ``stratum`` is not ``None``, then returns the set of turns
         in ``stratum` that are in the iterated image of an edge of
         ``stratum``.
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: f=phi.rose_representative()
+        sage: f.edge_turns()
+        {('a', 'A'), ('a', 'B'), ('a', 'C'), ('b', 'A'), ('c', 'A')}
+
         """
 
         A = self._domain._alphabet
@@ -1448,6 +1602,14 @@ class GraphSelfMap(GraphMap):
 
         A turn is legal if all its iterated images are non-degenerate
         turns.
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
+        sage: f=phi.rose_representative()
+        sage: f.legal_turns()
+        [('a', 'A'), ('a', 'B'), ('b', 'A'), ('b', 'B'), ('A', 'B')]
+
         """
 
         turns = self._domain.turns()
@@ -1471,6 +1633,15 @@ class GraphSelfMap(GraphMap):
         A turn is fold if the images of its two edges have a common
         prefix. If ``stratum`` is not ``None`` only consider illegal turns
         in the stratum.
+
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
+        sage: f=phi.rose_representative()
+        sage: f.fold_turns()
+        [('a', 'b')]
+
 
         SEE ALSO:
 
@@ -1508,6 +1679,17 @@ class GraphSelfMap(GraphMap):
         iterations of ``self`` required to fold ``t``.
 
         Else returns a list of turns.
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
+        sage: f=phi.rose_representative()
+        sage: f.illegal_turns()
+        [('a', 'b')]
+
+        SEE ALSO:
+
+        GraphSelfMap.fold_turns()
 
         """
 
@@ -2486,7 +2668,7 @@ class GraphSelfMap(GraphMap):
 
         #Contract tails
 
-        tails = self._domain.find_tails()
+        tails = self._domain.tails()
         if len(tails) > 0:
             if verbose:
                 print "Contracting tails:", tails
@@ -2614,7 +2796,7 @@ class GraphSelfMap(GraphMap):
 
         # Contract tails
 
-        tails = self._domain.find_tails()
+        tails = self._domain.tails()
         if len(tails) > 0:
             if verbose:
                 print "Contracting tails", tails
@@ -2703,7 +2885,7 @@ class GraphSelfMap(GraphMap):
 
         # Fusion valence 2 vertices
 
-        lines = self._domain.find_valence_2_vertices()
+        lines = self._domain.valence_2_vertices()
 
         if len(lines) > 0:
             if verbose:
@@ -3129,7 +3311,7 @@ class GraphSelfMap(GraphMap):
                 else:
                     result_morph = fold_morph
 
-        tails = self._domain.find_tails()
+        tails = self._domain.tails()
         if len(tails) > 0:
             result_morph = self.contract_tails(
                 tails,
