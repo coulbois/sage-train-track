@@ -226,7 +226,7 @@ class GraphWithInverses(DiGraph):
         while not done:
             if i not in self.vertices():
                 done = True
-                i = i + 1
+            i = i + 1
         return i - 1
 
     def new_vertices(self, n):
@@ -601,7 +601,7 @@ class GraphWithInverses(DiGraph):
 
         return edge_map
 
-    def find_tails(self):
+    def tails(self):
         """
         The forest (as a list of list of edges) outside the core graph.
 
@@ -637,7 +637,7 @@ class GraphWithInverses(DiGraph):
                 forest.append([A.inverse_letter(e)])
         return forest
 
-    def find_valence_2_vertices(self):
+    def valence_2_vertices(self):
         """
           The list of paths with all inner vertices of valence 2.
           """
