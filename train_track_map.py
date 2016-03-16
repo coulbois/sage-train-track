@@ -139,7 +139,8 @@ class TrainTrackMap(GraphSelfMap):
 
         sage: print TrainTrackMap.from_edge_map("a->ec,b->Ea,c->b,e->C")
         Train-track map:
-        Graph with inverses: a: 0->0, b: 1->0, c: 1->0, e: 0->1
+        Marked graph: a: 0->0, b: 1->0, c: 1->0, e: 0->1
+        Marking: a->a, b->Bc, c->eb
         Edge map: a->ec, b->Ea, c->b, e->C
         """
 
@@ -154,6 +155,13 @@ class TrainTrackMap(GraphSelfMap):
         images of e get infinitely long: lim_{n\to\infty}
         f^n(e)=+\infty. Equivalently for any edge e, there exists n
         such that the length of f^n(e) is larger or equal to 2.
+
+        EXAMPLES::
+
+        sage: f = TrainTrackMap.from_edge_map("a->ab,b->ac,c->c")
+        sage: f.is_expanding()
+        False
+
         """
 
         done = True
@@ -194,6 +202,13 @@ class TrainTrackMap(GraphSelfMap):
         SEE ALSO::
 
         TrainTrackMap.has_connected_local_whitehead_graphs()
+
+        EXAMPLES::
+
+        sage: f = TrainTrackMap.from_edge_map("a->ab,b->a,c->ac")
+        sage: f.is_perron_frobenius()
+        False
+
         """
         if len(self.stratify()) > 1:
             return False
@@ -372,6 +387,12 @@ class TrainTrackMap(GraphSelfMap):
         A list of INPs. Each INP is returned as a pair of word-paths, the fixed
         points lie inside the extremal edges of the words.
 
+        EXAMPLES::
+
+        sage: f = TrainTrackMap.from_edge_map("a->caaa,b->caa,c->b")
+        sage: f.indivisible_nielsen_paths()
+        [(word: a, word: bca)]
+
         SEE ALSO::
 
         GraphSelfMap.relative_indivisible_nielsen_paths()
@@ -469,6 +490,13 @@ class TrainTrackMap(GraphSelfMap):
         A list of tuples ``(word1,word2,period)``.
         The fixed points lie in the last edge
         of the two words.
+
+        EXAMPLES::
+
+        sage: f = TrainTrackMap.from_edge_map("a->caaa,b->caa,c->b")
+        sage: f.periodic_nielsen_paths()
+        [((word: a, word: bca), 1), ((word: A, word: B), 2), ((word: A, word: C), 2)]
+
 
         SEE ALSO::
         
@@ -967,6 +995,7 @@ class TrainTrackMap(GraphSelfMap):
         sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
         sage: f=TrainTrackMap(phi.rose_representative())
         sage: f.has_connected_local_whitehead_graphs()
+        False
 
 
         SEE ALSO::
