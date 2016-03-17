@@ -1,11 +1,14 @@
 \documentclass[10pt,a4paper]{article}
 
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{makeidx}
+\usepackage{hyperref}
 
 \newcommand{\Out}{\text{Out}}
 \newcommand{\Aut}{\text{Aut}}
 \newcommand{\FN}{F_N}
+\newcommand{\CVN}{CV_N}
 
 \title{Free group automorphisms and train-tracks with Sage\\
 User's Guide}
@@ -24,11 +27,11 @@ User's Guide}
 \section{Introduction}
 
 The Train-track package was first written by Thierry Coulbois and
-received contributions by Matt Clay and others.
+received contributions by Matt Clay, Brian Mann and others.
 
 It is primarily intended to implement the computation of a train-track
 representative for automorphisms of free groups as introduced by
-Mladen Bestvina and Mark Feighn~\cite{bf-train-track}.
+M.~Bestvina and M.~Handel~\cite{bh-traintrack}.
 
 
 Sage is based on Python. This is an object oriented language: the
@@ -40,7 +43,7 @@ object oriented linguo for what mathematicians call ``function''.
 You can always ask for \textbf{automatic completion} and \textbf{help} by using the TAB key: 
 \begin{enumerate}
 \item Hitting the TAB key after a letter offers all possible
-  completions known to sage.
+  completions known to Sage.
 \item Hitting the TAB key after a dot shows all methods that can be
   applied to that object.
 \item Hitting the TAB key after an opening parenthesis gives help on
@@ -58,8 +61,12 @@ intended for beginners and general structure.
 
 \section{Installation and files}
 
-To use this package you first need a recent ($\geq 6.3$) distribution
-of Sage. Then you need to download the files at
+To use this package you first need a recent distribution of Sage. We
+recommand that you run the latest version. Sage is constantly under
+development, so check regularly at \url{https://sagemath.org}. Then
+you need to download the files from
+\url{https://github.com/coulbois/sage-train-track}. We hope that soon
+this package will be part of the Sage distribution.
 
 \section{Free groups and automorphisms}
 
@@ -82,14 +89,14 @@ while going from Strings to Words.
 
 \subsection{Free group elements}
 
-Free group elements are words. They are created by
+Free group elements\index{free group element} are words. They are created by
 \begin{verbatim}
 sage: F=FreeGroup(3)
 sage: F('abA')
    word: abA
 sage: w=F('abAaab'); w
    word: abAaab
-sage: F.reduce(w)
+sage: w.reduced()
    word: abab
 \end{verbatim} 
 Note that they are not reduced by default. 
@@ -114,17 +121,17 @@ sage: F=FreeGroup(A)
 sage: ws='x0X0x1'
 sage: w=F(ws); w
 word: 'x0X0x1'
-sage: F.reduce(w)
+sage: w.reduced()
 KeyError: 'x'
 sage: w=F(['x0','X0','x1']); w
 word: x0,X0,x1
-sage: F.reduce(w)
+sage: w.reduced()
 word: x1
 \end{verbatim}
 
 \subsection{Free group automorphisms}
 
-The parsing of free group automorphisms relies on that of
+The creation (and the parsing) of free group automorphisms relies on that of
 substitutions. Most of what you might expect should correctly create a
 free group automorphism\index{free group automorphism}:
 \begin{verbatim}
@@ -132,7 +139,7 @@ sage: phi=FreeGroupMorphism('a->ab,b->a'); phi
 Automorphism of the Free group over ['a', 'b']:
 a->ab,b->a
 \end{verbatim}
-Automorphisms can be composed, inverted (note that there is not test
+Automorphisms can be composed, inverted (note that there is no test
 of invertibility upon creation), exponentiated, applied to free group elements.
 \begin{verbatim}
 sage: phi=FreeGroupAutomorphism('a->ab,b->ac,c->a')
@@ -147,41 +154,42 @@ sage: phi('aBc')
 word: abC
 \end{verbatim}
 
-Note that there is a list of pre-defined automorphisms of free groups taken from the litterature:
+There is a list of pre-defined automorphisms of free groups taken from the litterature:
 \begin{verbatim}
 sage: print free_group_automorphisms.Handel_Mosher_inverse_with_same_lambda()
 a->b,b->c,c->Ba
 \end{verbatim}
 
 Also Free group automorphisms can be obtained as composition of
-{elementary Nielsen automorphisms\index{elementary Nielsen automorphism} (of the form $a\mapsto
+elementary Nielsen automorphisms\index{elementary Nielsen automorphism} (of the form $a\mapsto
 ab$). Up to now they are rather called Dehn twists\index{Dehn twist}.
 \begin{verbatim}
 sage: F=FreeGroup(3)
-sage: print F.dehnt_twist('a','c')
+sage: FreeGroupAutomorphism.dehn_twist(F,'a','c')
 a->ac, b->b, c->c
-sage: print F.dehn_twist('A','c')
+sage: FreeGroupAutomorphism.dehn_twist(F,'A','c')
+Automorphism of the Free group over ['a', 'b', 'c']:
 a->Ca,b->b,c->c
-sage: print F.dehn_twist('a','b',on_left=True)
+sage: print FreeGroupAutomorphism.dehn_twist(F,'a','b',on_left=True)
 a->ba,b->b,c->c
 \end{verbatim}
 
 If the free group as even rank $N=2g$, then it is the fundamental
-group of an oriented surface ofgenus $g$ with one boundary
-component. In this case the mapping class group of $S_{g,1}$ is a
+group of an oriented surface of genus $g$ with one boundary
+component. In this case the mapping class group\index{mapping class group} of $S_{g,1}$ is a
 subgroup of the outer automorphism group of $F_N$ and it is generated
 by a collection of $3g-1$ Dehn twists along curves. Those Dehn
-twists\index{Dehn twist}s are accessed through:
+twists\index{Dehn twist}\index{surface Dehn twist} are accessed through:
 \begin{verbatim}
 sage: F=FreeGroup(4)
-sage: print F.surface_dehn_twist(2)
+sage: print FreeGroupAutomorphism.surface_dehn_twist(F,2)
 a->a,b->ab,c->acA,d->adA
 \end{verbatim}
 
-Similarly the \index{braid} group $B_N$ is a subgroup of $\Aut(\FN)$ and its usual generators are obtained by:
+Similarly the braid\index{braid} group $B_N$ is a subgroup of $\Aut(\FN)$ and its usual generators are obtained by:
 \begin{verbatim}
 sage: F=FreeGroup(3)
-sage: print F.braid_automorphism(0)
+sage: print FreeGroupAutomorphism.braid_automorphism(F,0)
 a->c,b->b,c->caC
 \end{verbatim}
 
@@ -195,17 +203,18 @@ sage: F=FreeGroup(4)
 sage: F.random_automorphism(8)
 \end{verbatim}
 
+
 \section{Graphs and maps}
 
-Graphs and maps are used to represent free group automorphisms. A
+Graphs\index{graph} and maps are used to represent free group automorphisms. A
 graph here is a GraphWithInverses: it has a set of vertices and a set
 of edges in one-to-one correspondance with the letters of an
 AlphabetWithInverses: each non-oriented edge is a pair $\{e,\bar e\}$
 of a letter of the alphabet and its inverse. This is complient with
-Serre's view. As the alphabet has a set of positive letters there is a
+Serre's view~\cite{serre-arbres,serre-trees}. As the alphabet has a set of positive letters there is a
 default choice of orientation for edges.
 
-The easiest graph is the \index{rose}:
+The easiest graph is the rose\index{rose}:
 \begin{verbatim}
 sage: A=AlphabetWithInverses(3)
 sage: G=GraphWithInverses.rose_graph(A)
@@ -220,9 +229,10 @@ edges, using some thermodynamics and randomness, thus two calls of
 \texttt{plot()} may output two different figures.
 
 A number of operations on graphs are defined: subdividing, folding,
-collapsing edges, etc.
+collapsing edges, etc. But, as of now, not all
+Stallings~\cite{stall-graphs} moves are implemented.
 
-Graphs come with maps between them: a map is a continuous map from a
+Graphs come with maps\index{graph map} between them: a map is a continuous map from a
 graph to another which maps vertices to vertices and edges to
 edge-paths. Again they can be given by a variety of means. As Graph
 maps are intended to represent free group automorphisms a simple way
@@ -230,18 +240,36 @@ to create a graph map is from a free group automorphism:
 \begin{verbatim}
 sage: phi=free_group_automorphisms.tribonacci()
 sage: print phi.rose_representative()
-Topological representative:
+GraphSelfMap:
 Marked graph: a: 0->0, b: 0->0, c: 0->0
 Marking: a->a, b->b, c->c
 Edge map: a->ab, b->ac, c->a
 \end{verbatim}
-Remark that by default the rose graph is \textbf{marked}: it comes
+Remark that by default the rose graph is \textbf{marked}\index{marking}\index{marked graph}: it comes
 with a marking from the rose (itself, but you should think of that one
 as fixed) to the graph. Here the graph map is a graph self map as the
 source and the target are the same.
 
 Graph maps can also be folded, subdivided, etc. If the graphs are
 marked then those operations will carry on the marking.
+
+Note that to associate an automorphism to a graph self map that is a
+homotopy equivalence we need to fix a base point\index{base point} to
+compute the fundamental group. Thus if we do not fix the base point we
+only get an outer automorphism\index{outer automorphism} of the free
+group. However, the program do not handle directly outer automorphism,
+rather \texttt{f.automophism()} returns an automorphism but with no
+guarantee on how the base is chosen, thus this automorphism is an
+arbitrary representative of the graph self map $f$.
+Moreover, if the base graph is not marked, then the automorphism is
+only defined up to conjugacy in $\Out(\FN)$.
+In this case \texttt{f.automorphism()} returns an arbitrary
+automorphism in the conjugacy class. We provide a
+\texttt{phi.simple\_outer\_representative()} which return an
+automorphism in the outer class of $\phi$ with the smallest possible length of images. 
+
+
+
 
 \section{Train-tracks}
 
@@ -250,25 +278,155 @@ train-track representative for (outer) automorphisms of free groups.
 \texttt{phi.train\_track()} computes a train-track representative for
 the (outer) automorphism phi. This train-track\index{train-track} can be either an
 absolute train-track or a relative train-track. The celebrated theorem
-of Bestvina and Feighn~\cite{bf-train-track} assures that if phi is
+of M.~Bestvina and M.~Handel~\cite{bh-traintrack} assures that if $\Phi$ is
 fully irreducible (iwip) then there exists an absolute train-track
-representing phi.
+representing $\Phi$.
 
-The \texttt{train-track(relative=False)} method will terminate with
+The \texttt{train\_track(relative=False)} method will terminate with
 either an absolute train-track or with a topological representative
 with a reduction: an invariant strict subgraph with non-trivial
 fundamental group.
 
 One more feature of train-tracks (absolute or relative) is to lower
-the number of Nielsn paths\index{Nielsen path}. Setting the \texttt{stable=True}
+the number of Nielsen paths\index{Nielsen path}. Setting the \texttt{stable=True}
 option will return a train-track with at most one indivisible Nielsen path\index{indivisible
   Nielsen path} (per exponential stratum if it is a relative
 train-track).
 
+\subsection{Examples}
+
+Let's start with building absolute train-tracks.
+
+\begin{verbatim}
+sage: phi=free_group_automorphisms.tribonacci()
+sage: phi.train_track()
+    Train-track map:
+    Marked graph: a: 0->0, b: 0->0, c: 0->0
+    Marking: a->a, b->b, c->c
+    Edge map: a->ab, b->ac, c->a
+    Irreducible representative
+\end{verbatim}
+Indeed Tribonacci automorphism
+$\phi:a\mapsto ab,\ b\mapsto ac,\ c\mapsto a$
+is a positive automorphism (also called
+substitution\index{substitution}), and thus it defines a map from the
+rose to itself which is a train-track map. Note that here the output
+is a \texttt{TrainTrackMap}.
+
+\begin{verbatim}
+sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->c")
+sage: phi.train_track(relative=False)
+    Marked graph: a: 0->0, b: 0->0, c: 0->0
+    Marking: a->a, b->b, c->c
+    Edge map: a->ab, b->ac, c->c
+    Strata: [set(['c']), set(['a', 'b'])]
+\end{verbatim}
+Here the automorphism is not irreducible (it fixes the free group
+element $c$).
+And the algorithm correctly detect that by returning a stratified
+graph map. Although the rose representative is reducible, it is a
+train track map (because the automorphism is positive). But this is
+not detected by the \texttt{train\_track()} method. We provide a
+\texttt{is\_train\_track()} method to test that.
+\begin{verbatim}
+sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->c")
+sage: f=phi.rose_representative()
+sage: f.is_train_track()
+True
+\end{verbatim}
+You can promote this map to become a \texttt{TrainTrackMap} by using
+\texttt{TrainTrackMap(f)}. This can be useful to compute Nielsen paths
+of such reducible train-track maps (but this may cause infinite loops
+in the program).
+
+Reducible automorphisms always have a relative train-track
+representative\index{relative train-track}.
+\begin{verbatim}
+sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->c")
+sage: phi.train_track()
+Graph self map:
+Marked graph: a: 2->0, b: 1->0, c: 0->0, d: 1->0, e: 2->0
+Marking: a->Ea, b->Db, c->c
+Edge map: a->b, b->ac, c->c, d->e, e->dAe
+Strata: [set(['c']), set(['a', 'b']), set(['e', 'd'])]
+\end{verbatim}
+(compare with the above example and note that the default option is
+\texttt{relative=True}). Ask for details of the computation by setting
+option \texttt{verbose=1} (or \texttt{2}, or more).
+
+The default option for this \texttt{train\_track} method is to set
+\texttt{stable=True}, meaning that it looks for a stable
+train-track\index{stable train-track}.
+
+\subsection{Train-tracks and graph maps}
+
+In the previous section we computed train-track representatives for
+automorphisms of free group. The process goes by building a graph self
+map on the rose to represent the automorphism (this is called a
+topological representative\index{topological representative} and then
+perform operations on this graph self map.
+
+The graph on which the topological representative is built can be any
+kind of our graphs: \texttt{GraphWithInverses}, \texttt{MarkedGraph},
+\texttt{MetricGraph}, \texttt{MarkedMetricGraph}. If the graph is not
+marked, then one give up the possibility to recover the original outer
+automorphism from the train-track. Indeed, all outer automorphisms in
+a conjugacy class in $\Out(\FN)$
+can be represented as the same homotopy equivalence on a graph. 
+
+The train-track algorithm can be called directly on a graph self map
+\texttt{f.train\_track()} with the same options as for automorpism but
+$f$
+will not be promoted to become a \texttt{TrainTrackMap} even if it
+could. One can access intermediate operations like
+\texttt{f.stabilize()}, \texttt{f.reduce()}, etc.
+
+\subsection{Nielsen paths}
+
+Nielsen paths are a main tool to refine the understanding of
+train-tracks and of automorphisms of free groups. A Nielsen
+path\index{Nielsen path} for a graph self map $f$
+is a path homotopic to its image relative to its endpoints. In our
+context, we only compute and use Nielsen paths in the case of
+train-track maps (or relative train-track maps).
+
+Nielsen paths of a graph self map \texttt{f} can be computed
+\texttt{f.indivisible\_nielsen\_paths()}. The output is a list of pairs
+\texttt{(u,v)} of paths in the domain of \texttt{f}. The paths
+\texttt{u} and \texttt{v} starts at the same vertex and the ends of
+the Nielsen path are inside the last edges of \texttt{u} and
+\texttt{v}. We also provide the computation of periodic Nielsen
+paths\index{periodic Nielsen path}, that-is-to-say Nielsen paths of
+iterates of \texttt{f}. In this case a Nielsen path is coded by
+\texttt{((u,v),period)}. To build longer Nielsen paths we need to
+concatenate the indivisible ones and for that we need to encode the
+endpoints of periodic Nielsen paths. This normal form for points
+inside edges is a little tricky and can be obtained using
+\texttt{TrainTrackMap.periodic\_point\_normal\_form()}.
+
 
 \section{More on free group automorphisms}
 
-Using the \texttt{train-track()} method our program can decide wether
+We implemented the computation of other invariants for iwip
+automorphisms of free groups. Beware, that Python and Sage let you
+check the requirements: computing the index of a reducible
+automorphism may cause errors or infinite loops by the program.
+
+A graph self map as Whitehead graphs\index{Whitehead graph} at each
+vertex and thanks to Brian Mann, they can be computed. The Whitehead
+graph of a graph self map $f:G\to G$
+at a vertex $v$
+as the set of germs of edges outgoing from $v$
+as vertices and as an edge for a germ from another if and only this
+turn is taken by the iterated image of an edge. Stable Whitehead
+graphs are also available: they only keep germs of edges which are periodic.
+
+Finally the ideal Whitehead graph\index{ideal Whitehead graph} is an
+invariant of iwip automorphisms. And we can compute them. From the
+ideal Whitehead graph one can compute the index list and the index of
+an iwip automorphism of a free group.
+
+Using the \texttt{train\_track()} method our program can decide wether
 an automorphism is fully irreducible\index{fully irreducible} or not. If it is iwip,
 one can compute the \textbf{index}, index-list or \textbf{ideal
   Whitehead graphs}. Not that these computations are done using an
@@ -278,6 +436,116 @@ broader class than just iwip automorphisms.
 
 \section{Convex cores, curve complex and more}
 
+\subsection{Metric simplicial trees  and Outer space}
+
+The programm is also designed to handle trees in Outer space as well
+as simplicial trees in the boundary of Outer space.
+
+Recall that M.~Culler and K.~Vogtmann~\cite{cv-moduli} introduced the Outer
+space\index{outer space} of a free group $\FN$
+which we denote by $\CVN$.
+Outer space is made of simplicial metric trees $T$
+with a free minimal action of the free group $\FN$
+by isometries. Alternatively a point in Outer space is a marked metric
+graph $T/\FN$.
+
+Our classes \texttt{MetricGraph} and \texttt{MarkedMetricGraph} allow
+us to handle points in Outer space. In a metric graph edges of length
+$0$
+can be used as an artefact to code simplicial trees with non-free
+action. For instance 
+\begin{verbatim}
+sage: A = AlphabetWithInverses(3)
+sage: G = MarkedMetricGraph.splitting(2,A)
+sage: print G
+Marked graph: a: 0->0, b: 0->0, c: 1->1, d: 0->1
+Marking: a->a, b->b, c->dcD
+Length: a:0, b:0, c:0, d:1
+\end{verbatim}
+This graphs codes the splitting\index{splitting} of the free group $F_3=F_2*\mathbb Z$.
+HNN-splittings are also available:
+\texttt{MarkedMetricGraph.HNN\_splitting()}. Thus the metric graphs
+(with edges of length $0$)
+are a convenient tool to work with the splitting complex.
+
+Let us emphasize that the splitting complex of a free group is
+becoming a popular tool after being proved hyperbolic by M.~Handel and
+L.~Mosher~\cite{hm-fs-hyperbolic}.
+
+In the geometric situation, these non-free trees can be used to encode arcs in the arc complex\index{curve complex}
+for a surface $S_{g,1}$
+of genus $g$
+with one puncture, ideal arcs (a curve from the puncture to itself)
+are in one-to-one correspondance with splittings of the free group
+$\pi_1(S_{g,1})$. They can also be used to study curve diagram in the context of braid groups.
+
+\subsection{Convex cores}
+
+We also implemented the computation of V.~Guirardel~\cite{guir-core}
+convex core of two simplicial trees in outer space and its
+boundary. The convex core is a square complex inside the cartesian
+product $T_0\times T_1$
+of two trees with action of the free group. Here it is encoded by its
+quotient $C(T_0\times T_1)/\FN$
+which is a finite square complex.  We have the convention that the
+convex core is connected and thus we give up unicity: instead we
+include twice light squares inside the core.
+
+
+The first way to create a convex core is by using a free group
+automorphism \texttt{phi}. Then \texttt{ConvexCore(phi)} returns the
+convex core of the Cayley graph $T_0$
+of the free group with the tree $T_1$
+which is the same as $T_0$
+but with the action twisted by \texttt{phi}.
+\begin{verbatim}
+sage: phi = FreeGroupAutomorphism.tribonacci()**3
+sage: C = ConvexCore(phi)
+sage: C.squares()
+[[5, 0, 2, 1, 'b', 'a'],
+ [5, 6, 4, 1, 'c', 'a'],
+ [7, 0, 2, 3, 'c', 'a'],
+ [3, 2, 6, 5, 'c', 'b']]
+sage: C.one_squeleton(side=1)
+Looped multi-digraph on 8 vertices
+\end{verbatim}
+
+The second way involves creating the two trees. This requires the
+creation of two marked graphs, which can be a little teddious, but
+some methods shorten the typesetting.
+\begin{verbatim}
+sage: A = AlphabetWithInverses(3)
+sage: G0 = MarkedGraph.rose_marked_graph(A)
+sage: G1 = MarkedGraph(GraphWithInverses.valence_3(3))
+sage: G1.precompose(phi)
+sage: C = ConvexCore(G0,G1)
+sage: C.volume()
+\end{verbatim}
+
+Remark that if the automorphism is a mapping class and the trees are
+transverse to ideal curves then the convex core (as a CW-complex) is
+homeomorphic to the surface.
+
 \printindex
+
+\bibliographystyle{amsplain}
+\bibliography{../../articles/bibli}
+
+\end{document}
+
+
+\begin{thebibliography}{{Rey}12}
+
+\bibitem{bh-train-track} M.~Bestvina, and M.~Handel, \emph{Train tracks and
+automorphisms of free groups.} Ann.  of Math.  (2) \textbf{135}
+(1992), no.  1, 1--51
+
+\bibitem{cv} M.~Culler, K.~Vogtmann, \emph{Moduli of graphs and
+automorphisms of free groups.} Invent.  Math.  \textbf{84} (1986), no.
+1, 91--119
+
+
+\end{thebibliography}
+
 
 \end{document}
