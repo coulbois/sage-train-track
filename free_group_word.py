@@ -135,10 +135,10 @@ class FreeGroupWord(FiniteWord_list):
         EXAMPLES::
         sage: A =  AlphabetWithInverses(3)
         sage: fw = FiniteWords(A)
-        sage: F = FreeGroupWord(fw,'ababA')
-        sage: F**3
+        sage: w = FreeGroupWord(fw,'ababA')
+        sage: w**3
         word: ababbabbabA
-        sage: F**-2
+        sage: w**-2
         word: aBABBABA
         """
         F = self.parent()

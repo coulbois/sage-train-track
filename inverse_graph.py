@@ -1171,7 +1171,7 @@ class GraphWithInverses(DiGraph):
 
         EXAMPLES::
         
-        sage: GraphWithInverses.rose_graph(AlphabetWithInverses(3))
+        sage: print GraphWithInverses.rose_graph(AlphabetWithInverses(3))
         Graph with inverses: a: 0->0, b: 0->0, c: 0->0
 
         """
