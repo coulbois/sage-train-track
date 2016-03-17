@@ -34,7 +34,6 @@ class FreeGroupWord(FiniteWord_list):
     Elements of a FreeGroupWord  word of finite rank.
 
     EXAMPLES::
-
         sage: A =  AlphabetWithInverses(6)
         sage: fw = FiniteWords(A)
         sage: FreeGroupWord(fw,['a','b','c','d'])
@@ -68,7 +67,6 @@ class FreeGroupWord(FiniteWord_list):
 
 
         EXAMPLES::
-
         sage: A =  AlphabetWithInverses(6)
         sage: fw = FiniteWords(A)
         sage: FGW = FreeGroupWord(fw,['a','b','c','d'])
@@ -107,9 +105,8 @@ class FreeGroupWord(FiniteWord_list):
 
         sage: A =  AlphabetWithInverses(3)
         sage: fw = FiniteWords(A)
-        sage: FGW = FreeGroupWord(fw,['a','b','c'])
-        sage: u = FGW('abAc')
-        sage: v = F('Caa')
+        sage: u = FreeGroupWord(fw,'abAc')
+        sage: v = FreeGroupWord(fw,'Caa')
         sage: u * v
         word: aba
 
@@ -136,13 +133,13 @@ class FreeGroupWord(FiniteWord_list):
         ``exp`` can be any integer (positive or negative).
 
         EXAMPLES::
-
-        sage: F=FreeGroupWord(3)
-        sage: w=F('ababA')
-        sage: w**3
-           word: ababbabbabA
-        sage: w**-2
-           word: aBABBABA
+        sage: A =  AlphabetWithInverses(3)
+        sage: fw = FiniteWords(A)
+        sage: F = FreeGroupWord(fw,'ababA')
+        sage: F**3
+        word: ababbabbabA
+        sage: F**-2
+        word: aBABBABA
         """
         F = self.parent()
         if exp == 0 or len(self) == 0:
@@ -182,10 +179,11 @@ class FreeGroupWord(FiniteWord_list):
 
         EXAMPLES::
 
-        sage: F=FreeGroup(3)
-        sage: F("aba")<F("abbb")
-        True
-        sage: F("aba")==F("aba")
+        sage: A =  AlphabetWithInverses(3)
+        sage: fw = FiniteWords(A)
+        sage: u = FreeGroupWord(fw,'aba')
+        sage: v = FreeGroupWord(fw,'abbb')
+        sage: u < v
         True
 
         """
@@ -211,11 +209,12 @@ class FreeGroupWord(FiniteWord_list):
         Inverse of ``self``.
 
         EXAMPLES::
+        sage: A =  AlphabetWithInverses(3)
+        sage: fw = FiniteWords(A)
+        sage: u = FreeGroupWord(fw,'abCbA')
+        sage: u.inverse()
+        word: aBcBA
 
-            sage: F = FreeGroup('abc')
-            sage: w = F('abCbA')
-            sage: w.inverse()
-            word: aBcBA
         """
         F = self.parent()
         A = F.alphabet()
@@ -229,10 +228,12 @@ class FreeGroupWord(FiniteWord_list):
 
         EXAMPLES::
 
-            sage: F = FreeGroup(['a','b','c'])
-            sage: w=F("abcAab")
-            sage: w.reduced()
-            word: abcb
+        sage: A =  AlphabetWithInverses(['a','b','c'])
+        sage: fw = FiniteWords(A)
+        sage: w = FreeGroupWord(fw,'abcAab')
+        sage: w.reduced()
+        word: abcb
+
         """
         result = list(self)
 
@@ -260,11 +261,12 @@ class FreeGroupWord(FiniteWord_list):
         ``True`` if ``self`` is a reduced word.
 
         EXAMPLES::
+        sage: A =  AlphabetWithInverses(3)
+        sage: fw = FiniteWords(A)
+        sage: w = FreeGroupWord(fw,'abcAab')
+        sage: w.is_reduced()
+        False
 
-            sage: F= FreeGroupWord(3)
-            sage: w=F("abcAab")
-            sage: w.is_reduced()
-            False
         """
         return all(self.parent().alphabet().are_inverse(
             self[i], self[i + 1]) for i in xrange(len(self) - 1))
@@ -274,11 +276,12 @@ class FreeGroupWord(FiniteWord_list):
         ``True`` if ``self`` is the empty word.
 
         EXAMPLES::
-
-            sage: F= FreeGroup(3)
-            sage: w=F("abcACBAb")
-            sage: w.is_identity()
-            False
+        sage: A =  AlphabetWithInverses(3)
+        sage: fw = FiniteWords(A)
+        sage: w = FreeGroupWord(fw,'abcACBAb')
+        sage: v = FreeGroupWord(fw,'abcACBAbBA')
+        sage: w.is_identity(v)
+        False
 
         """
         return len(w.reduced()) == 0
