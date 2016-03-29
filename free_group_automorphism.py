@@ -1,10 +1,34 @@
+# coding=utf-8
+r"""
+free_group_automorphism.py define FreeGroupMorphism, FreeGroupAutomorphism
+and free_group_automorphisms class
+
+
+AUTHORS:
+
+- Thierry COULBOIS (2013-01-01): initial version
+
+- Dominique BENIELLI (2016-02_15):
+AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+
+EXAMPLES::
+sage: A = AlphabetWithInverses('ab')
+sage: f = FreeGroup(A)
+sage: Au = FreeGroupAutomorphism('a->ab,b->A')
+sage: print Au
+a->ab,b->A
+sage: Au1 = FreeGroupAutomorphism('a->ab,b->A', f)
+sage: print Au1
+a->ab,b->A
+
+
+"""
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
-# - modified by Dominique 03/03/20016 :  major changes pep8 correction
 from inverse_alphabet import AlphabetWithInverses
 from sage.combinat.words.morphism import WordMorphism
 from free_group import FreeGroup
@@ -17,9 +41,20 @@ class FreeGroupMorphism(WordMorphism):
 
         INPUT:
 
-        - ``data`` - the data used to build the morphism
+        - ``data`` -- the data used to build the morphism
 
-        - ``group`` - an optional free group
+        - ``group`` -- an optional free group
+
+        EXAMPLES::
+        sage: Au = FreeGroupMorphism('a->ab,b->A')
+        sage: print Au
+        a->ab,b->A
+        sage: Au = FreeGroupMorphism('a->abc,b->Ac,c->C,d->ac')
+        sage: A = AlphabetWithInverses('abcd')
+        sage: f = FreeGroup(A)
+        sage: Au1 = FreeGroupMorphism('a->abc,b->Ac,c->C,d->ac', f)
+        sage: print Au1
+        a->abc,b->Ac,c->C,d->ac
         """
         if group is not None and not isinstance(group, FreeGroup):
             raise ValueError("the group must be a Free Group")
@@ -61,7 +96,30 @@ class FreeGroupMorphism(WordMorphism):
 
     def __mul__(self, other):
         """
-        Returns the composition self*other.
+         Returns the composition self*other.
+
+        INPUT:
+        - ``other`` -- a other FreeGroupMorphism * by 'self'
+
+        OUTPUT:
+
+
+        - Returns the composition self*other.
+        a FreeGroupMorphism if ''other is instance of FreeGroupMorphism
+        instead a WordMorphism
+
+        EXAMPLES::
+        sage: Au = FreeGroupMorphism('a->ab,b->A')
+        sage: Au1 = FreeGroupMorphism('a->aB,b->A')
+        sage: Au * Au1
+        Morphism of the Free group over ['a', 'b']: a->aba,b->BA
+        sage: Au2 = WordMorphism('a->aB,b->A')
+        sage: Au * Au2
+        WordMorphism: a->aba, b->BA
+        sage: Au3 =  FreeGroupMorphism('a->aB,b->A')
+        sage: Au * Au3
+        Morphism of the Free group over ['a', 'b']: a->aba,b->BA
+
         """
         if isinstance(other, FreeGroupMorphism):
             m = dict((a, self(other.image(a))) for a in
@@ -71,25 +129,52 @@ class FreeGroupMorphism(WordMorphism):
 
     def __pow__(self, n):
         """
-        returns self^n, where other is an integer.
+        INPUT:
+        - ``n`` -- exponent for
+
+        OUTPUT:
+
+        - returns self^n, where n is an integer.
+
+        EXAMPLES::
+
+        sage: f = FreeGroupAutomorphism('a->ab,b->A')
+        sage: f**2
+        Automorphism of the Free group over ['a', 'b']: a->abA,b->BA
 
         TESTS::
 
-            sage: f = FreeGroupAutomorphism('a->ab,b->A')
-            sage: f**-3
-            Automorphism of the Free group over ['a', 'b']: a->bAB,b->baBAB
+        sage: f = FreeGroupAutomorphism('a->ab,b->A')
+        sage: f**-3
+        Automorphism of the Free group over ['a', 'b']: a->bAB,b->baBAB
+        sage: f**0
+        Automorphism of the Free group over ['a', 'b']: a->a,b->b
+
         """
         if n > 0:
             from sage.structure.element import generic_power
             return generic_power(self, n)
         elif n < 0:
             from sage.structure.element import generic_power
+
+            return generic_power(self.inverse(), -n)
         else:
             return FreeGroupAutomorphism.identity_automorphism(self.domain())
 
     def __str__(self):
         """
         String representation.
+
+        OUTPUT:
+        - return a string representation
+
+        EXAMPLES::
+        sage: Au = FreeGroupAutomorphism('a->ab,b->A')
+        sage: Au.__str__()
+        'a->ab,b->A'
+        sage: print Au
+        a->ab,b->A
+
         """
         result = ""
         for letter in self.domain().alphabet().positive_letters():
@@ -100,6 +185,20 @@ class FreeGroupMorphism(WordMorphism):
         return result[:-1]
 
     def __repr__(self):
+        """
+        String representation.
+
+        OUTPUT:
+        - return a string representation
+
+        EXAMPLES::
+        sage: Au = FreeGroupMorphism('a->ab,b->A')
+        sage: Au.__repr__()
+        "Morphism of the Free group over ['a', 'b']: a->ab,b->A"
+        sage: print Au
+        a->ab,b->A
+
+        """
         result = "Morphism of the %s: " % str(self._domain)
         result = result + "%s" % str(self)
         return result
@@ -119,19 +218,36 @@ class FreeGroupMorphism(WordMorphism):
         return 0
 
     def to_automorphism(self):
+        """
+        String representation.
+
+        OUTPUT:
+
+        - return a FreeGroupAutomorphism
+
+        EXAMPLES::
+        sage: Au = FreeGroupMorphism('a->ab,b->A')
+        sage: Au.to_automorphism()
+        Automorphism of the Free group over ['a', 'b']: a->ab,b->A
+
+        """
         if not self.is_invertible():
             raise ValueError("the morphism is not invertible")
-        return FreeGroupAutomorphism(
-            dict((a, self.image(a)) for a in
-                 self.domain().alphabet().positive_letters()),
-            domain = self.domain())
+        return FreeGroupAutomorphism(dict(
+            (a, self.image(a))
+            for a in self.domain().alphabet().positive_letters()))
+        #,domain=self.domain())
 
     def to_word_morphism(self, forget_inverse=False):
         r"""
         Return a word morphism.
+
+
         INPUT:
         - ``forget_inverse`` -- (default: False) forget the inverse or not.
 
+        OUTPUT:
+        - return a WordMorphism
 
         .. NOTE::
 
@@ -141,8 +257,11 @@ class FreeGroupMorphism(WordMorphism):
 
         EXAMPLES::
 
-            sage: f = FreeGroupAutomorphism('a->AD,b->Adac,c->bd,d->c')
-            sage: f.to_word_morphism().periodic_points()
+        sage: f = FreeGroupAutomorphism('a->AD,b->Adac,c->bd,d->c')
+        sage: f.to_word_morphism()
+        WordMorphism: A->da, B->CADa, C->DB, D->C, a->AD, \
+        b->Adac, c->bd, d->c
+        sage: f.to_word_morphism().periodic_points()
             [[word: AdacccADDBdacADbdbdbddaCCCADacADbddaCAda...,
               word: dacADbdbdbddaCCCADacADbddaCAdaccAdaccAda...,
               word: cADbddaCAdaccAdaccAdacccADDBDBDBdaCADbdd...,
@@ -166,14 +285,17 @@ class FreeGroupMorphism(WordMorphism):
         Size of the endomorphism: half the maximum length of
         the image of a two letter word.
 
+        OUTPUT:
+        - return the size
+
         .. TODO::
 
             the definition is ambiguous, do we take floor or ceil ?
 
         EXAMPLES::
 
-            sage: FreeGroupMorphism('a->abc,b->,c->ccc').size()
-            3
+        sage: FreeGroupMorphism('a->abc,b->,c->ccc').size()
+        3
         """
         result = 0
         D = self.domain()
@@ -189,17 +311,19 @@ class FreeGroupMorphism(WordMorphism):
     def is_permutation(self):
         """
         True if self is a permutation of the alphabet.
+        OUTPUT:
+        - return True is 'self' is permutaion or false is not
 
         EXAMPLES::
 
-            sage: FreeGroupMorphism('a->a,b->b').is_permutation()
-            True
-            sage: FreeGroupMorphism('a->a,b->c,c->b').is_permutation()
-            True
-            sage: FreeGroupMorphism('a->a,b->b,c->b').is_permutation()
-            False
-            sage: FreeGroupMorphism('a->a,b->ba').is_permutation()
-            False
+        sage: FreeGroupMorphism('a->a,b->b').is_permutation()
+        True
+        sage: FreeGroupMorphism('a->a,b->c,c->b').is_permutation()
+        True
+        sage: FreeGroupMorphism('a->a,b->b,c->b').is_permutation()
+        True
+        sage: FreeGroupMorphism('a->a,b->ba').is_permutation()
+        False
         """
         A = self._domain._alphabet
         seen = set()
@@ -213,6 +337,13 @@ class FreeGroupMorphism(WordMorphism):
     def _inverse_permutation(self):
         """
         Return the inverse of ``self`` if it is a permutation
+        OUTPUT:
+        - return FreeGroupAutomorphism  inverse permutation
+
+        EXAMPLES::
+        FreeGroupMorphism('a->a,b->b')._inverse_permutation()
+        Automorphism of the Free group over ['a', 'b', 'c']: a->a,b->c,c->b
+
         """
         F = self.domain()
         A = F.alphabet()
@@ -229,20 +360,21 @@ class FreeGroupMorphism(WordMorphism):
     def is_invertible(self):
         """
         Use Dehn twists to successively to check wether ``self`` is invertible.
+        OUTPUT:
+        - return True is 'self' is invertible or false is not
 
         EXAMPLES::
 
-            sage: FreeGroupMorphism('a->b,b->a').is_invertible()
-            True
-            sage: FreeGroupMorphism('a->ab,b->a').is_invertible()
-            True
-
-            sage: FreeGroupMorphism('a->a,b->a').is_invertible()
-            False
-            sage: FreeGroupMorphism('a->ab,b->ba').is_invertible()
-            False
-            sage: FreeGroupMorphism('a->aa,b->b').is_invertible()
-            False
+        sage: FreeGroupMorphism('a->b,b->a').is_invertible()
+        True
+        sage: FreeGroupMorphism('a->ab,b->a').is_invertible()
+        True
+        sage: FreeGroupMorphism('a->a,b->a').is_invertible()
+        False
+        sage: FreeGroupMorphism('a->ab,b->ba').is_invertible()
+        False
+        sage: FreeGroupMorphism('a->aa,b->b').is_invertible()
+        False
         """
         f = self
         F = self.domain()
@@ -608,13 +740,50 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         return True
 
     def __repr__(self):
+        """
+        String representation.
+
+        OUTPUT:
+        - return a string representation
+
+        EXAMPLES::
+        sage: Au = FreeGroupAutomorphism('a->ab,b->A')
+        sage: Au.__repr__()
+        'a->ab,b->A'
+        "Automorphism of the Free group over ['a', 'b']: a->ab,b->A"
+        """
         result = "Automorphism of the %s: " % str(self._domain)
         result = result + "%s" % str(self)
         return result
 
     def __mul__(self, other):
+
         """
-        Returns the composition self*other.
+         Returns the composition self*other.
+
+        INPUT:
+        - ``other`` -- a other FreeGroupMorphism * by 'self'
+
+        OUTPUT:
+
+
+        - Returns the composition self*other.
+        a FreeGroupMorphism if ''other is instance of FreeGroupMorphism
+        instead a WordMorphism
+
+        EXAMPLES::
+        sage: Au = FreeGroupAutomorphism('a->ab,b->A')
+        sage: print Au
+        sage: Au1 = FreeGroupAutomorphism('a->aB,b->A')
+        sage: Au * Au1
+        Automorphism of the Free group over ['a', 'b']: a->aba,b->BA
+        sage: Au2 = WordMorphism('a->aB,b->A')
+        sage: Au * Au2
+        WordMorphism: a->aba, b->BA
+        sage: Au3 =  FreeGroupMorphism('a->aB,b->A')
+        sage: Au * Au3
+        Automorphism of the Free group over ['a', 'b']: a->aba,b->BA
+
         """
         if isinstance(other, FreeGroupMorphism):
             m = dict((a, self(other.image(a)))
