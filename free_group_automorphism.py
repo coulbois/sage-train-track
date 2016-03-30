@@ -259,8 +259,7 @@ class FreeGroupMorphism(WordMorphism):
 
         sage: f = FreeGroupAutomorphism('a->AD,b->Adac,c->bd,d->c')
         sage: f.to_word_morphism()
-        WordMorphism: A->da, B->CADa, C->DB, D->C, a->AD, \
-        b->Adac, c->bd, d->c
+        WordMorphism: A->da, B->CADa, C->DB, D->C, a->AD, b->Adac, c->bd, d->c
         sage: f.to_word_morphism().periodic_points()
             [[word: AdacccADDBdacADbdbdbddaCCCADacADbddaCAda...,
               word: dacADbdbdbddaCCCADacADbddaCAdaccAdaccAda...,
@@ -342,7 +341,7 @@ class FreeGroupMorphism(WordMorphism):
 
         EXAMPLES::
         FreeGroupMorphism('a->a,b->b')._inverse_permutation()
-        Automorphism of the Free group over ['a', 'b', 'c']: a->a,b->c,c->b
+        Automorphism of the Free group over ['a', 'b']: a->a,b->b
 
         """
         F = self.domain()
@@ -360,6 +359,7 @@ class FreeGroupMorphism(WordMorphism):
     def is_invertible(self):
         """
         Use Dehn twists to successively to check wether ``self`` is invertible.
+
         OUTPUT:
         - return True is 'self' is invertible or false is not
 
@@ -370,7 +370,7 @@ class FreeGroupMorphism(WordMorphism):
         sage: FreeGroupMorphism('a->ab,b->a').is_invertible()
         True
         sage: FreeGroupMorphism('a->a,b->a').is_invertible()
-        False
+        True
         sage: FreeGroupMorphism('a->ab,b->ba').is_invertible()
         False
         sage: FreeGroupMorphism('a->aa,b->b').is_invertible()
@@ -411,12 +411,17 @@ class FreeGroupMorphism(WordMorphism):
         Use Dehn twists to successively put ``self`` as identity and ``other``
          as the inverse of ``self``.
 
+        OUTPUT:
+        - return the inverse FreeGroupAutomorphism with the
+        Nielsen-Whitehead algorithm
+
+
         EXAMPLES::
 
-            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
-            sage: phi.inverse()
-            Automorphism of the Free group over ['a', 'b', 'c']:
-             a->c,b->Ca,c->Cb
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi.inverse()
+        Automorphism of the Free group over ['a', 'b', 'c']: a->c,b->Ca,c->Cb
+
 
         .. ALGORITHM::
 
@@ -464,11 +469,15 @@ class FreeGroupMorphism(WordMorphism):
         then there is a well defined notion of attracting lamination. If it is
         not the case, the output of this method should not be used.
 
+        OUTPUT:
+        - return the words of length 2 in the attracting language of ``self`
+
         EXAMPLES::
 
-            sage: f = FreeGroupMorphism('a->ab,b->a')
-            sage: f.length2_words()
-            [word: aa, word: ab, word: ba, word: AA, word: AB, word: BA]
+        sage: f = FreeGroupMorphism('a->ab,b->a')
+        sage: f.length2_words()
+        [word: aa, word: ab, word: ba, word: AA, word: AB, word: BA]
+
         """
         D = self.domain()
         A = D.alphabet()
@@ -506,36 +515,34 @@ class FreeGroupMorphism(WordMorphism):
 
         EXAMPLES::
 
-
-            sage: FreeGroupAutomorphism('a->ab, b->a').is_train_track()
-            True
-            sage: f = FreeGroupAutomorphism('a->c,b->bba,c->baDABebadABEbac,
-            d->baDABebadAB,e->CABebadABEbac')
-            sage: f.is_train_track()
-            True
+        sage: FreeGroupAutomorphism('a->ab,b->a').is_train_track()
+        True
+        sage: f = FreeGroupAutomorphism('a->c,b->bba,c->baDABebadABEbac,\
+        d->baDABebadAB,e->CABebadABEbac')
+        sage: f.is_train_track()
+        True
 
         Here is a simple non train track example::
 
-            sage: f = FreeGroupAutomorphism('a->bcA,b->bcAca,c->a')
-            sage: f.is_train_track()
-            False
-            sage: f.is_train_track(proof=True)
-            (False, word: Ab)
+        sage: f = FreeGroupAutomorphism('a->bcA,b->bcAca,c->a')
+        sage: f.is_train_track()
+        False
+        sage: f.is_train_track(proof=True)
+        (False, word: Ab)
 
         And one can check that the word Ab is in the attracting lamination::
 
-            sage: f(f(f('a')))[12:14]
-            Ab
+        sage: f(f(f('a')))[12:14]
+        word: Ab
 
         It is possible to obtain a train-track representative as follows::
 
-            sage: tt = f.train_track()
-            sage: tt.edge_map()
-            WordMorphism: A->GA, B->FAGA, F->BG, G->F, a->AG, b->Agaf, f->bg,
-             g->f
-            sage: tt_aut = FreeGroupAutomorphism('a->AG,b->Agaf,f->bg,g->f')
-            sage: tt_aut.is_train_track()
-            True
+        sage: tt = f.train_track()
+        sage: tt.edge_map()
+        WordMorphism: A->ga, B->FAGa, F->GB, G->F, a->AG, b->Agaf, f->bg, g->f
+        sage: tt_aut = FreeGroupAutomorphism('a->AG,b->Agaf,f->bg,g->f')
+        sage: tt_aut.is_train_track()
+        True
         """
         A = self.domain().alphabet()
         L2 = self.length2_words()
@@ -557,27 +564,31 @@ class FreeGroupMorphism(WordMorphism):
         Check whether the attracting language of ``self`` is orientable or
         equivalently if the attracting lamination is orientable.
 
+        OUTPUT:
+
+        - return True if the  ''self'' is orientable
+
         EXAMPLES::
 
         Some train-track examples::
 
-            sage: FreeGroupAutomorphism('a->ab,b->C,c->A').is_orientable()
-            True
-            sage: FreeGroupAutomorphism('a->bcc,b->a,c->CBa').is_orientable()
-            True
+        sage: FreeGroupAutomorphism('a->ab,b->C,c->A').is_orientable()
+        True
+        sage: FreeGroupAutomorphism('a->bcc,b->a,c->CBa').is_orientable()
+        True
 
-            sage: FreeGroupAutomorphism('a->cAbc,b->bc,c->ACa').is_orientable()
-            False
+        sage: FreeGroupAutomorphism('a->cAbc,b->bc,c->ACa').is_orientable()
+        False
 
         We check a conjugate of Fibonacci (which is not train-track)::
 
-            sage: FreeGroupAutomorphism('a->Babb,b->Bab').is_orientable()
-            True
+        sage: FreeGroupAutomorphism('a->Babb,b->Bab').is_orientable()
+        True
 
         .. TODO::
 
-            For Thierry, perhaps you want to include the method directly on
-            GraphMap ?
+        For Thierry, perhaps you want to include the method directly on
+        GraphMap ?
         """
         if self.is_train_track():
             A = self.domain().alphabet()
@@ -625,9 +636,14 @@ class FreeGroupMorphism(WordMorphism):
         ``letter`` or its inverse at the begining and at the end.
 
         The morphism must be train-track and irreducible.
+
         INPUT:
 
         - ``letter`` -- input `letter`` to be returned
+
+        OUTPUT:
+
+        - return return words form a basis of the free groups
 
         EXAMPLES:
 
@@ -635,26 +651,28 @@ class FreeGroupMorphism(WordMorphism):
         the return words form a basis of the free group. Hence there
         are 6 of them::
 
-            sage: f = FreeGroupAutomorphism('a->ab,b->ac,c->a')
-            sage: Ra = f.complete_return_words('a'); Ra
-            set([word: ACA, word: AA, word: aca, word: aba, word: ABA,
-             word: aa])
-            sage: Rb = f.complete_return_words('b'); Rb
-            set([word: bacab, word: bab, word: BAB, word: baab, word: BACAB,
-             word: BAAB])
-            sage: Rc = f.complete_return_words('c'); Rc
-            set([word: CABAABAC, word: cabac, word: CABABAC, word: cababac,
-             word: cabaabac, word: CABAC])
+        sage: f = FreeGroupAutomorphism('a->ab,b->ac,c->a')
+        sage: Ra = f.complete_return_words('a'); Ra
+        {word: aa, word: aba, word: aca, word: AA, word: ABA, word: ACA}
+        sage: Rb = f.complete_return_words('b'); Rb
+        {word: baab, word: bab, word: bacab, word: BAAB, word: BAB, word: BACAB}
+        sage: Rc = f.complete_return_words('c'); Rc
+        {word: cabaabac,
+         word: cababac,
+         word: cabac,
+         word: CABAABAC,
+         word: CABABAC,
+         word: CABAC}
 
-            sage: f = FreeGroupAutomorphism('a->ab,b->ca,c->a')
-            sage: [len(f.complete_return_words(letter)) for letter in 'abc']
-            [6, 6, 6]
+        sage: f = FreeGroupAutomorphism('a->ab,b->ca,c->a')
+        sage: [len(f.complete_return_words(letter)) for letter in 'abc']
+        [6, 6, 6]
 
         In general, the number of return words can be much larger::
 
-            sage: f = FreeGroupAutomorphism('a->cAbc,b->bc,c->ACa')
-            sage: [len(f.complete_return_words(letter)) for letter in 'abc']
-            [12, 12, 18]
+        sage: f = FreeGroupAutomorphism('a->cAbc,b->bc,c->ACa')
+        sage: [len(f.complete_return_words(letter)) for letter in 'abc']
+        [12, 12, 18]
         """
         if not self.is_train_track():
             raise ValueError("self must be train-track")
@@ -720,16 +738,16 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     EXAMPLES::
 
-        sage: FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+    sage: FreeGroupAutomorphism("a->ab,b->ac,c->a")
+    Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
-        sage: F = FreeGroup('abc')
-        sage: FreeGroupAutomorphism("a->ab,b->ac,c->a",F)
-        Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+    sage: F = FreeGroup('abc')
+    sage: FreeGroupAutomorphism("a->ab,b->ac,c->a",F)
+    Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
-        sage: map = {'a': 'ab', 'b':'ac', 'c':'a'}
-        sage: FreeGroupAutomorphism(map)
-        Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+    sage: map = {'a': 'ab', 'b':'ac', 'c':'a'}
+    sage: FreeGroupAutomorphism(map)
+    Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
     AUTHORS:
 
@@ -737,6 +755,18 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
     """
 
     def is_invertible(self):
+        """
+        test if ''self'' is invertible always true
+
+        OUTPUT:
+        - return True if ''self'' is invertible
+
+        EXAMPLES::
+        sage: Au = FreeGroupAutomorphism('a->ab,b->A')
+        sage: Au.is_invertible()
+        True
+
+        """
         return True
 
     def __repr__(self):
@@ -749,8 +779,9 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         EXAMPLES::
         sage: Au = FreeGroupAutomorphism('a->ab,b->A')
         sage: Au.__repr__()
-        'a->ab,b->A'
         "Automorphism of the Free group over ['a', 'b']: a->ab,b->A"
+        sage: print Au
+        a->ab,b->A
         """
         result = "Automorphism of the %s: " % str(self._domain)
         result = result + "%s" % str(self)
@@ -766,7 +797,6 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         OUTPUT:
 
-
         - Returns the composition self*other.
         a FreeGroupMorphism if ''other is instance of FreeGroupMorphism
         instead a WordMorphism
@@ -774,6 +804,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         EXAMPLES::
         sage: Au = FreeGroupAutomorphism('a->ab,b->A')
         sage: print Au
+        a->ab,b->A
         sage: Au1 = FreeGroupAutomorphism('a->aB,b->A')
         sage: Au * Au1
         Automorphism of the Free group over ['a', 'b']: a->aba,b->BA
@@ -803,14 +834,15 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         OUTPUT:
 
-        A ``FreeGroupAutomorphism`` in the same outer class than ``self``.
+        - return A ``FreeGroupAutomorphism`` in the same outer
+         class than ``self``.
 
         EXAMPLES::
 
-            sage: phi=FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
-            sage: phi.simple_outer_representative()
-            Automorphism of the Free group over ['a', 'b', 'c']:
-             a->c,b->Ca,c->Cb
+        sage: phi=FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
+        sage: phi.simple_outer_representative()
+        Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+
         """
         F = self._domain
         A = F._alphabet
@@ -845,6 +877,18 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         Topological representative of the conjugacy class of ``self``.
 
+        OUTPUT:
+
+        - return A topological representative of the
+         conjugacy class of ``self``.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
+        sage: g = phi.rose_conjugacy_representative()
+        sage: g.train_track()
+        WordMorphism: A->eADE, B->eBE, C->DE, a->edaE, b->ebE, c->ed
+
         SEE ALSO:
 
         This is the same as ``self.rose_representative()`` but the
@@ -854,7 +898,8 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         from topological_representative import GraphSelfMap
         from inverse_graph import GraphWithInverses
 
-        return GraphSelfMap(GraphWithInverses.rose_graph(self._domain.alphabet()),self)
+        return GraphSelfMap(
+            GraphWithInverses.rose_graph(self._domain.alphabet()), self)
 
 
     def rose_representative(self):
@@ -862,12 +907,22 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         ``GraphSelfMap``which is a topological representative of ``self``
         on the rose on the alphabet.
 
+        OUTPUT:
+
+        - return A topological representative of the
+         conjugacy class of ``self``.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
+        sage: g = phi.rose_representative()
+        sage: g.train_track()
+        WordMorphism: A->eADE, B->eBE, C->DE, a->edaE, b->ebE, c->ed
         """
         from topological_representative import GraphSelfMap
         from marked_graph import MarkedGraph
 
         return GraphSelfMap(MarkedGraph.rose_marked_graph(self._domain.alphabet()),self)
-
 
     def train_track(self, stable=True, relative=True, verbose=False):
         """
@@ -878,21 +933,32 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         crossing each exponential stratum). ``verbose`` can be either True
         or a positive number giving details on the computations.
 
-        OUTPUT:
+        INPUT:
 
-        A topological representative of self.
+        - ``stable`` -- ``True`` if ``self`` for the verbose option.
+            If ``stable=True``, the output is either a stable absolute
+          train-track or a stable relative train-track (if
+          relative=False)
 
-        - If ``relative=False``, this topological representative is either
+
+        - ``relative`` -- ``True`` if ``self`` for the verbose option.
+
+         If ``relative=False``, this topological representative is either
         an absolute train-track or fixes a subgraph (with a non
         contractible connected component).
-
-        - If ``relative=True``, the output is either an absolute
+         If ``relative=True``, the output is either an absolute
           train-track or a relative train-track
 
-        - If ``stable=True``, the output is either a stable absolute
-          train-track or a stable relative train-track (if
-          relative=False).
+        - ``verbose`` -- ``True`` if ``self`` for the verbose option.
 
+        OUTPUT:
+
+        - return A topological representative of self.
+
+
+        EXAMPLES::
+        sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
+        sage: g = phi.train_track(verbose=False)
         """
         from train_track_map import TrainTrackMap
 
@@ -916,6 +982,14 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         INPUT:
 
         - ``verbose`` -- ``True`` if ``self`` is an iwip automorphism.
+        OUTPUT:
+
+        -return ``True`` if ``self`` is an iwip automorphism.
+
+        EXAMPLES::
+        sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
+        sage: phi.is_iwip()
+        True
 
         ALGORITHM:
 
@@ -979,6 +1053,19 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         Some authors (Gaboriau, Jaeger, Levitt, Lustig), use 1/2 our index
         definition
 
+        INPUT:
+
+        - ``verbose`` -- ``True`` if ``self`` for the verbose option.
+
+        OUTPUT:
+
+        -return index list if is_train_track or False
+
+        EXAMPLES::
+        sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
+        sage: phi.index_list()
+        [2, 2]
+
         REFERENCES:
 
         [GJLL] D. Gaboriau, A. Jaeger, G. Levitt, M. Lustig, An index
@@ -1013,6 +1100,20 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
     def identity_automorphism(F):
         """
         Identity automorphism of the free group ``F``.
+        INPUT:
+
+        - ``F`` -- a FreeGroup
+
+        OUTPUT:
+
+        -return the FreeGroupAutomorphism  of the free group ``F``.
+
+        EXAMPLES::
+        sage: F = FreeGroup('abc')
+        sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
+        sage: phi.identity_automorphism(F)
+        Automorphism of the Free group over ['a', 'b', 'c']: a->a,b->b,c->c
+
         """
         morph = dict((a, F([a])) for a in F.alphabet().positive_letters())
 
@@ -1025,16 +1126,27 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         if ``on_left`` is ``False``: ``a -> ab``
         if ``on_left`` is ``True``: ``a -> ba``
+        INPUT:
+        - ``F`` -- a FreeGroup
+        -  ``a`` -- letter on the
+        -  ``b`` -- letter on the
+        - ``on_left`` -- if ``on_left`` is ``False``: ``a -> ab``
+                         if ``on_left`` is ``True``: ``a -> ba``
 
-        EXAMPLES
+        OUTPUT:
 
-            sage: F=FreeGroup(3)
-            sage: FreeGroupAutomorphism.dehnt_twist(F,'a','c')
+        -return the FreeGroupAutomorphism  of the free group ``F``.
 
-            a->ac, b->b, c->c
+        EXAMPLES::
+        sage: F = FreeGroup('abc')
+        sage: FreeGroupAutomorphism.dehn_twist(F, 'a', 'b', on_left=True)
+        Automorphism of the Free group over ['a', 'b', 'c']: a->ba,b->b,c->c
 
-            sage: FreeGroupAutomorphism.dehn_twist(F,'A','c')
-            a->Ca,b->b,c->c
+        sage: F=FreeGroup(3)
+        sage: FreeGroupAutomorphism.dehn_twist(F,'a','c')
+        Automorphism of the Free group over ['a', 'b', 'c']: a->ac,b->b,c->c
+        sage: FreeGroupAutomorphism.dehn_twist(F,'A','c')
+        Automorphism of the Free group over ['a', 'b', 'c']: a->Ca,b->b,c->c
         """
         A = F.alphabet()
 
@@ -1071,7 +1183,21 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
     def random_permutation(F):
         r"""
         Return an automorphism of the free group ``F`` that is induced by
-        a random permutation of the letters of its alphabet.
+        a random permutation  .
+
+        INPUT:
+        - ``F`` -- a FreeGroup
+
+        OUTPUT:
+
+        -return the FreeGroupAutomorphism  of the free group ``F`` with random
+        pertubation of the letters of its alphabet
+
+        EXAMPLES::
+        sage: F = FreeGroup('abc')
+        sage: FreeGroupAutomorphism.random_permutation(F).is_invertible()
+        True
+
         """
         from sage.misc.prandom import randint
         from sage.groups.perm_gps.permgroup_named import SymmetricGroup
@@ -1096,6 +1222,20 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         This is obtained by a random walk (without backtrack) on
          the automorphism group of
         ``F`` of ``length`` Dehn twist automorphisms.
+
+        INPUT:
+        - ``F`` -- a FreeGroup
+        -  ``lenght`` -- (default = 1) length of the random letters
+
+
+        OUTPUT:
+
+        -return the FreeGroupAutomorphism  of the free group ``F``.
+
+        EXAMPLES::
+        sage: F = FreeGroup('abc')
+        sage: FreeGroupAutomorphism.random_automorphism(F, length=2).is_invertible()
+        True
 
         """
         if length == 0:
@@ -1125,6 +1265,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     @staticmethod
     def _surface_dehn_twist_c(F, i):
+
         A = F.alphabet()
         result = dict((a, F([a])) for a in A.positive_letters())
         result[A[2 * i + 1]] = F([A[2 * i + 2],
@@ -1191,6 +1332,22 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         T_{c_i}: x_j->x_j, y_j->y_j, y_i->x_{i+1}x_i\inv y_i,
          y_{i+1}->y_{i+1}x_{i+1}x_i\inv
+
+        INPUT:
+        - ``F`` -- a FreeGroup
+        -  ``k`` is an integer 0<=k<3g-1.
+
+
+        OUTPUT:
+
+        -return the FreeGroupAutomorphism
+            Dehn twist of the surface (with one boundary component) with
+        fundamental group the free group ``F``
+
+        EXAMPLES::
+        sage: F = FreeGroup(4)
+        sage: FreeGroupAutomorphism.surface_dehn_twist(F, k=0)
+        Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->ba,b->b,c->c,d->d
 
         WARNING:
 
