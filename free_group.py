@@ -16,7 +16,7 @@ EXAMPLES::
 
 sage: A = AlphabetWithInverses(['a','b'])
 sage: FreeGroup(A)
-Free Group on generators {a, b, A, B}
+Free group over ['a', 'b']
 """
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
@@ -45,14 +45,18 @@ class FreeGroup(FiniteWords):
 
     sage: A = AlphabetWithInverses(['a','b'])
     sage: FreeGroup(A)
-    Free Group on generators {a, b, A, B}
+    Free group over ['a', 'b']
 
     sage: FreeGroup(3)
-    Free Group on generators {a, b, c, A, B, C}
+    Free group over ['a', 'b', 'c']
 
     sage: A = AlphabetWithInverses(2, type='x0')
     sage: FreeGroup(A)
-    Free Group on generators {x0, x1, X0, X1}
+    Free group over ['x0', 'x1']
+
+    sage: A = AlphabetWithInverses(2, type='a0')
+    sage: FreeGroup(A)
+    Free group over ['a0', 'a1']
 
     AUTHORS:
 
