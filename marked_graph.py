@@ -101,12 +101,37 @@ class MarkedGraph(GraphWithInverses):
     def marking(self):
         """
         A ``GraphMap`` from the rose to ``self``.
+        
+        EXAMPLES::
+
+        sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: G=MarkedGraph(G)
+        sage: print G.marking()
+        Graph map:
+        Graph with inverses: a: 0->0, b: 0->0
+        Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+        edge map: a->a, b->bc
+        
         """
         return self._marking
 
     def precompose(self, automorphism):
-        """
-        Precompose the marking by ``automorphism``.
+        """Precompose the marking by ``automorphism``.
+
+        INPUT:
+
+        - `automorphism`: an automorphism of the free group on the
+          rose that marks ``self``.
+
+        EXAMPLES::
+
+        sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: G=MarkedGraph(G)
+        sage: phi=FreeGroupAutomorphism("a->aba,b->ab")
+        sage: G.precompose(phi)
+        Marked graph: a: 0->0, c: 1->0, b: 0->1
+        Marking: a->abca, b->abc
+
         """
         edge_map = dict()
         for a in self._marking.domain().alphabet().positive_letters():
@@ -118,6 +143,22 @@ class MarkedGraph(GraphWithInverses):
         """
         A ``GraphMap`` from ``self`` to ``other`` that makes
         the markings commute.
+
+        INPUT:
+
+        - ``other``: a MarkedGraph
+
+        EXAMPLES::
+
+        sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: G=MarkedGraph(G)
+        sage: H=GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
+        sage: H=MarkedGraph(H)
+        sage: print G.difference_of_marking(H)
+        Graph map:
+        Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+        Graph with inverses: a: 0->0, b: 0->1, c: 1->1
+        edge map: a->a, c->, b->bcB
         """
 
         return other.marking() * self.marking().inverse()
@@ -129,6 +170,15 @@ class MarkedGraph(GraphWithInverses):
         WARNING:
 
         each edge in ``edge_list`` must appear only once.
+
+        EXAMPLES::
+
+        sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
+        sage: G = MarkedGraph(G)
+        sage: G.subdivide(['a','c'])
+        sage: print G
+        Marked graph: a: 0->2, b: 0->1, c: 1->3, d: 2->0, e: 3->1
+        Marking: a->ad, b->bceB
 
         SEE ALSO::
 
@@ -165,6 +215,15 @@ class MarkedGraph(GraphWithInverses):
         OUTPUT:
 
         A dictionnary that maps old edges to new graph paths.
+
+        EXAMPLES::
+
+        sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
+        sage: G = MarkedGraph(G)
+        sage: G.fold(['b'],['a'])
+        sage: print G
+        Marked graph: a: 1->0, b: 0->1, c: 1->1
+        Marking: a->ba, b->bcB
 
         SEE ALSO:
 
@@ -216,6 +275,15 @@ class MarkedGraph(GraphWithInverses):
         
         A dictionnay that maps an old edge to the path in the new
         graph.
+
+        EXAMPLES::
+
+        sage: G = MarkedGraph.rose_marked_graph(AlphabetWithInverses(2))
+        sage: G.blow_up_vertices([['a','A'],['b'],['B']])
+        sage: print G
+        Marked graph: a: 1->1, b: 2->3, c: 0->1, d: 0->2, e: 0->3
+        Marking: a->caC, b->dbE
+
         """
 
         blow_up_map = GraphWithInverses.blow_up_vertices(self, germ_components)
@@ -227,6 +295,13 @@ class MarkedGraph(GraphWithInverses):
     def rose_marked_graph(alphabet):
         """
         The rose on ``alphabet`` marked with the identity.
+        
+        EXAMPLES::
+
+        sage: print MarkedGraph.rose_marked_graph(AlphabetWithInverses(2))
+        Marked graph: a: 0->0, b: 0->0
+        Marking: a->a, b->b
+
         """
 
         marking = dict((a, Word([a])) for a in alphabet.positive_letters())
