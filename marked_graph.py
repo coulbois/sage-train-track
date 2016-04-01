@@ -310,16 +310,21 @@ class MarkedGraph(GraphWithInverses):
 
 
 class MarkedMetricGraph(MarkedGraph, MetricGraph):
-    """
-    A ``MarkedGraph`` together with a length function on edges.
+    """A ``MarkedGraph`` together with a length function on edges.
+
+    This is intended to represent point un outer space. Moreover,
+    length may be set to 0 to represent simplicial trees in the
+    boundary of outer space.
 
     EXAMPLES::
 
-    sage: G=MarkedMetricGraph({'a':(0,0),'b':(0,1),'c':(1,0)})
+    sage: G = MarkedMetricGraph({'a':(0,0),'b':(0,1),'c':(1,0)})
+    sage: print G
     Marked metric graph:
     a: 0->0, b: 0->1, c: 1->0
     Marking: a->a, b->bc
     Length: a: 1, b: 1, c: 1
+
     """
 
     def __init__(self, graph=None, marking=None, length=None, alphabet=None,
@@ -350,13 +355,29 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
 
     def length(self, a):
         """
-        The length of the edge labeled by ``a``
+        The length of the edge labeled by ``a``.
+
+        EXAMPLES::
+
+        sage: G = MarkedMetricGraph({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: G.lenght('a')
+        1
+
+        
         """
         return self._length[a]
 
     def set_length(self, a, l):
         """
         Sets the length of the edge ``a`` to ``l``.
+
+        EXAMPLES::
+
+        sage: G = MarkedMetricGraph({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: G.set_length('a',2)
+        sage: G.length('a')
+        2
+
         """
         self._length[a] = l
         self._length[self.alphabet().inverse_letter(a)] = l
@@ -374,6 +395,16 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
 
         All loops have length 0, the splitting edge ``e`` has length
         1.
+
+        EXAMPLES::
+        
+        sage: A = AlphabetWithInverses(5)
+        sage: print MarkedMetricGraph.splitting(2,A)
+        Marked graph: a: 0->0, b: 0->0, c: 1->1, d: 1->1, e:
+        1->1, f: 0->1
+        Marking: a->a, b->b, c->fcF, d->fdF, e->feF
+        Length: a:0, b:0, c:0, d:0, e:0, f:1
+        
         """
 
         graph = dict()
@@ -406,8 +437,17 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
         The marked metric graph corresponding to the HNN splitting
         F_N=F_{N-1}*<t>.
 
-        The rose marked graph with all edges of length 0 except ``A[0]``
+        This is rose marked graph with all edges of length 0 except ``A[0]``
         which is of length 1.
+
+        EXAMPLES::
+
+        sage: A=AlphabetWithInverses(4)
+        sage: print MarkedMetricGraph.HNN_splitting(A)
+        Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0
+        Marking: a->a, b->b, c->c, d->d
+        Length: a:1, b:0, c:0, d:0
+
         """
 
         length = dict((a, 0) for a in A.positive_letters())
@@ -415,8 +455,7 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
 
         RA = GraphWithInverses.rose_graph(A)
         RAA = GraphWithInverses.rose_graph(A)
-        marking = GraphMap(RA, RAA,
-                           edge_map=dict(
+        marking = GraphMap(RA, RAA, dict(
                                (a, Word([a])) for a in A.positive_letters()))
 
         return MarkedMetricGraph(marking=marking, length=length)
