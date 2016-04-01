@@ -597,6 +597,17 @@ class GraphMap:
         ``turns`` a list of turns of the domain graph. Default is None
         meaning all the turns of the graph. I not ``None`` return the
         sublist of ``turns`` consisting of illegal turns.
+
+
+        EXAMPLES::
+
+        sage: A = AlphabetWithInverses(2)
+        sage: G = GraphWithInverses.rose_graph(A)
+        sage: H = GraphWithInverses.rose_graph(A)
+        sage: f = GraphMap(G,H,"a->aba,b->ab")
+        sage: f.illegal_turns()
+        [('a', 'b')]
+        
         """
         result = []
 
@@ -614,7 +625,9 @@ class GraphMap:
         """
         Implement Stallings' folding to get an immersion from ``self``.
 
-        The domain of ``self`` is fold until we get an immersion.
+        The domain of ``self`` is fold until we get an
+        immersion. Intended to be used to compute the pullback of two
+        graph maps and the intersection of subgroupes of a free group.
 
         ALGORITHM:
 
@@ -626,9 +639,27 @@ class GraphMap:
 
         Repeat the process till no illegal turns remain.
 
+        EXAMPLES::
+
+        sage: A = AlphabetWithInverses(2)
+        sage: G = GraphWithInverses.rose_graph(A)
+        sage: H = GraphWithInverses.rose_graph(A)
+        sage: f = GraphMap(G,H,"a->aba,b->ab")
+        sage: f.stallings_folding()
+        sage: print f
+        Graph map:
+        Graph with inverses: a: 1->1, c: 1->1
+        Graph with inverses: a: 0->0, b: 0->0
+        edge map: a->a, c->b
+
         REFERENCES:
 
         [Stallings] J. Stallings, Topology of Finite Graphs,
+
+        AUTHOR:
+
+        Radhika GUPTA
+
         """
         A = self.domain().alphabet()
         for a in A:
@@ -672,41 +703,70 @@ class GraphMap:
 
         return self
 
-    def pullback(self, f2, G3, A):
+    def pullback(self, other):
         """
-        INPUT : Two Graph maps f1:G1->G, f2:G2->G, an empty GraphWithInverses
-                G3 and an empty AlphabetWithInverses A
-        OPERATION : Find the pullback G3 and a graph map f:G3->G
-        OUTPUT : Graphmap f
+        Pullback of the graph maps ``self`` and ``other``.
+
+        The pullback is a graph map f:G3 -> G that makes the diagram commute:
+
+        G3 -----> G1
+        |  \      |
+        |   \     | self
+        |    \f   |
+        |     \   |
+        V     _\| V
+        G2 -----> G
+           other
+        
 
         The pullback method can be used to find intersection of two subgroups
         of a Free Group.
 
-        Example :
-        G1 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='x0'))
-        G2 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='a0'))
-        G =  GraphWithInverses.rose_graph(AlphabetWithInverses(2))
-        n1 = WordMorphism({'x0':['a','a'],'x1':['b','a']})
-        n2 = WordMorphism({'a0':['b','a'],'a1':['b','b','b','a','B','a']})
-        f1 = GraphMap(G1,G,n1)
-        f2 = GraphMap(G2,G,n2)
-        G3 = GraphWithInverses()
-        A = AlphabetWithInverses(0,type='a0')
+        INPUT: 
 
-        f1.pullback(f2,G3,A)
+        - self: a graph map G1->G, 
+
+        - other: a graph map G2->G.
+
+        The codomain of ``self`` and ``other`` must be the same graph.
+
+        OUTPUT: 
+        
+        A ``GraphMap`` f
+
+
+        EXAMPLES::
+  
+        sage: G1 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='x0'))
+        sage: G2 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='a0'))
+        sage: G =  GraphWithInverses.rose_graph(AlphabetWithInverses(2))
+        sage: n1 = WordMorphism({'x0':['a','a'],'x1':['b','a']})
+        sage: n2 = WordMorphism({'a0':['b','a'],'a1':['b','b','b','a','B','a']})
+        sage: f1 = GraphMap(G1,G,n1)
+        sage: f2 = GraphMap(G2,G,n2)
+        sage: print f1.pullback(f2)
+        Graph map:
+        Graph with inverses: a0: (0, 0)->(1, 2), a1: (0, 2)->(1, 0), a2: (0, 2)->(1, 3), a3: (0, 3)->(1, 4), a4: (0, 4)->(1, 3), a5: (1, 2)->(0, 0), a6: (1, 4)->(0, 3)
+        Graph with inverses: a: 0->0, b: 0->0
+        edge map: a0->b, a1->a, a2->b, a3->b, a4->a, a5->a, a6->a
+
+        AUTHOR:
+
+        Radhika GUPTA
+
         """
         import itertools
         # First convert self and f2 into immersions
         self.stallings_folding()
-        f2.stallings_folding()
+        other.stallings_folding()
 
-        # G3 = GraphWithInverses()
-        # A = AlphabetWithInverses(0,type='a0')
+        G3 = GraphWithInverses()
+        A = AlphabetWithInverses(0,type='a0')
         d = {}
         # get set of vertices
         V = []
         for i in itertools.product(self.domain().vertices(),
-                                   f2.domain().vertices()):
+                                   other.domain().vertices()):
             V.append(i)
 
         # add edges
@@ -715,11 +775,11 @@ class GraphMap:
                 for e1 in self.domain().alphabet().positive_letters():
                     if self.domain().initial_vertex(e1) == v[0] \
                             and self.domain().terminal_vertex(e1) == w[0]:
-                        for e2 in f2.domain().alphabet().positive_letters():
-                            if f2.domain().initial_vertex(e2) == v[1] \
-                                    and f2.domain().terminal_vertex(e2) == w[
+                        for e2 in other.domain().alphabet().positive_letters():
+                            if other.domain().initial_vertex(e2) == v[1] \
+                                    and other.domain().terminal_vertex(e2) == w[
                                         1]:
-                                if self.image(e1) == f2.image(e2):
+                                if self.image(e1) == other.image(e2):
                                     e = A.add_new_letter()
                                     G3.add_edge(v, w, e)
                                     # update dictionary to define map on G3
@@ -727,7 +787,7 @@ class GraphMap:
 
         G3._alphabet = A
         n3 = WordMorphism(d)
-        G = self.codomain()  # same as f2.codomain()
+        G = self.codomain()  # same as other.codomain()
 
         return GraphMap(G3, G, n3)
 
@@ -738,6 +798,15 @@ class GraphMap:
 
         The rose is built on a copy of the alphabet of the domain of
         ``automorphism``.
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism('a->ab,b->ac,c->a')
+        sage: print GraphMap.rose_map(phi)
+        Graph map:
+        Graph with inverses: a: 0->0, b: 0->0, c: 0->0
+        Graph with inverses: a: 0->0, b: 0->0, c: 0->0
+        edge map: a->ab, b->ac, c->a
         """
 
         graph = GraphWithInverses.rose_graph(
