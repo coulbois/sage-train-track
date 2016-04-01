@@ -332,7 +332,6 @@ class FreeGroupMorphism(WordMorphism):
                 return False
             seen.add(b)
             seen.add(A.inverse_letter(b))
-        print seen #debug
         return True
 
     def _inverse_permutation(self):
