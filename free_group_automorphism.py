@@ -318,17 +318,21 @@ class FreeGroupMorphism(WordMorphism):
         sage: FreeGroupMorphism('a->a,b->c,c->b').is_permutation()
         True
         sage: FreeGroupMorphism('a->a,b->b,c->b').is_permutation()
-        True
+        False
         sage: FreeGroupMorphism('a->a,b->ba').is_permutation()
         False
         """
         A = self._domain._alphabet
         seen = set()
         for a in A.positive_letters():
-            if len(self.image(a)) != 1 or a in seen:
+            if len(self.image(a)) != 1:
                 return False
-            seen.add(a)
-            seen.add(A.inverse_letter(a))
+            b=self.image(a)[0]
+            if b in seen:
+                return False
+            seen.add(b)
+            seen.add(A.inverse_letter(b))
+        print seen #debug
         return True
 
     def _inverse_permutation(self):
@@ -372,7 +376,7 @@ class FreeGroupMorphism(WordMorphism):
         sage: FreeGroupMorphism('a->ab,b->a').is_invertible()
         True
         sage: FreeGroupMorphism('a->a,b->a').is_invertible()
-        True
+        False
         sage: FreeGroupMorphism('a->ab,b->ba').is_invertible()
         False
         sage: FreeGroupMorphism('a->aa,b->b').is_invertible()
