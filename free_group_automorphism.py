@@ -785,7 +785,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
         sage: phi = FreeGroupAutomorphism('a->ab,b->A')
-        sage:phi.__repr__()
+        sage: phi.__repr__()
         "Automorphism of the Free group over ['a', 'b']: a->ab,b->A"
         sage: print phi
         a->ab,b->A
