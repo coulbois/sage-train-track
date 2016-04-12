@@ -97,8 +97,10 @@ class FreeGroup(FiniteWords):
 
         - ``data`` -- (default: None) to  construct alphabet
         -``length``  -- (default: None)
-        -``
-        OUTPUT: instance of FreeGoupWord
+        -``datatype``
+        -``caching`` -- (default: True)
+
+        OUTPUT: instance of FreeGroupWord
 
         WARNING:
 

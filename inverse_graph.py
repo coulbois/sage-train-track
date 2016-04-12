@@ -1,10 +1,29 @@
+r"""
+inverse_graph module, define Class for GraphWithInverses and MetricGraph
+
+AUTHORS:
+
+- Thierry COULBOIS (2013-01-01): initial version
+
+- Dominique BENIELLI (2016-02_15):
+AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+
+EXAMPLES::
+
+sage: print GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+
+sage: print MetricGraph([[0,0,'a'],[0,1,'b'],[1,1,'c']])
+Metric Graph: a: 0->0, b: 0->1, c: 1->1
+Lengths: a: 1, b: 1, c: 1
+
+"""
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
-# - modified by Dominique 03/03/20016 :  major changes pep8 correction
 from sage.graphs.graph import DiGraph
 from sage.combinat.words.word import Word
 from inverse_alphabet import AlphabetWithInverses
@@ -26,6 +45,8 @@ class GraphWithInverses(DiGraph):
     - from a list of edges: ``[initial_vertex,terminal_vertex,letter]``.
 
     EXAMPLES::
+    sage: print GraphWithInverses()
+    Graph with inverses
     sage: print GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
     Graph with inverses: a: 0->0, c: 1->0, b: 0->1
 
@@ -38,6 +59,16 @@ class GraphWithInverses(DiGraph):
     """
 
     def __init__(self, data=None, alphabet=None):
+        """
+        INPUT:
+
+        - ``data`` -- (default None) a list or dictionary
+         from a list of edges: ``[initial_vertex,terminal_vertex,letter]``.
+         a dictionnary that maps letters of the alphabet to lists
+         ``(initial_vertex,terminal_vertex)``
+        - ``alphabet`` -- (default None ) alphabet AlphabetWithInverses by default
+
+        """
 
         self._initial = {}
         self._terminal = {}
@@ -77,6 +108,8 @@ class GraphWithInverses(DiGraph):
                          vertex_labels=True, pos=None, format=None,
                          weighted=None,
                          implementation='c_graph', sparse=True)
+
+
         # DiGraph.__init__(self,data=data, loops=True,multiedges=True,
         #                 vertex_labels=True, pos=None, format=None,
         #                        boundary=[], weighted=None,
@@ -108,6 +141,10 @@ class GraphWithInverses(DiGraph):
     def __str__(self):
         """
         String representation of ``self``.
+        sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: G.__str__()
+        'Graph with inverses: a: 0->0, c: 1->0, b: 0->1'
+
         """
         result = "Graph with inverses: "
         for a in self._alphabet.positive_letters():
@@ -125,16 +162,26 @@ class GraphWithInverses(DiGraph):
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
         sage: G.alphabet()
         Alphabet with inverses on ['a', 'b', 'c']
-
-
-
+        sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: print G
+        Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+        sage: G.alphabet()
+        Alphabet with inverses on ['a', 'c', 'b']
 
         """
+
         return self._alphabet
 
     def initial_vertex(self, edge_label):
         """
         Initial vertex of the edge labeled with ``edge_label``.
+
+        INPUT:
+
+        -``edge_label``  label of the edge Initial vertex
+
+        OUTPUT:
+        Initial vertex of the edge labeled by ``edge_label``.
 
         EXAMPLES::
 
@@ -152,6 +199,11 @@ class GraphWithInverses(DiGraph):
 
         Consistantly sets the terminal vertex of the edge label by
         the inverse of ``e`` to the vertex ``v``.
+
+        INPUT:
+
+        - ``e``  the edge
+        - ``v``  the vertex
 
         EXAMPLES::
 
@@ -178,6 +230,13 @@ class GraphWithInverses(DiGraph):
         """
         Terminal vertex of the edge labeled by ``edge_label``.
 
+        INPUT:
+
+        -``edge_label``  label of the edge Terminal vertex
+
+        OUTPUT:
+        Terminal vertex of the edge labeled by ``edge_label``.
+
         EXAMPLES::
 
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
@@ -194,7 +253,12 @@ class GraphWithInverses(DiGraph):
         
         Consistantly sets the initial vertex of the edge label by
         the inverse of ``e`` to the vertex ``v``.
-        
+
+        INPUT:
+
+        - ``e``  the edge
+        - ``v``  the vertex
+
         EXAMPLES::
 
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
@@ -219,6 +283,13 @@ class GraphWithInverses(DiGraph):
     def reverse_path(self, path):
         """
         Reverse path of ``path``.
+
+        INPUT:
+
+        -``path`` the path to reverse
+
+        OUTPUT:
+        Word with inverse letter of reversed path
         
         EXAMPLES::
 
@@ -232,12 +303,18 @@ class GraphWithInverses(DiGraph):
     def add_edge(self, u, v=None, label=None):
         """
         Add a new edge.
-        INPUT: The following forms are all accepted
+        The following forms are all accepted
 
         - G.add_edge(1,2,'a')
         - G.add_edge((1,2,'a'))
         - G.add_edge(1,2,['a','A'])
         - G.add_edge((1,2,['a','A']))
+
+        INPUT:
+
+        - ``u``  edge to add
+        - ``v``  -- (default None)
+        -``label`` -- (default None) the label of the new edge.
 
         OUTPUT:
 
@@ -256,7 +333,6 @@ class GraphWithInverses(DiGraph):
         'd'
         sage: print G
         Graph with inverses: a: 0->0, b: 0->1, c: 1->0, d: 1->1
-
 
         """
 
@@ -306,6 +382,11 @@ class GraphWithInverses(DiGraph):
         A list of length ``n`` of integers that are not vertices of
         ``self``.
 
+        INPUT:
+
+        -``n`` length of list of integers which are new vertices not
+         already vertices
+
         EXAMPLES::
 
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
@@ -326,6 +407,11 @@ class GraphWithInverses(DiGraph):
         """
         Add a new vertex with label ``i`` or the least integer which
         is not already a vertex.
+
+        INPUT:
+
+        -``i`` -- (default None) new vertex with label ``i`` or the
+        least integer which is not already a vertex.
 
         OUTPUT:
 
@@ -354,6 +440,12 @@ class GraphWithInverses(DiGraph):
         Removes the edge ``e`` (together with its inverse). Removes ``e``
         (and its inverse) from the alphabet.
 
+        INPUT:
+
+        -``e``  edge  to remove (and its inverse) from the alphabet.
+
+
+
         EXAMPLES::
 
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
@@ -379,6 +471,10 @@ class GraphWithInverses(DiGraph):
         """
         Removes the vertex ``v`` from ``self``.
 
+        INPUT:
+
+        -``v``  vertex  to remove (and its inverse) from the alphabet.
+
         WARNING:
 
         ``v`` must be an isolated vertex.
@@ -399,6 +495,13 @@ class GraphWithInverses(DiGraph):
         Reduced path homotopic (relative to endpoints) to ``path``.`
 
         This is the reduced word equal to ``path``.
+
+        INPUT:
+
+        -``path`` the path to reduce
+
+        OUTPUT:
+        Word with reduced path
 
         EXAMPLES::
 
@@ -428,6 +531,14 @@ class GraphWithInverses(DiGraph):
         """
         Length of the common prefix of the paths ``p`` and ``q``.
 
+        INPUT:
+
+        -``p`` path  ``p`` for common prefix length
+        -``q`` path  ``q`` for common prefix length
+
+        OUTPUT:
+        Length of the common prefix of the paths ``p`` and ``q``
+
         WARNING:
 
         ``p`` and ``q`` are assumed to be reduced.
@@ -437,6 +548,7 @@ class GraphWithInverses(DiGraph):
         sage: GraphWithInverses.rose_graph( \
         AlphabetWithInverses(3)).common_prefix_length("aBaa","aBcb")
         2
+
         """
         k = 0
         while (k < len(p) and k < len(q) and p[k] == q[k]):
@@ -445,6 +557,14 @@ class GraphWithInverses(DiGraph):
 
     def is_prefix(self, p, q):
         """
+        ``True`` if the path ``p`` is a prefix of ``q``.
+
+        INPUT:
+
+        -``p`` path  ``p``  prefix of path ``q``
+        -``q`` path  ``q`` for common prefix
+
+        OUTPUT:
         ``True`` if the path ``p`` is a prefix of ``q``.
 
         WARNING:
@@ -475,6 +595,14 @@ class GraphWithInverses(DiGraph):
     def connected_components(self, edge_list=None):
         """
         The list of connected components (each as a list of
+        edges) of the subgraph of ``self`` spanned by ``edge_list``.
+
+        INPUT:
+
+        -``edge_list``  -- (default None) list of edge
+
+        OUTPUT:
+        List of Connected components (each as a list of
         edges) of the subgraph of ``self`` spanned by ``edge_list``.
 
         EXAMPLES::
@@ -514,6 +642,14 @@ class GraphWithInverses(DiGraph):
 
     def core_subgraph(self, edge_list):
         """
+        Core subgraph (the list of edges that belong to at least one
+        loop) of the subgraph of ``self`` spanned by ``edge_list``.
+
+        INPUT:
+
+        -``edge_list``  -- (default None) list of edge
+
+        OUTPUT:
         Core subgraph (the list of edges that belong to at least one
         loop) of the subgraph of ``self`` spanned by ``edge_list``.
 
@@ -563,6 +699,9 @@ class GraphWithInverses(DiGraph):
         A turn is a tuple (a,b) of edges outgoing from the same
         vertex. a is less than b in the ``self.alphabet()`` order.
 
+        OUTPUT:
+        List of turns of the graph.
+
         EXAMPLES::
 
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,2,'c']])
@@ -582,7 +721,16 @@ class GraphWithInverses(DiGraph):
 
         This is the list of edges outgoing from the terminal vertex
         of ``u`` minus the inverse of the last letter of ``u``.
-        
+
+        INPUT:
+
+        -``u``    edge
+        -``turns`` list of letters
+
+        OUTPUT:
+        List of edges a such that the turn between ``u`` and
+        a is in ``turns``.
+
         EXAMPLES::
 
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,2,'c']])
@@ -606,8 +754,11 @@ class GraphWithInverses(DiGraph):
         An edge may appear several time in the list: it will be
         subdivided as many times.
 
-        OUTPUT:
+        INPUT:
 
+        -``edge_list`` list of  edge
+
+        OUTPUT:
         A dictionnary that maps an old edge to a path in the new
         graph.
 
@@ -660,10 +811,13 @@ class GraphWithInverses(DiGraph):
         terminology, this is a sequence of folds of the successive
         edges of ``path``.
 
-        OUTPUT:
+        INPUT:
 
-        A dictionnay that maps an old edge to the path in
-        the new graph.
+        -``edges_full`` list of edges fully folded
+        -``edges_partial`` list of edges  partially folded
+
+        OUTPUT:
+        A dictionnary of words
 
         EXAMPLES::
 
@@ -729,6 +883,10 @@ class GraphWithInverses(DiGraph):
         Each connected component is contracted to one of its
         vertices.
 
+        INPUT:
+
+        -``edges_list`` list of edges
+
         OUTPUT:
 
         A dictionnary that maps an old edge to its image in the new
@@ -764,7 +922,7 @@ class GraphWithInverses(DiGraph):
 
         INPUT:
 
-        ``forest`` is a list of disjoint subtrees each given as
+        -``forest`` is a list of disjoint subtrees each given as
         lists of edges.
 
         OUTPUT:
@@ -826,6 +984,10 @@ class GraphWithInverses(DiGraph):
         (that is to say edges that do not belong to any loop in the
         graph.)
 
+        OUTPUT:
+
+        The forest (as a list of list of edges) outside the core graph.
+
         EXAMPLES::
 
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,2,'c']])
@@ -864,6 +1026,9 @@ class GraphWithInverses(DiGraph):
 
     def valence_2_vertices(self):
         """
+        The list of paths with all inner vertices of valence 2.
+
+        OUTPUT:
         The list of paths with all inner vertices of valence 2.
 
         EXAMPLES::
@@ -982,7 +1147,6 @@ class GraphWithInverses(DiGraph):
         sage: G.spanning_tree()
         {0: word: , 1: word: b}
 
-
         """
 
         A = self._alphabet
@@ -1004,6 +1168,17 @@ class GraphWithInverses(DiGraph):
         return tree
 
     def plot(self, edge_labels=True, graph_border=True, **kwds):
+        """
+
+        INPUT:
+
+        -``edge_labels`` -- (default True) if edge label visible
+        -``graph_border`` -- (default True) if graph border visible
+
+        OUTPUT:
+        Launched png viewer for Graphics object
+
+        """
         return DiGraph.plot(DiGraph(self), edge_labels=edge_labels,
                             graph_border=graph_border, **kwds)
 
@@ -1014,7 +1189,7 @@ class GraphWithInverses(DiGraph):
 
         INPUT:
 
-        ``germ_components`` a list of classes of germs outgoing from a
+        -``germ_components`` a list of classes of germs outgoing from a
         vertex.
 
         OUTPUT:
@@ -1062,6 +1237,15 @@ class GraphWithInverses(DiGraph):
         Intended to be used to detect whether a Nielsen loop of a
         train-track map generates a free factor and thus the
         represented automorphism is reducible.
+
+        INPUT:
+
+        -``loop`` a word
+        -`verbose`` -- (default False) for verbose option
+
+        OUTPUT:
+         ``True`` if ``loop`` lies in a (non-trivial) free factor of
+        the fundamental group.
 
         ALGORITHM:
           
@@ -1144,6 +1328,14 @@ class GraphWithInverses(DiGraph):
 
         ``rank`` is assumed to be greater or equal than 2.
 
+        INPUT:
+
+        -``rank`` given rank
+
+        OUTPUT:
+         A strongly connected graph with all vertices of
+        valence 3 and of given rank.
+
         EXAMPLES::
         
         sage: print GraphWithInverses.valence_3(2)
@@ -1168,6 +1360,13 @@ class GraphWithInverses(DiGraph):
         The rose graph labeled by the alphabet.
 
         The alphabet is copied.
+
+        INPUT:
+
+        -``alphabet`` given alphabet
+
+        OUTPUT:
+        The rose graph labeled by the alphabet.
 
         EXAMPLES::
         
@@ -1209,20 +1408,59 @@ class MetricGraph(GraphWithInverses):
 
 
     def __init__(self, data=None, alphabet=None, lengths=None):
-        GraphWithInverses.__init__(self,data,alphabet)
+        """
+        INPUT:
+
+        - ``data`` -- (default None) a list or dictionary
+         from a list of edges: ``[initial_vertex,terminal_vertex,letter]``.
+         a dictionnary that maps letters of the alphabet to lists
+         ``(initial_vertex,terminal_vertex)``
+        - ``alphabet`` -- (default None ) alphabet AlphabetWithInverses
+          by default
+        -``lengths`` -- (default None) dictionary of alphabet length
+
+        EXAMPLES::
+
+        sage: G = MetricGraph([[0,0,'a'],[0,1,'b'],[1,2,'c']])
+        sage: print G
+        Metric Graph: a: 0->0, b: 0->1, c: 1->2
+        Lengths: a: 1, b: 1, c: 1
+
+        sage: l = dict((('a',1),('b', 2),('c', 3)))
+        sage: G = MetricGraph(data=[[0,0,'a'],[0,1,'b'],[1,2,'c']], lengths=l)
+        sage: print G
+        Metric Graph: a: 0->0, b: 0->1, c: 1->2
+        Lengths: a: 1, b: 2, c: 3
+
+        sage: A =  AlphabetWithInverses(3)
+        sage: print MetricGraph(data=[[0,0,'a'],[0,1,'b'],[1,2,'c']], alphabet=A)
+        Metric Graph: a: 0->0, b: 0->1, c: 1->2
+        Lengths: a: 1, b: 1, c: 1
+
+        """
+
+        GraphWithInverses.__init__(self, data, alphabet)
 
         if lengths is None:
             lengths = dict((a, 1) for a in self.alphabet())
         else:
-            for a in length.keys():
-                lengths[self.alphabet().inverse_letter(a)] = length[a]
+            for a in lengths.keys():
+                lengths[self.alphabet().inverse_letter(a)] = lengths[a]
 
-        self._length=lengths
-
+        self._length = lengths
 
     def __str__(self):
         """
         String representation of ``self``.
+
+        OUTPUT:
+        String representation of ``self``.
+
+        EXAMPLES::
+
+        sage: MetricGraph([[0,0,'a'],[0,1,'b'],[1,2,'c']]).__str__()
+        'Metric Graph: a: 0->0, b: 0->1, c: 1->2\nLengths: a: 1, b: 1, c: 1'
+
         """
         result = "Metric Graph: "
         for a in self._alphabet.positive_letters():
@@ -1240,5 +1478,19 @@ class MetricGraph(GraphWithInverses):
     def length(self, a):
         """
         Length of the edge ``a``.
+
+        INPUT:
+
+        -``a`` key of edge given for getting the length
+
+        EXAMPLES::
+        sage: l = dict((('a',1),('b', 2),('c', 3)))
+        sage: G = MetricGraph(data=[[0,0,'a'],[0,1,'b'],[1,2,'c']], lengths=l)
+        sage: print G
+        Metric Graph: a: 0->0, b: 0->1, c: 1->2
+        Lengths: a: 1, b: 2, c: 3
+        sage: G.length('a')
+        1
+
         """
         return self._length[a]

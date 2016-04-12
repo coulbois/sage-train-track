@@ -64,8 +64,6 @@ class FreeGroupWord(FiniteWord_list):
 
         - return the string represention of FreeGroupWord
 
-
-
         EXAMPLES::
         sage: A =  AlphabetWithInverses(3)
         sage: fw = FiniteWords(A)
