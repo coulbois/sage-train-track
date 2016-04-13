@@ -1,11 +1,28 @@
+r"""
+marked_graph module, define Class for MarkedGraph and MarkedMetricGraph
+
+AUTHORS:
+
+- Thierry COULBOIS (2013-01-01): initial version
+
+- Dominique BENIELLI (2016-02_15):
+AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+
+EXAMPLES::
+
+sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+sage: print MarkedGraph(G)
+Marked graph:
+a: 0->0, b: 0->1, c: 1->0
+Marking: a->a, b->bc
+
+"""
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
-# - modified by Dominique 03/03/20016 :  major changes pep8 correction
-
 from inverse_graph import GraphWithInverses, MetricGraph
 from graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
@@ -25,7 +42,7 @@ class MarkedGraph(GraphWithInverses):
 
     EXAMPLES::
 
-    sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+    sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
     sage: print MarkedGraph(G)
     Marked graph:
     a: 0->0, b: 0->1, c: 1->0
@@ -38,6 +55,26 @@ class MarkedGraph(GraphWithInverses):
 
     def __init__(self, graph=None, marking=None, alphabet=None,
                  marking_alphabet=None):
+        """
+        INPUT:
+
+        -``graph`` -- (default None) GraphWithInverses is expected
+        or will be combute from ''grap''
+        -``marking`` -- (default None) GraphMap is expected
+        or will be compute
+        -``alphabet`` -- (default None) if ``graph`` is GraphWithInverses
+        ``alphabet`` will be use for ``self``
+        -``marking_alphabet`` -- (default None) alphabet used in the case of a
+        ``MarkedGraph`` is created from a GraphWithInverses`` by
+        computing (randomly) a rose equivalent to the graph.
+
+        EXAMPLES::
+        sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: M = MarkedGraph(graph=G)
+        sage: Ma = GraphMap({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: A = AlphabetWithInverses('a','b','c')
+        sage: M = MarkedGraph(marking=G, marking_alphabet=A)
+        """
         if isinstance(marking, GraphMap):
             GraphWithInverses.__init__(self,
                                        marking.codomain(),
@@ -85,6 +122,17 @@ class MarkedGraph(GraphWithInverses):
     def __str__(self):
         """
         String representation of ``self``.
+
+        OUTPUT:
+        String representation of ``self``.
+
+        EXAMPLES::
+        sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: print MarkedGraph(G)
+        a: 0->0, b: 0->1, c: 1->0
+        Marking: a->a, b->bc
+        sage: G.__str__()
+
         """
         result = "Marked graph: "
         for a in self._alphabet.positive_letters():

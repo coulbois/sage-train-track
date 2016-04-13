@@ -1,3 +1,25 @@
+r"""
+inverse_graph module, define Class for GraphWithInverses and MetricGraph
+
+AUTHORS:
+
+- Thierry COULBOIS (2013-01-01): initial version
+
+- Dominique BENIELLI (2016-02_15):
+AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+
+EXAMPLES::
+
+sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+sage: A = AlphabetWithInverses(2)
+sage: H = GraphWithInverses.rose_graph(A)
+sage: print GraphMap(G,H,"a->ab,b->b,c->B")
+Graph map:
+Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+Graph with inverses: a: 0->0, b: 0->0
+edge map: a->ab, c->B, b->b
+
+"""
 #
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
@@ -5,7 +27,6 @@
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
-# - modified by Dominique 03/03/20016 :  major changes pep8 correction
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from inverse_alphabet import AlphabetWithInverses
@@ -29,7 +50,7 @@ class GraphMap:
 
         - ``GraphMap(f)`` where ``f`` is a ``GraphMap``.
 
-        - ``GraphMap(domain,codomain,edge_map,vertex_map=None)`` where
+        - ``GraphMap(domain, codomain, edge_map, vertex_map=None)`` where
           ``domain`` and ``codomain`` are ``GraphWithInverses`` and
           ``edge_map`` is anything accepted by
           ``WordMorphism(edge_map)`` with domain alphabet an
@@ -46,6 +67,7 @@ class GraphMap:
         Graph with inverses: a: 0->0, b: 0->1, c: 1->1
         Graph with inverses: a: 0->0, b: 0->0
         edge map: a->ab, b->b, c->B
+
         """
         if isinstance(args[0], GraphMap):
             self._domain = args[0]._domain
@@ -63,6 +85,13 @@ class GraphMap:
         """
         Applies ``self`` to ``argument`` which is either a vertex
          of ``self`` or an edge path.
+
+        INPUT:
+        -``argument`` a vertex of ``self`` or a edge path
+
+        OUTPUT:
+        A vertex of ``self`` or an edge path
+        Applies ``self`` to ``argument`` which is either .
 
         SEE ALSO:
 
@@ -91,14 +120,24 @@ class GraphMap:
         """
         Compose ``self`` with ``other``.
 
+        INPUT:
+
+        -``other`` other GraphMap to compute multiplication
+
+        OUTPUT:
+
+        GraphMap obtains with other domain as first
+        input and ``self`` codomain for second input and vertex_map is
+        construct applying ``self`` to ``other`` edge_map image
+
         EXAMPLES::
 
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
         sage: A = AlphabetWithInverses(2)
         sage: H = GraphWithInverses.rose_graph(A)
         sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
-        sage: g = GraphMap(H,H,"a-aba,b->ba")
-        sage print g * f
+        sage: g = GraphMap(H,H,"a->aba,b->ba")
+        sage: print g * f
         Graph map:
         Graph with inverses: a: 0->0, b: 0->1, c: 1->1
         Graph with inverses: a: 0->0, b: 0->0
@@ -114,21 +153,39 @@ class GraphMap:
     def __str__(self):
         """
         String represetation of ``self``.
+
+        OUTPUT:
+
+        a string representation of ``self``
+
+        EXAMPLES::
+
+        sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
+        sage: A = AlphabetWithInverses(2)
+        sage: H = GraphWithInverses.rose_graph(A)
+        sage: GraphMap(G,H,"a->ab,b->b,c->B").__str__()
+        'Graph map:\nGraph with inverses: a: 0->0, b: 0->1, c: 1->1\nGraph with inverses: a: 0->0, b: 0->0\nedge map: a->ab, b->b, c->B'
+
         """
         result = "Graph map:\n" + self._domain.__str__() + "\n"
         result += self._codomain.__str__() + "\n"
         result += "edge map: "
         for a in self._domain._alphabet.positive_letters():
             result += a + "->" + self.image(a).__str__() + ", "
-        result = result[:-2] + "\n"
+        result = result[:-2] # + "\n"
         if self._vertex_map is not None:
+            result = result + "\n"
             result = result + "vertex map: " +\
-                self._vertex_map.__str__() + "\n"
+                self._vertex_map.__str__() # + "\n"
         return result
 
     def domain(self):
         """
         Domain of ``self``: this is a graph.
+
+        OUTPUT:
+
+        Domain of ``self`` which is a GrapMap
 
         EXAMPLES::
 
@@ -144,6 +201,10 @@ class GraphMap:
     def codomain(self):
         """
         Codomain of ``self``: this is a graph.
+
+        OUTPUT:
+
+        Codomain of ``self`` which is a GrapMap
 
         EXAMPLES::
 
@@ -208,9 +269,6 @@ class GraphMap:
 
         EXAMPLES::
 
-
-        EXAMPLES::
-
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
         sage: A = AlphabetWithInverses(2)
         sage: H = GraphWithInverses.rose_graph(A)
@@ -260,6 +318,8 @@ class GraphMap:
         """
         The edge map of ``self``: this is a word morphism.
 
+        OUTPUT:
+        The edge map of ``self``
 
         EXAMPLES::
 
@@ -279,9 +339,13 @@ class GraphMap:
 
         INPUT:
             
-        - iter: a positive integer
+        - ``iter``: -- (default 1) a positive integer
             
-        - letter: a letter of the alphabet of the domain of ``self``.
+        - ``letter``: a letter of the alphabet of the domain of ``self``.
+
+        OUTPUT:
+        if ``iter`` > 1 then returns ``self``^iter(letter)``
+        if ``iter`` = 1then returns the image of letter
 
         WARNING:
 
@@ -291,7 +355,6 @@ class GraphMap:
 
         EXAMPLES::
 
-        
         sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
         sage: A = AlphabetWithInverses(2)
         sage: H = GraphWithInverses.rose_graph(A)
@@ -321,10 +384,12 @@ class GraphMap:
 
         In particular the inverse maps all vertices to the root of ``t1``.
 
+        OUTPUT:
+        A homotopy inverse of ``self``.
+
         WARNING:
 
         ``self`` is assumed to be a homotopy equivalence.
-
 
         EXAMPLES::
 
@@ -416,6 +481,10 @@ class GraphMap:
 
         ``self`` and ``self.tighten()`` are homotopic.
 
+        OUTPUT:
+        Tighten ``self`` such that there are at least two gates at
+        each vertex of the domain.
+
         WARNING:
 
         It is assumed that ``self`` is a homotopy equivalence
@@ -429,8 +498,12 @@ class GraphMap:
         sage: H = GraphWithInverses.rose_graph(A)
         sage: f = GraphMap(G,H,"a->baabAB,b->babAB")
         sage: f.tighten()
+        WordMorphism: A->BA, B->B, a->ab, b->b
         sage: print f
-
+        Graph map:
+        Graph with inverses: a: 0->0, b: 0->0
+        Graph with inverses: a: 0->0, b: 0->0
+        edge map: a->ab, b->b
 
         """
         G1 = self.domain()
@@ -501,7 +574,7 @@ class GraphMap:
 
         self.set_edge_map(edge_map)
 
-        return self
+        return self._edge_map
 
     def subdivide_domain(self, e):
         """
@@ -526,7 +599,6 @@ class GraphMap:
         OUTPUT:
 
         A dictionnary that maps old edges of the domain to new edges of the domain.
-        
 
         EXAMPLES::
 
@@ -700,8 +772,6 @@ class GraphMap:
             Turns = self._domain.turns()  # update list of all turns in domain
             Il_turns = self.illegal_turns(Turns)
             # update list of illegal turns in domain
-
-        return self
 
     def pullback(self, other):
         """
