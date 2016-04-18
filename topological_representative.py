@@ -13,10 +13,10 @@ AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
 EXAMPLES::
 
 sage: A = AlphabetWithInverses(5)
-sage: f = GraphSelfMap.from_edge_map("a->a,b->b,c->c,
-d->eCEAd,e->eCEAdbDaecEae", A)
+sage: f = GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae", A)
 sage: print f
-Graph with inverses: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
+Graph self map:
+Marked graph: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
 Marking: a->a, b->dbD, c->ecE
 Edge map: a->a, b->b, c->c, d->eCEAd, e->eCEAdbDaecEae
 """
@@ -26,7 +26,6 @@ Edge map: a->a, b->b, c->c, d->eCEAd, e->eCEAdbDaecEae
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
-
 from graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
@@ -65,15 +64,15 @@ class GraphSelfMap(GraphMap):
 
     sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a",FreeGroup(3))
     sage: print phi.rose_representative()
-    Graph with inverses: a: 0->0, b: 0->0, c: 0->0
+    Graph self map:
+    Marked graph: a: 0->0, b: 0->0, c: 0->0
     Marking: a->a, b->b, c->c
     Edge map: a->ab, b->ac, c->a
-
     sage: A = AlphabetWithInverses(5)
-    sage: f = GraphSelfMap.from_edge_map(
-    "a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae",A)
+    sage: f = GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae",A)
     sage: print f
-    Graph with inverses: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
+    Graph self map:
+    Marked graph: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
     Marking: a->a, b->dbD, c->ecE
     Edge map: a->a, b->b, c->c, d->eCEAd, e->eCEAdbDaecEae
 
@@ -101,7 +100,6 @@ class GraphSelfMap(GraphMap):
         Graph with inverses: a: 0->0, b: 0->0, c: 0->0
         Edge map: a->ab, b->ac, c->a
 
-        
         """
         if len(args) == 1:
             GraphMap.__init__(self, *args)
@@ -157,22 +155,21 @@ class GraphSelfMap(GraphMap):
         - ``path`` (default None) an admissible edge-path in the base
           graph of the ``GraphSelfMap``.
 
+        OUTPUT:
+        a ``GraphSelfMap`` from an edge map.
+
         EXAMPLES::
 
-        sage: print GraphSelfMap.from_edge_map(
-        "a->a,b->b,c->c,d->eCEAd,e->dbDae")
+        sage: print GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae")
         Graph self map:
-        Graph with inverses: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
+        Marked graph: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
         Marking: a->a, b->dbD, c->ecE
         Edge map: a->a, b->b, c->c, d->eCEAd, e->dbDae
-
-        sage: print GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,
-        e->dbDae",path="ab")
+        sage: print GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae",path="ab")
         Graph self map:
-        Graph with inverses: a: 0->0, b: 0->0, c: 1->1, d: 0->0, e: 0->1
+        Marked graph: a: 0->0, b: 0->0, c: 1->1, d: 0->0, e: 0->1
         Marking: a->a, b->b, c->ecE, d->d
         Edge map: a->a, b->b, c->c, d->eCEAd, e->dbDae
-
 
         """
 
@@ -269,6 +266,11 @@ class GraphSelfMap(GraphMap):
         orientation.  The indices of the matrix are determined by the
         order in the alphabet.
 
+        OUTPUT:
+        Incidence matrix of ``self``.
+
+        EXAMPLES::
+
         sage: A=AlphabetWithInverses(5)
         sage: f=GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae",A)
         sage: f.matrix()
@@ -297,6 +299,9 @@ class GraphSelfMap(GraphMap):
         - ``stratum`` -- (default:None) if not None an integer
            that is the index of a stratum of self.
 
+        OUTPUT:
+        The dominant Perron-Frobenius eigenvalue of the matrix of ``self``.
+
         EXAMPLES::
 
         sage: A = AlphabetWithInverses(3)
@@ -304,8 +309,6 @@ class GraphSelfMap(GraphMap):
         sage: f = GraphSelfMap(R,"a->ab,b->ac,c->a")
         sage: f.expansion_factor()
         1.839286755214161?
-
-        
 
         """
         if stratum is None:
@@ -325,13 +328,19 @@ class GraphSelfMap(GraphMap):
         It is required that ``self`` is an invertible graph map, that
         is to say a homotopy equivalence.
 
+        INPUT:
+
+        -``verbose`` -- (default False) for verbose option
+
+        OUTPUT:
+        ``FreeGroupAutomorphism`` a Automorphism represented by ``self``
+
+        EXAMPLES::
         sage: A = AlphabetWithInverses(3)
         sage: R = GraphWithInverses.rose_graph(A)
         sage: f = GraphSelfMap(R,"a->ab,b->ac,c->a")
         sage: f.automorphism()
         Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
-
-
 
         """
         from marked_graph import MarkedGraph
@@ -448,6 +457,11 @@ class GraphSelfMap(GraphMap):
         than n. Each of the first n-1 edges are mapped to a new edge
         and the last n-th edge is map to the rest.
 
+        INPUT:
+
+        -``edge_list`` list of edge for subdivide
+
+        -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
@@ -467,9 +481,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
         sage: f = phi.rose_conjugacy_representative()
         sage: print f.subdivide(['a'])
-        Graph self map:
-        Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
-        Edge map: a->ad, b->adc, c->ad, d->b
+        A->DA, B->B, C->C, a->ad, b->b, c->c
 
         """
 
@@ -477,26 +489,41 @@ class GraphSelfMap(GraphMap):
             print "Subdivide edges: ", edge_list
 
         subdivide_dict = self._domain.subdivide(edge_list)
+        #print "subdivid dict ", subdivide_dict
         subdivide_morph = WordMorphism(subdivide_dict)
-
+        #print "subdivide_morph ", subdivide_morph
         result = {}
         for e in self._edge_map.domain().alphabet():
+            #print "e in b1 ", e
             if len(subdivide_dict[e]) == 1:
                 a = subdivide_dict[e][0]
+                #print "a in b1 ", a
                 result[a] = subdivide_morph(self.image(e))
-
+                #print "image in b1 ", self.image(e)
+        #print "result ", result
         for e in edge_list:  # this edge has been subdivided
             u = self.image(e)
+            #print "u ", u
+            #print "subdivide_dict[e][-1] ", subdivide_dict[e][-1]
             if len(u) >= len(subdivide_dict[e]):
                 for i, a in enumerate(subdivide_dict[e]):
                     result[a] = subdivide_dict[u[i]]
                 result[subdivide_dict[e][-1]] = subdivide_morph(u[i:])
+                #print "subdivide_morph(u[i:]) ", subdivide_morph(u[i:])
             else:  # in this other case:
                 # len(subdivide_morph(u))>=len(subdivide[e])
+                #print "subdivide_morph ", subdivide_morph
+                #print "subdivide_dict ", subdivide_dict
                 v = subdivide_morph(u)
+                #print "v ", v
                 for i, a in enumerate(subdivide_dict[e]):
-                    result[a] = v[i]
-                    result[subdivide_dict[e][-1]] = v[i:]
+                    #print "i and a ", i , a
+                    #print "subdivide_dict[e] " , subdivide_dict[e]
+                    i_affectation = 0
+                    if i < len(v):
+                        result[a] = v[i]
+                        i_affectation = i
+                result[subdivide_dict[e][-1]] = v[(i_affectation):]
 
         self.set_edge_map(result)
 
@@ -509,6 +536,12 @@ class GraphSelfMap(GraphMap):
         """
         Subdivides ``edge`` in two edges a and b. The image of a is
         the prefix of length ``position`` of the image of ``edge``.
+
+        INPUT:
+
+        -``edge``  edge for subdivide in two part
+        -``position`` prefix length of image of ''edge''
+        -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
@@ -523,11 +556,11 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->aba,b->ac,c->a")
         sage: f = phi.rose_conjugacy_representative()
         sage: f.subdivide_edge('a',2)
+        WordMorphism: A->DA, B->B, C->C, a->ad, b->b, c->c
         sage: print f
         Graph self map:
         Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
         Edge map: a->adb, b->adc, c->ad, d->ad
-        
 
         """
 
@@ -567,7 +600,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        ``turns`` is a list ``[avoid,t1,t2,...,tn]`` with
+        -``turns`` is a list ``[avoid,t1,t2,...,tn]`` with
         ``self(ti)=ti+1`` and ``t1`` is the image of
         ``avoid``. ``avoid`` is either a turn of the graph (a tuple of
         edges with common initial vertex) or a list
@@ -586,6 +619,11 @@ class GraphSelfMap(GraphMap):
         This is the induction step in the proof of Theorem 1.7 in
         [BH-train-track].
 
+        -``verbose`` -- (default False) for verbose option
+
+        OUTPUT:
+        Folds (partially) and iteratively the turns
+
         WARNING:
 
         Beware this has no effect on the possible strata of self.
@@ -595,6 +633,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->aba,b->ac,c->a")
         sage: f = phi.inverse().rose_conjugacy_representative()
         sage: f.multifold([['c', 1], ('b', 'c')])
+        WordMorphism: A->A, B->BE, C->CdE, a->a, b->eb, c->eDc
         sage: print f
         Graph self map:
         Graph with inverses: a: 0->0, b: 2->0, c: 1->0, d: 1->2, e: 0->2
@@ -830,6 +869,10 @@ class GraphSelfMap(GraphMap):
         (path,'path') where path is a path in the graph of self which
         is mapped onto the ``common_prefix``.
 
+        -``common_prefix`` common prfix to share
+
+        -``verbose`` -- (default False) for verbose option
+
         OUTPUT:
 
         A WordMorphism that maps old edges to their fold image.
@@ -846,6 +889,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->aba,b->ac,c->a")
         sage: f = phi.inverse().rose_conjugacy_representative()
         sage: f.fold(('b', 'c'),Word('C'))
+        WordMorphism: A->A, B->BD, C->CD, a->a, b->db, c->dc
         sage: print f
         Graph self map:
         Graph with inverses: a: 0->0, b: 1->0, c: 1->0, d: 0->1
@@ -919,6 +963,14 @@ class GraphSelfMap(GraphMap):
         irreducible. Else, the isotopy is to the edge of index
         ``target_edge_index[i]`` for each ``lines[i]``.
 
+        INPUT:
+
+        -``lines`` list of line to fusion
+
+        -``target_edge_index`` --(default None) diffine the isotopy as
+        the edge of index ``target_edge_index[i]`` for each ``lines[i]``.
+        -``verbose`` -- (default False) for verbose option
+
         OUTPUT:
 
         The ``WordMorphism`` that maps the old edges to their images in the
@@ -933,39 +985,30 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
         sage: f = phi.inverse().rose_conjugacy_representative()
         sage: f.subdivide(['a'])
+        WordMorphism: A->DA, B->B, C->C, a->ad, b->b, c->c
         sage: print f
+        Graph self map:
+        Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
+        Edge map: a->c, b->Cad, c->Cb, d->c
+
+        sage: f.fusion_lines([['a','d']])
+        WordMorphism: A->A, B->B, C->C, D->, a->a, b->b, c->c, d->
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 1->1, b: 1->1, c: 1->1
+        Edge map: a->cc, b->Ca, c->Cb
+
+
+        SEE ALSO::
         Graph self map:
         Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
         Edge map: a->ad, b->adc, c->ad, d->b
 
-        sage: f.fusion_line([['a','d']])
-        sage: print f
         Graph self map:
         Graph with inverses: a: 1->1, b: 1->1, c: 1->1
         Edge map: a->ab, b->ac, c->a
 
 
-        SEE ALSO::
-
-        GraphWithInverses.contract_edges()
-        EXAMPLES::
-
-        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: f = phi.inverse().rose_conjugacy_representative()
-        sage: f.subdivide(['a'])
-        sage: print f
-        Graph self map:
-        Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
-        Edge map: a->ad, b->adc, c->ad, d->b
-
-        sage: f.fusion_line([['a','d']])
-        sage: print f
-        Graph self map:
-        Graph with inverses: a: 1->1, b: 1->1, c: 1->1
-        Edge map: a->ab, b->ac, c->a
-
-
-        SEE ALSO::
 
         GraphWithInverses.contract_edges()
 
@@ -1088,7 +1131,11 @@ class GraphSelfMap(GraphMap):
         ``forest`` is a list of list of edges. One list for each
         connected component.
 
-        OUPUT:
+        INPUT:
+        -``forest`` list of list of edges, for each connected component
+        -``verbose`` -- (default False) for verbose option
+
+        OUTPUT:
 
         The WordMorphism that maps each old edge to its image.
 
@@ -1100,6 +1147,7 @@ class GraphSelfMap(GraphMap):
 
         sage: f = GraphSelfMap.from_edge_map("a->adbD,b->adcD,c->a,d->")
         sage: f.contract_invariant_forest([['d']])
+        WordMorphism: A->A, B->B, C->C, D->, a->a, b->b, c->c, d->
         sage: print f
         Graph self map:
         Marked graph: a: 0->0, b: 0->0, c: 0->0
@@ -1137,7 +1185,11 @@ class GraphSelfMap(GraphMap):
 
         A filtration is a list of invariant set of edges.
 
-        OUPUT:
+        INPUT:
+
+        -``verbose`` -- (default False) for verbose option
+
+        OUTPUT:
 
         A list of sets of edges.  One set for each invariant non-empty
         subgraph, ordered from the smallest to the biggest.
@@ -1201,10 +1253,10 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        ``tails`` is a list of lists of edges. One list for each
+        -``tails`` is a list of lists of edges. One list for each
         connected component.
 
-        OUPUT:
+        OUTPUT:
 
         The WordMorphism that maps old edges to their images.
 
@@ -1216,6 +1268,7 @@ class GraphSelfMap(GraphMap):
 
         sage: f = GraphSelfMap.from_edge_map("a->abaa,b->aca,c->a,d->da")
         sage: f.contract_tails([['D']])
+        WordMorphism: A->A, B->B, C->C, D->, a->a, b->b, c->c, d->
         sage: print f
         Graph self map:
         Marked graph: a: 0->0, b: 0->0, c: 0->0
@@ -1271,7 +1324,11 @@ class GraphSelfMap(GraphMap):
         graph contains some loops. If this graph is not the whole
         graphs stratify self.
 
-        OUPUT:
+        INPUT:
+
+        -``verbose`` -- (default False) for verbose option
+
+        OUTPUT:
 
         The WordMorphism that maps old edges to the new edges.
 
@@ -1279,13 +1336,13 @@ class GraphSelfMap(GraphMap):
 
         sage: f = GraphSelfMap.from_edge_map("a->abaa,b->aca,c->a,d->da")
         sage: f.reduce()
+        WordMorphism: A->A, B->B, C->C, D->, a->a, b->b, c->c, d->
         sage: print f
         Graph self map:
         Marked graph: a: 0->0, b: 0->0, c: 0->0
         Marking: a->a, b->b, c->c
         Edge map: a->abaa, b->aca, c->a
         Irreducible representative
-
 
         """
 
@@ -1403,6 +1460,10 @@ class GraphSelfMap(GraphMap):
 
         * go to 1.
 
+        INPUT:
+
+        -``verbose`` -- (default False) for verbose option
+
         OUTPUT:
 
         The ``WordMorphism`` that maps old edges to the new edges.
@@ -1412,10 +1473,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a').inverse()
         sage: f = phi.rose_conjugacy_representative()
         sage: f.train_track()
-        Graph self map:
-        Graph with inverses: a: 0->0, b: 1->0, c: 1->0, e: 0->1
-        Edge map: a->ec, b->Ea, c->b, e->C
-        Irreducible representative
+        WordMorphism: A->A, B->BE, C->CE, a->a, b->eb, c->ec
 
         """
         done = False
@@ -1469,6 +1527,13 @@ class GraphSelfMap(GraphMap):
 
         * there are no foldings in iterated images of edges.
 
+        INPUT:
+
+        -``verbose`` -- (default False) for verbose option
+
+        OUTPUT:
+        ``True`` if ``self`` is an absolute train-track.
+
         EXAMPLES::
 
         sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
@@ -1519,7 +1584,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        ``t`` is a couple ``(e,f)`` of edges,
+        -``t`` is a couple ``(e,f)`` of edges,
 
         OUTPUT:
 
@@ -1532,7 +1597,7 @@ class GraphSelfMap(GraphMap):
         sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
         sage: f=phi.rose_representative()
         sage: f.image_turn(('A','B'))
-        ('B','C')
+        ('B', 'C')
 
         """
         e = self.image(t[0])[0]
@@ -1550,6 +1615,13 @@ class GraphSelfMap(GraphMap):
         If ``stratum`` is not ``None``, then returns the set of turns
         in ``stratum` that are in the iterated image of an edge of
         ``stratum``.
+
+        INPUT:
+        -``stratum`` --(default None)
+
+        OUTPUT:
+        The set of turns that appear in the iterated image of
+        edges.
 
         EXAMPLES::
 
@@ -1603,6 +1675,9 @@ class GraphSelfMap(GraphMap):
         A turn is legal if all its iterated images are non-degenerate
         turns.
 
+        OUTPUT:
+        The list of legal turns of ``self``.
+
         EXAMPLES::
 
         sage: phi=FreeGroupAutomorphism("a->ab,b->a")
@@ -1634,6 +1709,11 @@ class GraphSelfMap(GraphMap):
         prefix. If ``stratum`` is not ``None`` only consider illegal turns
         in the stratum.
 
+        INPUT:
+        -``stratum`` --(default None)
+
+        OUTPUT:
+        The list of turns that are fold by ``self``.
 
         EXAMPLES::
 
@@ -1672,10 +1752,16 @@ class GraphSelfMap(GraphMap):
         A turn is illegal if it is mapped by a power of ``self`` to a
         degenerate turn.
 
-        OUPUT:
+        INPUT:
+        -``stratum`` --(default None)
 
-        If ``iteration`` is ``True`` returns a list ``[(t,iter)]``
-        where ``t``is an illegal turn and ``iter`` the number of
+        -``iteration`` --(default None) the number of iterations of ``self``
+        required to fold ``t``.
+
+        OUTPUT:
+
+        If ``iteration`` is ``True`` returns a list ``[(t, iter)]``
+        where ``t``is an illegal turn and ``iteration`` the number of
         iterations of ``self`` required to fold ``t``.
 
         Else returns a list of turns.
@@ -1747,9 +1833,22 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        ``stratum`` is the index of a stratum of ``self`` which is
+        -``stratum`` is the index of a stratum of ``self`` which is
         irreducible, exponential and satisfies the relative
         train-track conditions RTT-i, RTT-ii and RTT-iii.
+
+        -``verbose`` -- (default False) for verbose option
+
+        OUTPUT:
+        The list of indivisible Nielsen paths of ``self`` that
+        intersect the interior of the ``stratum`` of self.
+
+        EXAMPLES::
+        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
+        sage: f=phi.rose_representative()
+        sage: f.relative_indivisible_nielsen_paths()
+        []
+
         """
 
         G = self._domain
@@ -1760,9 +1859,14 @@ class GraphSelfMap(GraphMap):
         next = []
         places = []  # To prevent infinite matching pseudo-paths
 
-        extension = dict((a, []) for a in self._strata[stratum])
-        for a in self._strata[stratum]:
-            extension[A.inverse_letter(a)] = []
+        if stratum is not None:
+            extension = dict((a, []) for a in self._strata[stratum])
+            for a in self._strata[stratum]:
+                extension[A.inverse_letter(a)] = []
+        else:
+            extension = dict((a, []) for a in A.positive_letters())
+            for a in A.positive_letters():
+                extension[A.inverse_letter(a)] = []
 
         edge_turns = self.edge_turns(stratum)
         for t in edge_turns:
@@ -1984,7 +2088,7 @@ class GraphSelfMap(GraphMap):
 
         return result
 
-    def inessential_inp(self, inps, s, verbose):
+    def inessential_inp(self, inps, s, verbose=False):
         """
 
         From the list ``inps`` returns either an inessential inp in the
@@ -1998,6 +2102,16 @@ class GraphSelfMap(GraphMap):
 
         - ``s`` : the index of the exponential stratum of ``self``
           that meets these inps.
+
+        -``verbose`` -- (default False) for verbose option
+
+        OUTPUT:
+        an inessential inp in the stratum ``s`` or ``None``.
+
+        EXAMPLES:
+        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
+        sage: f=phi.rose_representative()
+        sage: f.inessential_inp(inps=[('a','ab')] , s=[0] )
         
         WARNING:
 
@@ -2059,6 +2173,8 @@ class GraphSelfMap(GraphMap):
         INPUT:
 
         ``inp`` is a couple ``(word1,word2)`` coding an INP of ``self``.
+
+        -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
@@ -2259,6 +2375,9 @@ class GraphSelfMap(GraphMap):
         Refine the filtration by subdividing the stratum ``s`` into
         irreducible strata.
 
+        INPUT:
+        -``verbose`` -- (default False) for verbose option
+
         OUTPUT:
 
         The number of strata which replaces the ``s`` stratum.
@@ -2307,6 +2426,9 @@ class GraphSelfMap(GraphMap):
         Computes a maximal filtration for ``self``
         and sets and the strata of ``self``.
 
+        INPUT:
+        -``verbose`` -- (default False) for verbose option
+
         OUTPUT:
 
         A list ``filtration`` of invariant subgraphs of ``self`` with
@@ -2345,12 +2467,16 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        ``morph``: a WordMorphism to be applied to the strata of ``self``.
+        -``morph``-- (default None): a WordMorphism to be applied
+        to the strata of ``self``.
+
+        -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
         a dictionnary that maps the index of an old strata ``s`` to the
         indices of the new strata that inherit from ``s``.
+
         """
 
         A = self._domain.alphabet()
@@ -2391,7 +2517,9 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        ``s``: the index of a stratum of ``self`` (0 is the bottom stratum)
+        -``s``: the index of a stratum of ``self`` (0 is the bottom stratum)
+
+        -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
@@ -2466,6 +2594,8 @@ class GraphSelfMap(GraphMap):
         INPUT:
 
         ``s``: index of a stratum of ``self``.
+
+        -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
@@ -2660,6 +2790,9 @@ class GraphSelfMap(GraphMap):
 
         4/ Update the maximal filtration encoded in self._strata.
 
+        INPUT:
+        -``verbose`` -- (default False) for verbose option
+
         OUTPUT:
 
         The WordMorphism that maps an old edge to a new edge.
@@ -2781,6 +2914,10 @@ class GraphSelfMap(GraphMap):
         5/ contract pretrivial forests
 
         6/ Update the maximal filtration encoded in self._strata.
+
+        INPUT:
+
+        -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
@@ -3237,7 +3374,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        ``paths``: a list of paths. Each path is a reduced path mapped
+        -``paths``: a list of paths. Each path is a reduced path mapped
         by ``self`` to a path homotopic to a point.
 
         After folding the paths, contract the tails and pretrivial forest.
@@ -3335,9 +3472,9 @@ class GraphSelfMap(GraphMap):
 
         It is assumed that all strata are irreducible.
 
-        OUPUT:
+        OUTPUT:
 
-        A dictionnary that maps the index of an exponential
+        A dictionary that maps the index of an exponential
         stratum to its expansion factor.
 
         """
