@@ -480,8 +480,11 @@ class GraphSelfMap(GraphMap):
 
         sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
         sage: f = phi.rose_conjugacy_representative()
-        sage: print f.subdivide(['a'])
-        A->DA, B->B, C->C, a->ad, b->b, c->c
+        sage: f.subdivide(['a'])
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
+        Edge map: a->ad, b->adc, c->ad, d->b
 
         """
 
@@ -489,41 +492,23 @@ class GraphSelfMap(GraphMap):
             print "Subdivide edges: ", edge_list
 
         subdivide_dict = self._domain.subdivide(edge_list)
-        #print "subdivid dict ", subdivide_dict
         subdivide_morph = WordMorphism(subdivide_dict)
-        #print "subdivide_morph ", subdivide_morph
         result = {}
         for e in self._edge_map.domain().alphabet():
-            #print "e in b1 ", e
             if len(subdivide_dict[e]) == 1:
                 a = subdivide_dict[e][0]
-                #print "a in b1 ", a
                 result[a] = subdivide_morph(self.image(e))
-                #print "image in b1 ", self.image(e)
-        #print "result ", result
         for e in edge_list:  # this edge has been subdivided
             u = self.image(e)
-            #print "u ", u
-            #print "subdivide_dict[e][-1] ", subdivide_dict[e][-1]
             if len(u) >= len(subdivide_dict[e]):
                 for i, a in enumerate(subdivide_dict[e]):
                     result[a] = subdivide_dict[u[i]]
                 result[subdivide_dict[e][-1]] = subdivide_morph(u[i:])
-                #print "subdivide_morph(u[i:]) ", subdivide_morph(u[i:])
-            else:  # in this other case:
-                # len(subdivide_morph(u))>=len(subdivide[e])
-                #print "subdivide_morph ", subdivide_morph
-                #print "subdivide_dict ", subdivide_dict
+            else:  # the image of e can only be subdivided after subdivisions
                 v = subdivide_morph(u)
-                #print "v ", v
                 for i, a in enumerate(subdivide_dict[e]):
-                    #print "i and a ", i , a
-                    #print "subdivide_dict[e] " , subdivide_dict[e]
-                    i_affectation = 0
-                    if i < len(v):
-                        result[a] = v[i]
-                        i_affectation = i
-                result[subdivide_dict[e][-1]] = v[(i_affectation):]
+                    result[a] = v[i]
+                result[subdivide_dict[e][-1]] = v[i:]
 
         self.set_edge_map(result)
 
@@ -983,32 +968,24 @@ class GraphSelfMap(GraphMap):
         EXAMPLES::
 
         sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: f = phi.inverse().rose_conjugacy_representative()
+        sage: f = phi.rose_conjugacy_representative()
         sage: f.subdivide(['a'])
         WordMorphism: A->DA, B->B, C->C, a->ad, b->b, c->c
         sage: print f
         Graph self map:
         Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
-        Edge map: a->c, b->Cad, c->Cb, d->c
+        Edge map: a->ad, b->adc, c->ad, d->b
 
         sage: f.fusion_lines([['a','d']])
         WordMorphism: A->A, B->B, C->C, D->, a->a, b->b, c->c, d->
+        
         sage: print f
-        Graph self map:
-        Graph with inverses: a: 1->1, b: 1->1, c: 1->1
-        Edge map: a->cc, b->Ca, c->Cb
-
-
-        SEE ALSO::
-        Graph self map:
-        Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
-        Edge map: a->ad, b->adc, c->ad, d->b
-
         Graph self map:
         Graph with inverses: a: 1->1, b: 1->1, c: 1->1
         Edge map: a->ab, b->ac, c->a
 
 
+        SEE ALSO::
 
         GraphWithInverses.contract_edges()
 
@@ -1132,7 +1109,8 @@ class GraphSelfMap(GraphMap):
         connected component.
 
         INPUT:
-        -``forest`` list of list of edges, for each connected component
+        -``forest`` list of list of edges, one for each connected component
+
         -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
@@ -1475,6 +1453,12 @@ class GraphSelfMap(GraphMap):
         sage: f.train_track()
         WordMorphism: A->A, B->BE, C->CE, a->a, b->eb, c->ec
 
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 0->0, b: 1->0, c: 1->0, e: 0->1
+        Edge map: a->ec, b->Ea, c->b, e->C
+        Irreducible representative
+
         """
         done = False
 
@@ -1594,8 +1578,8 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: f=phi.rose_representative()
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: f = phi.rose_representative()
         sage: f.image_turn(('A','B'))
         ('B', 'C')
 
@@ -1680,8 +1664,8 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
-        sage: f=phi.rose_representative()
+        sage: phi = FreeGroupAutomorphism("a->ab,b->a")
+        sage: f = phi.rose_representative()
         sage: f.legal_turns()
         [('a', 'A'), ('a', 'B'), ('b', 'A'), ('b', 'B'), ('A', 'B')]
 
@@ -1717,8 +1701,8 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
-        sage: f=phi.rose_representative()
+        sage: phi = FreeGroupAutomorphism("a->ab,b->a")
+        sage: f = phi.rose_representative()
         sage: f.fold_turns()
         [('a', 'b')]
 
@@ -1768,8 +1752,8 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
-        sage: f=phi.rose_representative()
+        sage: phi = FreeGroupAutomorphism("a->ab,b->a")
+        sage: f = phi.rose_representative()
         sage: f.illegal_turns()
         [('a', 'b')]
 
@@ -1823,7 +1807,7 @@ class GraphSelfMap(GraphMap):
 
         return illegal_turns
 
-    def relative_indivisible_nielsen_paths(self, stratum=None, verbose=False):
+    def relative_indivisible_nielsen_paths(self, stratum, verbose=False):
         """
         The list of indivisible Nielsen paths of ``self`` that
         intersect the interior of the ``stratum`` of self.
@@ -1840,14 +1824,13 @@ class GraphSelfMap(GraphMap):
         -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
+
         The list of indivisible Nielsen paths of ``self`` that
         intersect the interior of the ``stratum`` of self.
 
         EXAMPLES::
-        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
-        sage: f=phi.rose_representative()
-        sage: f.relative_indivisible_nielsen_paths()
-        []
+
+
 
         """
 
@@ -1859,14 +1842,9 @@ class GraphSelfMap(GraphMap):
         next = []
         places = []  # To prevent infinite matching pseudo-paths
 
-        if stratum is not None:
-            extension = dict((a, []) for a in self._strata[stratum])
-            for a in self._strata[stratum]:
-                extension[A.inverse_letter(a)] = []
-        else:
-            extension = dict((a, []) for a in A.positive_letters())
-            for a in A.positive_letters():
-                extension[A.inverse_letter(a)] = []
+        extension = dict((a, []) for a in self._strata[stratum])
+        for a in self._strata[stratum]:
+            extension[A.inverse_letter(a)] = []
 
         edge_turns = self.edge_turns(stratum)
         for t in edge_turns:
