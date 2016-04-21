@@ -482,6 +482,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
         sage: f = phi.rose_conjugacy_representative()
         sage: f.subdivide(['a'])
+        WordMorphism: A->DA, B->B, C->C, a->ad, b->b, c->c
         sage: print f
         Graph self map:
         Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
@@ -2102,13 +2103,14 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->adb,b->adc,c->a,d->d")**3
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'d'}, {'a', 'b', 'c', 'd'}]
         sage: inps = f.relative_indivisible_nielsen_paths(stratum=1)
-        sage: f.inessential_inp(inps = inps , s = 1)
+        sage: f.relative_inessential_inp(inps=inps, stratum=1)
         [word: adb, word: bda]
 
         WARNING:
 
-        The ``s`` stratum of ``self`` must be irreducible, exponential
+        The ``stratum`` stratum of ``self`` must be irreducible, exponential
         and satisfies the relative train-track conditions RTT-i,
         RTT-ii and RTT-iii.
 
@@ -2183,9 +2185,12 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->adb,b->adc,c->a,d->d")**3
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'d'}, {'a', 'b', 'c', 'd'}]
         sage: inps = f.relative_indivisible_nielsen_paths(stratum=1)
         sage: f.fold_inp_in_relative_train_track(inps[0],1)
+        WordMorphism: A->AEDBEDAEDAE, B->BEDAEDAE, C->C, D->D, a->eadeadebdea, b->eadeadeb, c->c, d->d
         sage: f.stratify()
+        [{'d'}, {'a', 'b', 'c', 'd', 'e'}]
         sage: print f
         Graph self map:
         Marked graph: a: 1->0, b: 1->0, c: 0->0, d: 0->0, e: 0->1
@@ -2367,6 +2372,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->adb,b->adc,c->a,d->d")
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'d'}, {'a', 'b', 'c', 'd'}]
         sage: f.is_exponential_stratum(0)
         False
         sage: f.is_exponential_stratum(1)
@@ -2399,7 +2405,11 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->adB,b->adc,c->a,d->d")
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'d'}, {'a', 'b', 'c', 'd'}]
         sage: f.relative_matrix(1)
+        [1 1 1]
+        [0 0 1]
+        [1 0 0]
 
         """
         from sage.matrix.constructor import matrix
@@ -2549,6 +2559,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->ab,b->aadc,c->a,d->d")
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'d'}, {'a', 'b', 'c', 'd'}]
         sage: m = f.fold(['a','b'],'a')
         sage: f.update_strata(m)
         {0: [0], 1: [1]}
@@ -2612,6 +2623,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->acba,b->A,c->c")
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'c'}, {'a', 'b', 'c'}]
         sage: f.find_relative_folding(1)
         [['a', 3], ('a', 'B')]
 
@@ -2665,7 +2677,7 @@ class GraphSelfMap(GraphMap):
         else:
             return source[fold] + [fold]
 
-    def core_subdivide(self, s, verbose):
+    def core_subdivide(self, s, verbose=False):
         """
 
         Core subdivision of the ``s`` stratum of ``self`` as defined
@@ -2690,6 +2702,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->ab,b->ca,c->c")
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'c'}, {'a', 'b', 'c'}]
         sage: f.core_subdivide(1)
         WordMorphism: A->A, B->DB, C->C, a->a, b->bd, c->c
        
@@ -2699,6 +2712,7 @@ class GraphSelfMap(GraphMap):
         Marking: a->a, b->bd, c->c
         Edge map: a->abd, b->c, c->c, d->a
         Strata: [set(['c']), set(['b']), set(['a', 'd'])]
+
 
         REFERENCES:
 
@@ -2885,6 +2899,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->ab,b->b,")
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'b'}, {'a', 'b'}]
         sage: f.stratum('a')
         1
         
@@ -2944,14 +2959,17 @@ class GraphSelfMap(GraphMap):
         The WordMorphism that maps an old edge to a new edge.
 
         EXAMPLES::
-
+        sage: A = AlphabetWithInverses(4)
+        sage: G = GraphWithInverses.rose_graph(A)
         sage: f = GraphSelfMap(G,"a->acbd,b->ad,c->cd,d->Dcad")
         sage: f.stratify()
+        [{'a', 'b', 'c', 'd'}]
         sage: f.relative_reduce()
+        WordMorphism: A->A, B->B, C->C, D->D, a->a, b->b, c->c, d->d
         sage: print f
         Graph self map:
-        Graph with inverses: a: 1->1, b: 1->1
-        Edge map: a->ab, b->a
+        Graph with inverses: a: 0->0, b: 0->0, c: 0->0, d: 0->0
+        Edge map: a->acbd, b->ad, c->cd, d->Dcad
         Irreducible representative
 
         """
@@ -3271,7 +3289,8 @@ class GraphSelfMap(GraphMap):
         EXAMPLES::
 
         sage: f = GraphSelfMap.from_edge_map("a->acb,b->a,c->cdC,d->cdC")
-        sage: f.stratify() 
+        sage: f.stratify()
+        [{'c', 'd'}, {'a', 'b', 'c', 'd'}]
         sage: f.find_inessential_connecting_paths(1)
         [word: cD]
 
@@ -3438,9 +3457,11 @@ class GraphSelfMap(GraphMap):
         EXAMPLES::
 
         sage: f = GraphSelfMap.from_edge_map("a->acb,b->a,c->cdC,d->cdC")
-        sage: f.stratify() 
+        sage: f.stratify()
+        [{'c', 'd'}, {'a', 'b', 'c', 'd'}]
         sage: m=f.fold_paths(['cD'])
         sage: f.update_strata(m)
+        {0: [0], 1: [1]}
         sage: print f
         Graph self map:
         Marked graph: a: 0->0, b: 0->0, c: 0->2, e: 2->3, f: 3->0
@@ -3547,6 +3568,7 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->acb,b->a,c->cd,d->ded,e->d")
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'d', 'e'}, {'c', 'd', 'e'}, {'a', 'b', 'c', 'd', 'e'}]
         sage: f.relative_expansion_factors()
         {0: 2.414213562373095?, 2: 1.618033988749895?}
 
@@ -3601,7 +3623,9 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->acb,b->a,c->cd,d->deD,e->d")
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'d', 'e'}, {'c', 'd', 'e'}, {'a', 'b', 'c', 'd', 'e'}]
         sage: f.relative_train_track()
+        WordMorphism: A->A, B->B, C->C, D->eD, E->E, a->a, b->b, c->c, d->dE, e->e
         sage: print f
         Graph self map:
         Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0, e: 0->0
@@ -3754,7 +3778,9 @@ class GraphSelfMap(GraphMap):
         sage: phi = FreeGroupAutomorphism("a->acb,b->a,c->cd,d->deD,e->d")
         sage: f = phi.rose_representative()
         sage: f.stratify()
+        [{'d', 'e'}, {'c', 'd', 'e'}, {'a', 'b', 'c', 'd', 'e'}]
         sage: f.stable_relative_train_track()
+        WordMorphism: A->A, B->B, C->C, D->eD, E->E, a->a, b->b, c->c, d->dE, e->e
         sage: print f
         Graph self map:
         Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0, e: 0->0
