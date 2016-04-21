@@ -443,7 +443,8 @@ class GraphSelfMap(GraphMap):
             return source[fold] + [fold]
 
     def subdivide(self, edge_list, verbose=False):
-        """Subdivides edges as many times as they appear in the ``edge_list``.
+        """
+        Subdivides edges as many times as they appear in the ``edge_list``.
 
         If an edge appears n times in the list then
 
@@ -485,7 +486,6 @@ class GraphSelfMap(GraphMap):
         Graph self map:
         Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
         Edge map: a->ad, b->adc, c->ad, d->b
-
         """
 
         if verbose:
@@ -844,7 +844,7 @@ class GraphSelfMap(GraphMap):
         return result_morph
 
     def fold(self, turn, common_prefix, verbose=False):
-        """
+        r"""
         Folds the ``turn`` and identify the ``common_prefix`` of its image.
 
         INPUT:
@@ -1808,8 +1808,7 @@ class GraphSelfMap(GraphMap):
         return illegal_turns
 
     def relative_indivisible_nielsen_paths(self, stratum, verbose=False):
-        """
-        The list of indivisible Nielsen paths of ``self`` that
+        """The list of indivisible Nielsen paths of ``self`` that
         intersect the interior of the ``stratum`` of self.
 
         Each INP is a pair ``(u,v)`` with the fixed points lying inside
@@ -1826,11 +1825,16 @@ class GraphSelfMap(GraphMap):
         OUTPUT:
 
         The list of indivisible Nielsen paths of ``self`` that
-        intersect the interior of the ``stratum`` of self.
+        intersect the interior of the ``stratum`` of self. Each
+        Nielsen path is a pair of paths [u,v] starting at the same
+        vertex. The end-points are inside the last edge of u and v.
 
         EXAMPLES::
 
-
+        sage: phi = FreeGroupAutomorphism("a->acba,b->acb,c->c")
+        sage: f = phi.train_track(relative=True)
+        sage: f.relative_indivisible_nielsen_paths(stratum=1)
+        [[word: acb, word: ba]]
 
         """
 
@@ -2066,31 +2070,42 @@ class GraphSelfMap(GraphMap):
 
         return result
 
-    def inessential_inp(self, inps, s, verbose=False):
+    def relative_inessential_inp(self, stratum, inps=None, verbose=False):
         """
+        An inessential INP in the stratum ``s`` or ``None``.
 
-        From the list ``inps`` returns either an inessential inp in the
-        stratum ``s`` or ``False``.
+        Recall that an INP is essential if its length (using the
+        length of edges given by the Perron-Frobenius eigen-vector) is
+        equal to twice the total length of the graph.
+
+     
 
         INPUT:
 
-        - ``inps`` : a list of inps each of the form ``(word1,word2)``
-        with the fixed points lying inside the last letters of
-        ``word1`` and ``word2``.
+        - ``inps`` (default None): a list of INPs each of the form
+        ``(word1,word2)`` with the fixed points lying inside the last
+        letters of ``word1`` and ``word2``. If ``inps`` is ``None``
+        then it is set to
+        ``self.relative_indivisible_nielsen_paths(stratum = stratum)
 
         - ``s`` : the index of the exponential stratum of ``self``
-          that meets these inps.
+          that meets these INPs.
 
         -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
-        an inessential inp in the stratum ``s`` or ``None``.
 
-        EXAMPLES:
-        sage: phi=FreeGroupAutomorphism("a->ab,b->a")
-        sage: f=phi.rose_representative()
-        sage: f.inessential_inp(inps=[('a','ab')] , s=[0] )
-        
+        an inessential INP in the stratum ``s`` or ``None``.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->adb,b->adc,c->a,d->d")**3
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: inps = f.relative_indivisible_nielsen_paths(stratum=1)
+        sage: f.inessential_inp(inps = inps , s = 1)
+        [word: adb, word: bda]
+
         WARNING:
 
         The ``s`` stratum of ``self`` must be irreducible, exponential
@@ -2099,15 +2114,14 @@ class GraphSelfMap(GraphMap):
 
         SEE ALSO::
         
-        GraphSelfMap.indivisible_nielsen_paths()
-
         TrainTrackMap.indivisible_nielsen_paths()
 
+        GraphSelfMap.relative_indivisible_nielsen_paths()
         """
 
         A = self.domain().alphabet()
 
-        M = self.relative_matrix(s)
+        M = self.relative_matrix(stratum)
         vectors = M.eigenvectors_left()
         pf = 0
         for (e, v, n) in vectors:
@@ -2118,12 +2132,16 @@ class GraphSelfMap(GraphMap):
         critic = 0  # the length of the common prefix of an issential inp
         i = 0
         pfvl = dict()
-        for a in self._strata[s]:
+        for a in self._strata[stratum]:
             critic += pfv[i]
             pfvl[a] = pfv[i]
             i += 1
 
         critic = critic * (pf - 1)
+
+        if inps is None:
+            inps=self.relative_indivisible_nielsen_paths(\
+                stratum = stratum, verbose = verbose and verbose>1 and verbose-1)
 
         for inp in inps:
             prefix = \
@@ -2133,24 +2151,26 @@ class GraphSelfMap(GraphMap):
             prefix_length = 0
             for a in prefix:
                 aa = A.to_positive_letter(a)
-                if aa in self._strata[s]:
+                if aa in self._strata[stratum]:
                     prefix_length += pfvl[aa]
             if prefix_length != critic:
                 return inp
         return None
 
-    def fold_inp_in_relative_train_track(self, inp, s, verbose=False):
+    def fold_inp_in_relative_train_track(self, inp, stratum, verbose=False):
         """
-        Recursively fold the non-essential ``inp`` of the stratum
-        ``s`` of ``self``.
+        Recursively fold the non-essential ``inp`` of the ``stratum`` of
+        ``self``.
 
         Assuming that ``self`` is a relative train-track and ``inp`` is a
-        non-essential INP of the ``s`` stratum of ``self``, recursively folds
+        non-essential INP of the ``stratum`` of ``self``, recursively folds
         the inp until a partial fold occurs and the inp is removed.
 
         INPUT:
 
-        ``inp`` is a couple ``(word1,word2)`` coding an INP of ``self``.
+        - ``inp`` a couple ``(word1,word2)`` coding an INP of ``self``.
+
+        - ``stratum`` index of a stratum of ``self``
 
         -``verbose`` -- (default False) for verbose option
 
@@ -2158,11 +2178,31 @@ class GraphSelfMap(GraphMap):
 
         The ``WordMorphism`` from the old edges to new graph.
 
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->adb,b->adc,c->a,d->d")**3
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: inps = f.relative_indivisible_nielsen_paths(stratum=1)
+        sage: f.fold_inp_in_relative_train_track(inps[0],1)
+        sage: f.stratify()
+        sage: print f
+        Graph self map:
+        Marked graph: a: 1->0, b: 1->0, c: 0->0, d: 0->0, e: 0->1
+        Marking: a->eadeadebdea, b->eadeadeb, c->c, d->d
+        Edge map: a->adebdea, b->bdeadcdeadeadebdeadeadeadeb,
+        c->eadeadebdeadeadeadebdeadeadebdeadc, d->d, e->eade
+        Strata: [set(['d']), set(['a', 'c', 'b', 'e'])]
+
+        WARNING:
+
+        This has no effects on the strata of ``self`` (use
+        ``GraphSelfMap.stratify()`` afterward)
         """
 
         G = self._domain
         A = G.alphabet()
-        stratum = set(e for e in self._strata[s])
+        stratum = set(e for e in self._strata[stratum])
         strata = self._strata
         self._strata = False
 
@@ -2316,7 +2356,22 @@ class GraphSelfMap(GraphMap):
         """
         ``True`` if the ``stratum`` of ``self`` is exponential.
 
-        It is assumed that this stratum is irreducible.
+        INPUT:
+
+        -``stratum`` index of a stratum of ``self``
+
+        It is assumed that ``stratum`` is irreducible.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->adb,b->adc,c->a,d->d")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: f.is_exponential_stratum(0)
+        False
+        sage: f.is_exponential_stratum(1)
+        True
+
         """
 
         M = self.relative_matrix(stratum)
@@ -2328,23 +2383,33 @@ class GraphSelfMap(GraphMap):
                 return True
         return False
 
-    def relative_matrix(self, s):
+    def relative_matrix(self, stratum):
         """
-
         The incidence matrix of the stratum ``s`` of ``self``.
 
         Note that edges are counted positively disrespectly of their
         orientation.
 
+        INPUT:
+
+        -``stratum`` index of a stratum of ``self``
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->adB,b->adc,c->a,d->d")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: f.relative_matrix(1)
+
         """
         from sage.matrix.constructor import matrix
 
-        M = matrix(len(self._strata[s]))
-        index = dict((a, j) for j, a in enumerate(self._strata[s]))
-        for j, a in enumerate(self._strata[s]):
+        M = matrix(len(self._strata[stratum]))
+        index = dict((a, j) for j, a in enumerate(self._strata[stratum]))
+        for j, a in enumerate(self._strata[stratum]):
             for b in self.image(a):
                 b = self._domain._alphabet.to_positive_letter(b)
-                if b in self._strata[s]:
+                if b in self._strata[stratum]:
                     M[index[b], j] += 1
         return M
 
@@ -2354,11 +2419,23 @@ class GraphSelfMap(GraphMap):
         irreducible strata.
 
         INPUT:
+
+        - ``s`` index of a stratum
+
         -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
         The number of strata which replaces the ``s`` stratum.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->ab,b->b")
+        sage: f = phi.rose_representative()
+        sage: f._strata=([['a','b']])
+        sage: f.filtre_stratum(0)
+        2
+        
         """
 
         stratum = self._strata[s]
@@ -2401,25 +2478,37 @@ class GraphSelfMap(GraphMap):
 
     def stratify(self, verbose=False):
         """
-        Computes a maximal filtration for ``self``
-        and sets and the strata of ``self``.
-
-        INPUT:
-        -``verbose`` -- (default False) for verbose option
-
-        OUTPUT:
-
-        A list ``filtration`` of invariant subgraphs of ``self`` with
+        Computes a maximal filtration for ``self`` and sets and the strata
+        of ``self``.
+ 
+       ``filtration`` of invariant subgraphs of ``self`` with
         ``filtration[i]`` a subgraph of ``filtration[i+1]``. The subgraphs
-        ``filtration[i]`` are given as lists of edges.
+        ``filtration[i]`` are given as sets of edges.
 
         The ``i`` stratum is the set of edges that are in ``filtration[i]``
         and not in ``filtration[i-1]``.
 
+        INPUT:
+
+        -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
         The maximal filtration as a list of sets.
+
+        EXAMPLES::
+        
+        sage: phi = FreeGroupAutomorphism("a->ab,b->b")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        [{'b'}, {'a', 'b'}]
+
+        sage: print f
+        Graph self map:
+        Marked graph: a: 0->0, b: 0->0
+        Marking: a->a, b->b
+        Edge map: a->ab, b->b
+        Strata: [set(['b']), set(['a'])]
 
         SEE ALSO:
 
@@ -2454,6 +2543,15 @@ class GraphSelfMap(GraphMap):
 
         a dictionnary that maps the index of an old strata ``s`` to the
         indices of the new strata that inherit from ``s``.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->ab,b->aadc,c->a,d->d")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: m = f.fold(['a','b'],'a')
+        sage: f.update_strata(m)
+        {0: [0], 1: [1]}
 
         """
 
@@ -2490,8 +2588,8 @@ class GraphSelfMap(GraphMap):
 
     def find_relative_folding(self, s, verbose=False):
         """
-        Finds an illegal turn of the ``i`` stratum of ``self`` in the
-        image of an edge of the ``i`` stratum.
+        Finds an illegal turn of the ``s`` stratum of ``self`` in the
+        image of an edge of the ``s`` stratum.
 
         INPUT:
 
@@ -2508,6 +2606,14 @@ class GraphSelfMap(GraphMap):
 
         If the ``s`` stratum of ``self`` satisfies RTT-iii,
         returns an empty list.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->acba,b->A,c->c")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: f.find_relative_folding(1)
+        [['a', 3], ('a', 'B')]
 
         """
         A = self._domain.alphabet()
@@ -2578,6 +2684,21 @@ class GraphSelfMap(GraphMap):
         OUTPUT:
 
         The WordMorphism that maps old edges to their images.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ca,c->c")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: f.core_subdivide(1)
+        WordMorphism: A->A, B->DB, C->C, a->a, b->bd, c->c
+       
+        sage: print f
+        Graph self map:
+        Marked graph: a: 0->0, b: 0->1, c: 0->0, d: 1->0
+        Marking: a->a, b->bd, c->c
+        Edge map: a->abd, b->c, c->c, d->a
+        Strata: [set(['c']), set(['b']), set(['a', 'd'])]
 
         REFERENCES:
 
@@ -2749,6 +2870,24 @@ class GraphSelfMap(GraphMap):
     def stratum(self, e):
         """
         The stratum of ``self`` that contains the edge ``e``.
+
+        INPUT:
+
+        - ``e`` a letter in the alphabet that labels edges of the domain
+        of ``self``
+
+        OUTPUT:
+
+        an integer: the index of the stratum that contains ``e``
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->ab,b->b,")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: f.stratum('a')
+        1
+        
         """
         e = self._domain.alphabet().to_positive_letter(e)
         for s, stratum in enumerate(self._strata):
@@ -2756,109 +2895,6 @@ class GraphSelfMap(GraphMap):
                 return s
         raise ValueError("%s not in alphabet" % e)
 
-    def relative_contract_tails_and_forest(self, verbose=False):
-        """
-        Reduces ``self`` by:
-
-        1/ contract tails
-
-        2/ contract pretrivial forests
-
-        3/ contract lowest strata that are forest.
-
-        4/ Update the maximal filtration encoded in self._strata.
-
-        INPUT:
-        -``verbose`` -- (default False) for verbose option
-
-        OUTPUT:
-
-        The WordMorphism that maps an old edge to a new edge.
-
-        """
-
-        #Contract tails
-
-        tails = self._domain.tails()
-        if len(tails) > 0:
-            if verbose:
-                print "Contracting tails:", tails
-            result_morph = self.contract_tails(
-                tails, verbose=verbose and verbose > 1 and verbose - 1)
-        else:
-            result_morph = False
-
-        # Contract pretrivial forest
-
-        pretrivial_forest = self.pretrivial_forest()
-        if len(pretrivial_forest) > 0:
-            if verbose:
-                print "Contracting pretrivial forest:", pretrivial_forest
-            tmp_morph=self.contract_invariant_forest(
-                pretrivial_forest,
-                verbose=verbose and verbose > 1 and verbose - 1)
-
-            if result_morph:
-                result_morph = tmp_morph * result_morph
-            else:
-                result_morph = tmp_morph
-
-        # Contract invariant forest.
-
-        if len(self._strata) > 1:
-            i = 0
-            vertex_components = []
-            done = False
-            while i < len(self._strata) - 1 and not done:
-                for a in self._strata[i]:
-                    v = self._domain.initial_vertex(a)
-                    vv = self._domain.terminal_vertex(a)
-                    if v == vv:
-                        done = True
-                        break
-                    cv = -1
-                    cvv = -1
-                    for j, component in enumerate(vertex_components):
-                        if v in component:
-                            cv = j
-                        if vv in component:
-                            cvv = j
-                    if cv == -1 and cvv == -1:
-                        vertex_components.append(set([v, vv]))
-                    elif cv == -1:
-                        vertex_components[cvv].add(v)
-                    elif cvv == -1:
-                        vertex_components[cv].add(vv)
-                    elif cv != cvv:
-                        vertex_components[cv].update(vertex_components[cvv])
-                        vertex_components.pop(cvv)
-                    else:
-                        done = True
-                        break
-                if not done:
-                    i = i + 1
-            if i > 0:
-                trees = self._domain.connected_components(
-                    [a for j in xrange(i) for a in self._strata[j]])
-                if verbose:
-                    print "Strata under", i, "are contractable... " \
-                                             "Contracting this forest:", trees
-                tmp_morph = self.contract_invariant_forest(
-                    trees, verbose=verbose and verbose > 1 and verbose - 1)
-                self._strata = self._strata[i:]
-                heritage = self.update_strata(
-                    tmp_morph, verbose=verbose and verbose > 1 and verbose - 1)
-
-                if result_morph:
-                    result_morph = tmp_morph * result_morph
-                else:
-                    result_morph = tmp_morph
-
-        if not result_morph:
-            result_morph = WordMorphism(
-                dict((a, a) for a in self._domain._alphabet))
-
-        return result_morph
 
     def relative_reduce(self, safe_strata=None, verbose=False):
         """
@@ -2872,8 +2908,8 @@ class GraphSelfMap(GraphMap):
 
         4/ Perform safe fusion of valence 2 vertices. The isotopy is
         chosen such that the expansion factors of self do not increase
-        and (TODO: so that property RTT-i (no need of core
-        subdivision) is not broken). A fusion is safe if either:
+        and so that property RTT-i (no need of core subdivision) is
+        not broken. A fusion is safe if either:
 
         - the upper most stratum contains only one edge of the fusion
           line
@@ -2897,9 +2933,26 @@ class GraphSelfMap(GraphMap):
 
         -``verbose`` -- (default False) for verbose option
 
+        -``safe_strata`` -- (default None) set of indices of
+         stratum. For these ``safe_strata`` we do not require that the
+         fusion strictly decreases the relative expansion
+         factor. Indeed such a strata should be declare safe when an
+         other operation (e.g. a folding) previously strictly decreased.
+
         OUTPUT:
 
         The WordMorphism that maps an old edge to a new edge.
+
+        EXAMPLES::
+
+        sage: f = GraphSelfMap(G,"a->acbd,b->ad,c->cd,d->Dcad")
+        sage: f.stratify()
+        sage: f.relative_reduce()
+        sage: print f
+        Graph self map:
+        Graph with inverses: a: 1->1, b: 1->1
+        Edge map: a->ab, b->a
+        Irreducible representative
 
         """
 
@@ -3198,13 +3251,30 @@ class GraphSelfMap(GraphMap):
         The list of inessential connecting path in the invariant
         subgraph below the ``s`` stratum.
 
+        An inessential connecting path is a path in the strata below
+        ``s`` which 
+
+        - connects two points of the stratum ``s``
+
+        and
+
+        - is mapped to a (homotopically equivalent) trivial path.
+
         INPUT:
 
-        ``s``: the index of a stratum of ``self``
+        - ``s``: the index of a stratum of ``self``
 
         OUPUT:
 
-        A list of paths. Each path is given as a list of edges.
+        A list of paths. 
+
+        EXAMPLES::
+
+        sage: f = GraphSelfMap.from_edge_map("a->acb,b->a,c->cdC,d->cdC")
+        sage: f.stratify() 
+        sage: f.find_inessential_connecting_paths(1)
+        [word: cD]
+
         """
 
         result = []
@@ -3350,16 +3420,33 @@ class GraphSelfMap(GraphMap):
         """
         Recursively fold the ``paths`` of ``self``.
 
+        After folding the paths, contract the tails and pretrivial forest.
+
         INPUT:
 
         -``paths``: a list of paths. Each path is a reduced path mapped
         by ``self`` to a path homotopic to a point.
 
-        After folding the paths, contract the tails and pretrivial forest.
+        OUTPUT:
+        
+        The WordMorphism that maps an old edge to a new edge.
 
         WARNING:
 
         Does not do anything to the possible strata of self.
+
+        EXAMPLES::
+
+        sage: f = GraphSelfMap.from_edge_map("a->acb,b->a,c->cdC,d->cdC")
+        sage: f.stratify() 
+        sage: m=f.fold_paths(['cD'])
+        sage: f.update_strata(m)
+        sage: print f
+        Graph self map:
+        Marked graph: a: 0->0, b: 0->0, c: 0->2, e: 2->3, f: 3->0
+        Marking: a->a, b->cefb, c->Bcefb
+        Edge map: a->acefb, b->a, c->cef, e->cef, f->FEC
+        Strata: [set(['c', 'e', 'f']), set(['a', 'b'])]
 
         """
         G = self._domain
@@ -3455,6 +3542,14 @@ class GraphSelfMap(GraphMap):
         A dictionary that maps the index of an exponential
         stratum to its expansion factor.
 
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->acb,b->a,c->cd,d->ded,e->d")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: f.relative_expansion_factors()
+        {0: 2.414213562373095?, 2: 1.618033988749895?}
+
         """
 
         result = {}
@@ -3496,10 +3591,25 @@ class GraphSelfMap(GraphMap):
 
                    2.4.3/ go back to 2/
 
-        SEE ALSO:
+        SEE ALSO::
 
-        ``GraphSelfMap.stable_train_track()``.
+        GraphSelfMap.stable_relative_train_track()
+        FreeGroupAutomorphism.train_track()
 
+        EXAMPLES::
+        
+        sage: phi = FreeGroupAutomorphism("a->acb,b->a,c->cd,d->deD,e->d")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: f.relative_train_track()
+        sage: print f
+        Graph self map:
+        Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0, e: 0->0
+        Marking: a->a, b->b, c->c, d->dE, e->e
+        Edge map: a->acb, b->a, c->cdE, d->d, e->dE
+        Strata: [set(['d']), set(['e']), set(['c']), set(['a', 'b'])]
+
+        
         """
 
         A = self._domain.alphabet()
@@ -3634,6 +3744,24 @@ class GraphSelfMap(GraphMap):
 
         A WordMorphism that maps old edges to paths in the new graph.
 
+        SEE ALSO::
+
+        GraphSelfMap.stable_train_track()
+        FreeGroupAutomorphism.train_track()
+
+        EXAMPLES::
+        
+        sage: phi = FreeGroupAutomorphism("a->acb,b->a,c->cd,d->deD,e->d")
+        sage: f = phi.rose_representative()
+        sage: f.stratify()
+        sage: f.stable_relative_train_track()
+        sage: print f
+        Graph self map:
+        Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0, e: 0->0
+        Marking: a->a, b->b, c->c, d->dE, e->e
+        Edge map: a->acb, b->a, c->cdE, d->d, e->dE
+        Strata: [set(['d']), set(['e']), set(['c']), set(['a', 'b'])]
+
         """
 
         G = self._domain
@@ -3752,9 +3880,9 @@ class GraphSelfMap(GraphMap):
                                 inp_done = True
                                 if verbose:
                                     print "INPs in stratum", s, ":", inps
-                                inp = self.inessential_inp(
-                                    inps, s,
-                                    verbose=verbose and verbose > 1 and
+                                inp = self.relative_inessential_inp(
+                                    s, inps = inps,
+                                    verbose = verbose and verbose > 1 and
                                     verbose - 1)
                                 if inp:
                                     done = False

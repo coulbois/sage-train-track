@@ -965,8 +965,15 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
 
         EXAMPLES::
+
         sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
-        sage: g = phi.train_track(verbose=False)
+        sage: g = phi.train_track()
+        sage: print g
+        Train-track map:
+        Marked graph: a: 0->2, b: 2->2, d: 2->0, e: 0->2
+        Marking: a->edaE, b->ebE, c->ed
+        Edge map: a->bd, b->aded, d->a, e->d
+        Irreducible representative
 
         """
         from train_track_map import TrainTrackMap
