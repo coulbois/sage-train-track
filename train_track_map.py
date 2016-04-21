@@ -1056,8 +1056,8 @@ class TrainTrackMap(GraphSelfMap):
             if verbose:
                 print "INPs: ", inps
             if len(inps) == 0:
-                if result_morphism:
-                    return result_morphism
+                if result_morph:
+                    return result_morp
                 else:
                     return WordMorphism(
                         dict((a, a) for a in self._domain._alphabet))
