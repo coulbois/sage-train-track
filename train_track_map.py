@@ -31,7 +31,7 @@ Irreducible representative
 # *****************************************************************************
 # - modified by Dominique 03/03/20016 :  major changes pep8 correction
 
-from sage.combinat.words.topological_representative import GraphSelfMap
+from topological_representative import GraphSelfMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.combinat.words.words import FiniteWords
@@ -171,7 +171,7 @@ class TrainTrackMap(GraphSelfMap):
 
         - ``edge_map`` anything which is accepted by
         ``WordMorphism(edge_map)``, the letters must be from an
-        ``AlphabetWithInverses``. Its is only required that images of
+        ``AlphabetWithInverses``. It is only required that images of
         positive letters are defined.
 
         -``alphabet``  (default None)
@@ -404,11 +404,11 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
-        sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a').inverse()
+        sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a')
         sage: f = phi.rose_conjugacy_representative()
         sage: ff = TrainTrackMap(f)
         sage: ff.local_whitehead_graph(0)
-        Looped graph on 6 vertices
+        Graph on 6 vertices
 
         AUTHOR: 
 
@@ -419,7 +419,7 @@ class TrainTrackMap(GraphSelfMap):
             [(e, f) for (e, f) in self.edge_turns()
              if self.domain().initial_vertex(e) == v]
         
-        return Graph(edges, loops=True) # loops=  multiedges=True
+        return Graph(edges)
 
     def stable_local_whitehead_graph(self, v):
         """
@@ -511,7 +511,6 @@ class TrainTrackMap(GraphSelfMap):
 
         GraphSelfMap.relative_indivisible_nielsen_paths()
         TrainTrackMap.periodic_nielsen_paths()
-        [(word: a, word: bca)]
 
         """
 
@@ -603,22 +602,31 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        -``end_points`` -- (default False) end points
+        -``end_points`` -- (default False) set to ``True`` to compute
+         a description of the end points of each periodic Nielsen
+         path.
 
         -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
-        A list of tuples ``(word1,word2,period)``.
-        The fixed points lie in the last edge
-        of the two words.
+        If ``end_points=False``: a list of couples ``((word1,word2),period))``.  The fixed points
+        lie in the last edge of the two words. 
+
+        If ```end_points==True``: a list of triples
+        ``((word1,word2),period,(first_end_point,second_end_point))``
+        where each end-point is either a vertex of the graph
+        (designated by the edge pointing towards the tip of the
+        periodic nielsen path) or a point inside an edge which is
+        denoted by ``(e,period,portion)`` or ``(e,period,left,right)``
 
         EXAMPLES::
 
         sage: f = TrainTrackMap.from_edge_map("a->caaa,b->caa,c->b")
         sage: f.periodic_nielsen_paths()
         [((word: a, word: bca), 1), ((word: A, word: B), 2), ((word: A, word: C), 2)]
-
+        sage: f.periodic_nielsen_paths(end_points=True)[0]
+        ((word: a, word: bca), 1, (('A',), ('A', 1, 2, 1)))
 
         SEE ALSO::
         
@@ -949,7 +957,7 @@ class TrainTrackMap(GraphSelfMap):
                 done = False
                 folding_morph = self.fold([inp[0][0], inp[1][0]],
                                           image[0][0:prefix_length],
-                                          verbose=verbose)
+                                          verbose=verbose and verbose>1 and verbose-1)
                 if result_morph:
                     result_morph = folding_morph * result_morph
                 else:
@@ -1026,13 +1034,15 @@ class TrainTrackMap(GraphSelfMap):
         -``verbose`` -- (default False) for verbose option
 
         OUTPUT:
+
         An irreducible train-track representative
 
         EXAMPLES::
 
         sage: f = TrainTrackMap.from_edge_map("a->caaa,b->caa,c->b")
         sage: f.stabilize()
-        WordMorphism: A->A, B->B, C->C, a->a, b->b, c->c
+        WordMorphism: A->ACBA, B->BA, C->C, a->abca, b->ab, c->c
+
 
         """
         A = self._domain.alphabet()
@@ -1042,12 +1052,15 @@ class TrainTrackMap(GraphSelfMap):
         while not done:
             done = True
             inps = self.indivisible_nielsen_paths(
-                verbose=(verbose and verbose - 1))
+                verbose=(verbose and verbose>1 and verbose - 1))
             if verbose:
                 print "INPs: ", inps
             if len(inps) == 0:
-                return WordMorphism(
-                    dict((a, a) for a in self._domain._alphabet))
+                if result_morphism:
+                    return result_morphism
+                else:
+                    return WordMorphism(
+                        dict((a, a) for a in self._domain._alphabet))
 
             M = self.matrix()
             vectors = M.eigenvectors_left()
@@ -1090,7 +1103,7 @@ class TrainTrackMap(GraphSelfMap):
                             turn[0])[0:self._domain.common_prefix_length(
                                 self.image(turn[0]), self.image(turn[1]))]
                         self._strata = False
-                        folding_morph = self.fold(turn, prefix, verbose)
+                        folding_morph = self.fold(turn, prefix, verbose and verbose>1 and verbose-1)
                         if result_morph:
                             result_morph = folding_morph * result_morph
                         else:
@@ -1116,7 +1129,7 @@ class TrainTrackMap(GraphSelfMap):
                             break
 
             if not done:
-                reduce_morph = self.reduce(verbose)
+                reduce_morph = self.reduce(verbose and verbose>1 and verbose-1)
                 result_morph = reduce_morph * result_morph
 
             if verbose:
@@ -1127,7 +1140,7 @@ class TrainTrackMap(GraphSelfMap):
 
             if len(self._strata) > 1:
                 done = True
-
+            
         return result_morph
 
     def has_connected_local_whitehead_graphs(self, verbose=False):
@@ -1759,7 +1772,7 @@ class TrainTrackMap(GraphSelfMap):
         
         A periodic point of ``self`` inside an edge is denoted by
         ``(e,period,left,right)``. The point ``x`` is the unique point
-        such that ``self^period(x)=x`` and ``x``lies in the occurences
+        such that ``self^period(x)=x`` and ``x`` lies in the occurence
         of ``e`` inside ``self^period(e)`` such that
         ``self^period(e)=uev`` with ``len(u)=left and len(v)=right``.
 
@@ -1774,9 +1787,8 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        -``point ``
-        ``(e,period,left,right)`` standing for the periodic point x in
-        the edge ``e`` with the given period.
+        -``point`` of the form ``(e,period,left,right)`` standing for
+         the periodic point x in the edge ``e`` with the given period.
 
         -``keep_orientation`` -- (default False)
 
@@ -1895,7 +1907,7 @@ class TrainTrackMap(GraphSelfMap):
 
         6/ If there is more than two Nielsen loops then it is not iwip
 
-        7/ If there is one iwip check whether it is contained in a
+        7/ If there is one Nielsen loop checks whether it is contained in a
         non-trivial free factor.
 
         REFERENCES

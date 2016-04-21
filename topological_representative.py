@@ -2442,7 +2442,7 @@ class GraphSelfMap(GraphMap):
 
         sage: phi = FreeGroupAutomorphism("a->ab,b->b")
         sage: f = phi.rose_representative()
-        sage: f._strata=([['a','b']])
+        sage: f._strata=([set(['a','b'])])
         sage: f.filtre_stratum(0)
         2
         

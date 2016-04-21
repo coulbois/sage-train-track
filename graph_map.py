@@ -482,8 +482,8 @@ class GraphMap:
         ``self`` and ``self.tighten()`` are homotopic.
 
         OUTPUT:
-        Tighten ``self`` such that there are at least two gates at
-        each vertex of the domain.
+        
+        ``self`` after it has been tighten.
 
         WARNING:
 
@@ -498,7 +498,6 @@ class GraphMap:
         sage: H = GraphWithInverses.rose_graph(A)
         sage: f = GraphMap(G,H,"a->baabAB,b->babAB")
         sage: f.tighten()
-        WordMorphism: A->BA, B->B, a->ab, b->b
         sage: print f
         Graph map:
         Graph with inverses: a: 0->0, b: 0->0
@@ -574,7 +573,7 @@ class GraphMap:
 
         self.set_edge_map(edge_map)
 
-        return self._edge_map
+        return self
 
     def subdivide_domain(self, e):
         """
