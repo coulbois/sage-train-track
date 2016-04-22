@@ -652,8 +652,9 @@ class ConvexCore():
         self._isolated_edges = isolated_edges
 
     def _build_signed_ends(self, verbose=False):
-        """For each edge of G1 computes a list of edges in T0 assigned
-        with a + or a - sign.
+        """
+        For each edge of G1 computes a list of edges in T0 assigned with a
+        + or a - sign.
 
         It is assumed that ``f=self._f01``: G0->G1 is 
 
@@ -676,8 +677,6 @@ class ConvexCore():
 
         Fix an edge e1 in T1. An edge e0 in T0 is assigned a + if its
         image f(e0) crosses e1 positively.
-
-
         """
         G0 = self._G0
         G1 = self._G1
@@ -724,7 +723,8 @@ class ConvexCore():
         self._signed_ends = signed_ends
 
     def boundary(self, cell):
-        """The boundary of a cell is the list of vertices bounding it. 
+        """
+        The boundary of a cell is the list of vertices bounding it.
 
         A cell is a square, an edge or a vertex. Squares are bounded
         by four vertices, edges by two vertices.
@@ -775,13 +775,23 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi = phi*phi
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C = ConvexCore(phi)
-        sage: C.boundary(()) # boundary of a square #TODO
+        sage: C.boundary((Word('C'), 0, 'c', 'a')) # boundary of a square
+        [(word: C, 0, ('c', 0)),
+        (word: , 0, ('a', 1)),
+        (word: Bc, 0, ('C', 0)),
+        (word: B, 0, ('A', 1))]
 
-        sage: C.boundary(()) # boundary of an edge #TODO
+        sage: C.boundary([3, 0, 2, 1, 'c', 'a']) # boundary of a square
+        [[3, 0, ('c',0)], [0, 2, ('a',1)], [2, 1, ('C',0)], [1, 3, ('A',1)]]
 
+
+        sage: C.boundary((Word('Bc'),0,('C',0))) # boundary of an edge 
+        [(word: Bc, 0), (word: B, 0)]
+
+        sage: C.boundary([2,1,'C']) # boundary of an edge
+        [2,1]
         """
         if isinstance(cell, tuple):
             if len(cell) == 4:  # cell is a square
@@ -811,12 +821,17 @@ class ConvexCore():
         else:  # the cell is a list of the form [v0,v1,v2,v3,v4,a,b]:
             # square or [v0,v1,(a,side)]: edge
             if len(cell) == 6:
-                return cell[:4]
+                a = cell[4]
+                b = cell[5]
+                aa = self._G0.alphabet().inverse_letter(a)
+                bb = self._G1.alphabet().inverse_letter(b)
+                return [[cell[0],cell[1],(a,0)],[cell[1],cell[2],(b,1)],[cell[2],cell[3],(aa,0)],[cell[3],cell[0],(bb,1)]]
             else:
                 return cell[:2]
 
     def path_from_origin(self, vertex, side, verbose=False):
-        """Path from the origin of ``self`` to ``vertex`` on ``side``.
+        """
+        Path from the origin of ``self`` to ``vertex`` on ``side``.
 
         Recall that on each side, each connected component of the
         1-skeleton of ``self`` is a tree. The origin is a vertex 
@@ -841,18 +856,19 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C=ConvexCore(phi)
         sage: C.path_from_origin(2,0)
         word: Bc
         
+        sage: C.path_from_origin(2,0)
+        word: a
+
         sage: C.path_from_origin(('Bc',0),0)
         word: Bc
 
         sage: C.path_from_origin(('Bc',0),1)
         word: a
-        
 
         """
         if not isinstance(vertex, tuple):  # The vertex is an integer
@@ -879,6 +895,13 @@ class ConvexCore():
         ``T0`` or ``T1`` (according to ``side``) where ``self`` is the
         convex core of the trees ``T0`` and ``T1``.
 
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+        sage: C=ConvexCore(phi)
+        sage: print C.tree(0)
+        Graph with inverses: a: 0->0, b: 0->0, c: 0->0
+
         """
         if side == 0:
             return self._G0
@@ -892,11 +915,10 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C=ConvexCore(phi)
         sage: C.squares()
-
+        [[3, 0, 2, 1, 'c', 'a']]
         
         """
         return self._squares
@@ -907,10 +929,10 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C=ConvexCore(phi)
         sage: C.twice_light_squares()
+        [[1, 4, 0, 5, 'a', 'c']]
 
         """
         return self._twice_light_squares
@@ -919,13 +941,20 @@ class ConvexCore():
         """
         List of edges of ``self``.
 
+        This includes the isolated edges of ``self`` but not the edges
+        of the twice-light squares.
+
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C=ConvexCore(phi)
         sage: C.edges()
-
+        [[3, 1, ('a', 1)],
+        [1, 0, ('b', 0)],
+        [2, 3, ('b', 1)],
+        [1, 2, ('c', 0)],
+        [0, 2, ('a', 1)],
+        [3, 0, ('c', 0)]]
         """
         return self._edges
 
@@ -933,12 +962,17 @@ class ConvexCore():
         """
         List of vertices of ``self``.
 
+        WARNING:
+
+        The two vertices of a twice-light square that do not belong to
+        the core are not vertices of ``self``.
+
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C=ConvexCore(phi)
         sage: C.vertices()
+        [0, 1, 2, 3]
 
         """
         return self._vertices
@@ -949,10 +983,10 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C=ConvexCore(phi)
         sage: C.isolated_edges()
+        [[2, 3, ('b', 1)], [1, 0, ('b', 0)]]
 
         """
         return self._isolated_edges
@@ -978,8 +1012,7 @@ class ConvexCore():
 
         EXAMPLES::
         
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C=ConvexCore(phi)
         sage: print C.slice('c',0)
         Looped multi-digraph on 2 vertices
@@ -1018,11 +1051,14 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C=ConvexCore(phi)
+        sage: C.one_squeleton(0)
+        Looped multi-digraph on 4 vertices
+
         sage: C.one_squeleton(0,augmented=True)
-        
+        Looped multi-digraph on 5 vertices
+
         """
 
         G = self.tree(side)
@@ -1059,10 +1095,10 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
         sage: C=ConvexCore(phi)
         sage: C.volume()
+        1
 
         """
 
@@ -1091,11 +1127,22 @@ class ConvexCore():
         """
         List of squares which are not surrounded by 4 squares.
 
+        This is an important information, either to run the Rips
+        machine or to recognize a surface (with boundary).
+
         OUTPUT:
 
         A list of pairs (square,i) where square is a square and i is
         0,1,2 or 3 designating the edge of square which is not bounded
         by another square.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
+        sage: C = ConvexCore(phi)        
+        sage: C.squares_of_the_boundary()
+        [(2, 0), (4, 2), (8, 1), (1, 1), (5, 3), (6, 3), (0, 0), (3, 2)]
+
         """
 
         valence = dict(((e[0], e[1], e[2]), True) for e in self.edges())
@@ -1130,8 +1177,90 @@ class ConvexCore():
 
         return boundary_squares
 
+    
+    def squares_orientation(self,orientation=1,verbose=False):
+        """
+        Assuming that ``self`` is an orientable surface square-complex,
+        chose a coherent orientation of the squares.  A coherent
+        orientation is such that two squares sharing an edge are
+        coherently oriented.  If there are more than one strongly
+        connected component of squares then they get different
+        numbers.  Intended to be used by
+        ``ConvexCore.plot_ideal_curve_diagram()``.  
+
+        INPUT: 
+        
+        - ``orientation`` (default 1): the orientation of the first
+        square of ``self``. It can be either 1 or -1.  
+
+        OUTPUT:
+        
+        A list of positive and negative numbers such that two adjacent
+        squares are coherently oriented (same number).
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
+        sage: C = ConvexCore(phi)        
+        sage: C.squares_orientation()
+        [1, -1, -1, -1, 1, -1, -1, 1, -1]
+
+        """
+
+        squares=self.squares()
+        
+        if len(squares)==0:
+            return []
+        
+        squares_orientation=[orientation]+[0 for i in xrange(1,len(squares))]
+
+        todo=[0] # oriented squares with not yet oriented neighboors
+
+        oriented=1 #number of oriented squares
+
+
+        while oriented<len(squares):
+            while len(todo)>0 and oriented<len(squares):
+                i=todo.pop()
+                sqi=squares[i]
+                for j in xrange(1,len(squares)):
+                    if squares_orientation[j]==0:
+                        sqj=squares[j]
+                        if sqi[4]==sqj[4] and ((sqi[0]==sqj[0] and sqi[1]==sqj[1]) or (sqi[3]==sqj[3] and sqi[2]==sqj[2])):
+                            squares_orientation[j]=-squares_orientation[i]
+                            todo.append(j)
+                            oriented+=1
+                        elif sqi[4]==sqj[4] and ((sqi[0]==sqj[3] and sqi[1]==sqj[2]) or (sqi[3]==sqj[0] and sqi[2]==sqj[1])):
+                            squares_orientation[j]=squares_orientation[i]
+                            todo.append(j)
+                            oriented+=1
+                        elif sqi[5]==sqj[5] and ((sqi[0]==sqj[0] and sqi[3]==sqj[3]) or (sqi[1]==sqj[1] and sqi[2]==sqj[2])):
+                            squares_orientation[j]=-squares_orientation[i]
+                            todo.append(j)
+                            oriented+=1
+                        elif sqi[5]==sqj[5] and ((sqi[0]==sqj[1] and sqi[3]==sqj[2]) or (sqi[1]==sqj[0] and sqi[2]==sqj[3])):
+                            squares_orientation[j]=squares_orientation[i]
+                            todo.append(j)
+                            oriented+=1
+            if oriented<len(squares): # there is more than one strongly connected component
+                if verbose:
+                    print "There is another strongly connected component"
+                for i in xrange(1,len(squares)):
+                    if squares_orientation[i]==0:
+                        break
+                todo.append(i)
+                if orientation>0:
+                    orientation+=1
+                else:
+                    orientation-=1
+                squares_orientation[i]=orientation
+                oriented+=1
+
+        return squares_orientation
+    
     def surface_boundary(self, orientation=None, verbose=False):
-        """List of edges in the boundary of the square complex.
+        """
+        List of edges in the boundary of the square complex.
 
         Attended to be used by
         `ConvexCore.plot_ideal_curve_diagram()`.
@@ -1143,6 +1272,28 @@ class ConvexCore():
         orientation: it can be 0 meaning that the edge is oriented in
         this direction or a non-zero number specifying the orientation
         of the square bounding the edge.
+
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
+        sage: C = ConvexCore(phi)        
+        sage: C.surface_boundary()
+        [(8, 0, ('b', 0, -1)),
+        (0, 8, ('B', 0, 1)),
+        (3, 2, ('a', 0, -1)),
+        (2, 3, ('A', 0, 1)),
+        (7, 8, ('b', 1, -1)),
+        (8, 7, ('B', 1, 1)),
+        (2, 7, ('a', 1, -1)),
+        (7, 2, ('A', 1, 1)),
+        (11, 1, ('a', 1, 1)),
+        (1, 11, ('A', 1, -1)),
+        (4, 11, ('b', 1, 1)),
+        (11, 4, ('B', 1, -1)),
+        (1, 0, ('a', 0, 1)),
+        (0, 1, ('A', 0, -1)),
+        (3, 4, ('b', 0, 1)),
+        (4, 3, ('B', 0, -1))]
 
         """
 
@@ -1194,8 +1345,9 @@ class ConvexCore():
                                  cyclic_order_0=None, cyclic_order_1=None,
                                  verbose=False):
 
-        """Plot the set of ideal curves on the surface S=S(g,1) of genus g with
-        one puncture.
+        """
+        Plot the set of ideal curves on the surface S=S(g,1) of genus g
+        with one puncture.
 
         The free group has rank N=2g, the trees T0 and T1 are roses
         transverse to a maximal set of ideal curves on S. The convex
@@ -1232,16 +1384,17 @@ class ConvexCore():
         EXAMPLES::
         
         sage: F=FreeGroup(4)
-        sage: phi=mul([F.surface_dehn_twist(i) for i in [2,1,1,4]])
+        sage: phi=mul([FreeGroupAutomorphism.surface_dehn_twist(F,i) for i in [2,1,1,4]])
         sage: C=ConvexCore(phi)
-        sage: C.plot_ideal_curve_diagram(
-        cyclic_order_0=['A','B','a','C','D','c','d','b'])
+        sage: C.plot_ideal_curve_diagram(cyclic_order_0=['A','B','a','C','D','c','d','b'])
 
         """
 
         from sage.plot.graphics import Graphics
-        from sage.plot.line import Line
+        from sage.plot.line import Line,line
+        from sage.plot.text import text
         from sage.plot.arrow import Arrow
+        from sage.rings.real_mpfr import RR
 
         T0 = self.tree(0)
         T1 = self.tree(1)
@@ -1822,8 +1975,11 @@ class ConvexCore():
         return g
 
     def plot_punctured_disc_ideal_curves(self, verbose=False):
-        """Plot a disc with punctures and ideal curves with ``self``
-        as dual graph.
+        """
+        TODO: not yet available
+
+        Plot a disc with punctures and ideal curves with ``self`` as dual
+        graph.
 
         The braid group on N starnds is the Mapping class group of the
         disc with N puntures. The fundamental group of this disc is
@@ -1847,7 +2003,6 @@ class ConvexCore():
         of ``F.braid_automorphism(i)``.
 
         Note that in this context there are no twice light squares.
-
         """
 
         from sage.plot.graphics import Graphics
@@ -1880,3 +2035,5 @@ class ConvexCore():
         if verbose:
             print "Edges of the boundary:"
             print boundary
+
+        #TODO
