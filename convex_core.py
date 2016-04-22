@@ -20,11 +20,12 @@ import bisect
 
 
 class ConvexCore():
-    """Guirardel's convex core of two simplicial trees with an action of
-    a free group.
+    """
+    Guirardel's convex core of two simplicial
+    trees with an action of a free group.
 
     Let T1 and T2 be trees with actions of the free group FN. G1=T1/FN
-    and G2=T2/FN are MarkedGraph. 
+    and G2=T2/FN are MarkedGraph.
 
     A ConvexCore is a CW-complex of dimension 2. 2-cells are
     squares. 1-cells are edges labeled by edges of G1 or G2. A square
@@ -772,6 +773,15 @@ class ConvexCore():
           integers standing for vertices a is a label of the tree on
           ``side``.
 
+        EXAMPLES::
+
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi = phi*phi
+        sage: C = ConvexCore(phi)
+        sage: C.boundary(()) # boundary of a square #TODO
+
+        sage: C.boundary(()) # boundary of an edge #TODO
+
         """
         if isinstance(cell, tuple):
             if len(cell) == 4:  # cell is a square
@@ -878,30 +888,72 @@ class ConvexCore():
     def squares(self):
         """
         List of squares of ``self``.
+
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: C.squares()
+
+        
         """
         return self._squares
 
     def twice_light_squares(self):
         """
         List of twice light squares of ``self``.
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: C.twice_light_squares()
+
         """
         return self._twice_light_squares
 
     def edges(self):
         """
         List of edges of ``self``.
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: C.edges()
+
         """
         return self._edges
 
     def vertices(self):
         """
         List of vertices of ``self``.
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: C.vertices()
+
         """
         return self._vertices
 
     def isolated_edges(self):
         """
         List of isolated edges
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: C.isolated_edges()
+
         """
         return self._isolated_edges
 
@@ -954,14 +1006,23 @@ class ConvexCore():
 
         INPUT:
 
-        ``side`` is 0 or 1, standing for ``T0`` or ``T1``
+        - ``side`` is 0 or 1, standing for ``T0`` or ``T1``
 
+        - ``augmented`` -- (default False) if ``True`` twice light
+          edges bounded a twice light squares are considered as edges.
 
         OUTPUT:
 
         A ``DiGraph`` edges are labeled by letters of the alphabet and
         vertices are labeled by the vertices of ``self``.
 
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: C.one_squeleton(0,augmented=True)
+        
         """
 
         G = self.tree(side)
@@ -995,6 +1056,14 @@ class ConvexCore():
         volume: the number of squares in the 2-squeleton. 
         
         If the trees are metric trees, then this is the volume.
+
+        EXAMPLES::
+
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: C.volume()
+
         """
 
         G0 = self.tree(0)
