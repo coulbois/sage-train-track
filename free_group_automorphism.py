@@ -906,7 +906,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         base graph of the ``GraphSelfMap`` is a
         ``GraphWithInverses`` instead of a ``MarkedGraph``.
         """
-        from topological_representative import GraphSelfMap
+        from graph_self_map import GraphSelfMap
         from inverse_graph import GraphWithInverses
 
         return GraphSelfMap(
@@ -930,7 +930,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         sage: g.train_track()
         WordMorphism: A->eADE, B->eBE, C->DE, a->edaE, b->ebE, c->ed
         """
-        from topological_representative import GraphSelfMap
+        from graph_self_map import GraphSelfMap
         from marked_graph import MarkedGraph
 
         return GraphSelfMap(MarkedGraph.rose_marked_graph(self._domain.alphabet()),self)

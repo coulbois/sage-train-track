@@ -31,7 +31,7 @@ Irreducible representative
 # *****************************************************************************
 # - modified by Dominique 03/03/20016 :  major changes pep8 correction
 
-from topological_representative import GraphSelfMap
+from graph_self_map import GraphSelfMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.combinat.words.words import FiniteWords
