@@ -1,5 +1,5 @@
 r"""
-topological_representative.py module
+graph_self_map.py module
 
 Define a GraphSelfMap Class
 

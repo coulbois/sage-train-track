@@ -1,9 +1,6 @@
 # coding=utf-8
 r"""
-Combinatorial classes of words.
-
-To define a new class of words, please refer to the documentation file:
-sage/combinat/words/notes/word_inheritance_howto.txt
+free_group.py define FreeGroup class
 
 AUTHORS:
 

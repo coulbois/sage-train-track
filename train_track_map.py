@@ -444,11 +444,11 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
-        sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a').inverse()
+        sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a')
         sage: f = phi.rose_conjugacy_representative()
         sage: ff = TrainTrackMap(f)
         sage: ff.stable_local_whitehead_graph(0)
-        Subgraph of (): Looped graph on 3 vertices
+        Subgraph of (): Graph on 4 vertices
 
         """
         
@@ -1425,10 +1425,10 @@ class TrainTrackMap(GraphSelfMap):
         sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
         sage: f=TrainTrackMap(phi.rose_representative())
         sage: f.ideal_whitehead_graph()
-        Looped graph on 6 vertices
+        Graph on 6 vertices
 
         WARNING:
-        
+
         If pnps is not given computes them by calling
         ``self.periodic_nielsen_paths()``. Thus it is assumed that
         ``self`` is an expanding train-track.
@@ -1626,7 +1626,7 @@ class TrainTrackMap(GraphSelfMap):
         sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
         sage: f=TrainTrackMap(phi.rose_representative())
         sage: f.ideal_whitehead_graph()
-        Looped graph on 6 vertices
+        Graph on 6 vertices
         sage: f.periodic_nielsen_paths()
         [((word: acb, word: bca), 1)]
         sage: f.index_list()
