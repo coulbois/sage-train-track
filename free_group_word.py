@@ -9,14 +9,14 @@ AUTHORS:
 - Thierry COULBOIS (2013-01-01): initial version
 
 - Dominique BENIELLI (2016-02_15):
-AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+  AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
 
 EXAMPLES::
 
-sage: A =  AlphabetWithInverses(['a','b'])
-sage: fw = FiniteWords(A)
-sage: FreeGroupWord(fw,['a','b','c','d'])
-word: abcd
+    sage: A =  AlphabetWithInverses(['a','b'])
+    sage: fw = FiniteWords(A)
+    sage: FreeGroupWord(fw,['a','b','c','d'])
+    word: abcd
 """
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
@@ -42,8 +42,6 @@ class FreeGroupWord(FiniteWord_list):
     AUTHORS:
 
     - Thierry Coulbois (2013-05-16):
-    - Dominique Benielli (2016-03-09)
-
     """
 
     def __hash__(self):
@@ -65,11 +63,11 @@ class FreeGroupWord(FiniteWord_list):
         - return the string represention of FreeGroupWord
 
         EXAMPLES::
-        sage: A =  AlphabetWithInverses(3)
-        sage: fw = FiniteWords(A)
-        sage: FGW = FreeGroupWord(fw, ['a','b','c','d'])
-        sage: FGW.__str__()
-        'abcd'
+            sage: A =  AlphabetWithInverses(3)
+            sage: fw = FiniteWords(A)
+            sage: FGW = FreeGroupWord(fw, ['a','b','c','d'])
+            sage: FGW.__str__()
+            'abcd'
         """
 
         result = ""
@@ -100,13 +98,12 @@ class FreeGroupWord(FiniteWord_list):
         ``self`` and ``other``are assumed to be reduced.
 
         EXAMPLES::
-        sage: A =  AlphabetWithInverses(3)
-        sage: fw = FiniteWords(A)
-        sage: u = FreeGroupWord(fw, 'abAc')
-        sage: v = FreeGroupWord(fw, 'Caa')
-        sage: u * v
-        word: aba
-
+            sage: A =  AlphabetWithInverses(3)
+            sage: fw = FiniteWords(A)
+            sage: u = FreeGroupWord(fw, 'abAc')
+            sage: v = FreeGroupWord(fw, 'Caa')
+            sage: u * v
+            word: aba
         """
         A = self.parent().alphabet()
         i = 0
@@ -130,13 +127,13 @@ class FreeGroupWord(FiniteWord_list):
         ``exp`` can be any integer (positive or negative).
 
         EXAMPLES::
-        sage: A =  AlphabetWithInverses(3)
-        sage: fw = FiniteWords(A)
-        sage: w = FreeGroupWord(fw, 'ababA')
-        sage: w**3
-        word: ababbabbabA
-        sage: w**(-2)
-        word: aBABBABA
+            sage: A =  AlphabetWithInverses(3)
+            sage: fw = FiniteWords(A)
+            sage: w = FreeGroupWord(fw, 'ababA')
+            sage: w**3
+            word: ababbabbabA
+            sage: w**(-2)
+            word: aBABBABA
         """
 
         F = self.parent()
@@ -178,13 +175,12 @@ class FreeGroupWord(FiniteWord_list):
 
         EXAMPLES::
 
-        sage: A =  AlphabetWithInverses(3)
-        sage: fw = FiniteWords(A)
-        sage: u = FreeGroupWord(fw, 'aba')
-        sage: v = FreeGroupWord(fw, 'abbb')
-        sage: u < v
-        True
-
+            sage: A =  AlphabetWithInverses(3)
+            sage: fw = FiniteWords(A)
+            sage: u = FreeGroupWord(fw, 'aba')
+            sage: v = FreeGroupWord(fw, 'abbb')
+            sage: u < v
+            True
         """
         if not isinstance(other, Word_class):
             return NotImplemented
@@ -205,21 +201,29 @@ class FreeGroupWord(FiniteWord_list):
 
     def __invert__(self):
         """
+        This would be hidden without the ``.. automethod::``
+
+        OUTPUT:
+
         Inverse of ``self``.
 
         EXAMPLES::
-        sage: A =  AlphabetWithInverses(3)
-        sage: fw = FiniteWords(A)
-        sage: u = FreeGroupWord(fw, 'abCbA')
-        sage: u.inverse()
-        word: aBcBA
 
+            sage: A =  AlphabetWithInverses(3)
+            sage: fw = FiniteWords(A)
+            sage: u = FreeGroupWord(fw, 'abCbA')
+            sage: u.inverse()
+            word: aBcBA
         """
         F = self.parent()
         A = F.alphabet()
         return F(A.inverse_letter(a) for a in reversed(self))
 
-    inverse = __invert__
+    def inverse(self):
+        """
+        .. automethod:: __invert__
+        """
+        return self. __invert__()
 
     def reduced(self):
         """
@@ -227,12 +231,11 @@ class FreeGroupWord(FiniteWord_list):
 
         EXAMPLES::
 
-        sage: A =  AlphabetWithInverses(['a','b','c'])
-        sage: fw = FiniteWords(A)
-        sage: w = FreeGroupWord(fw, 'abcAab')
-        sage: w.reduced()
-        word: abcb
-
+            sage: A =  AlphabetWithInverses(['a','b','c'])
+            sage: fw = FiniteWords(A)
+            sage: w = FreeGroupWord(fw, 'abcAab')
+            sage: w.reduced()
+            word: abcb
         """
         result = list(self)
 
@@ -259,12 +262,15 @@ class FreeGroupWord(FiniteWord_list):
         """
         ``True`` if ``self`` is a reduced word.
 
+        OUTPUT:
+        ``True`` if ``self`` is a reduced word.
+
         EXAMPLES::
-        sage: A =  AlphabetWithInverses(3)
-        sage: fw = FiniteWords(A)
-        sage: w = FreeGroupWord(fw, 'abcAab')
-        sage: w.is_reduced()
-        False
+            sage: A =  AlphabetWithInverses(3)
+            sage: fw = FiniteWords(A)
+            sage: w = FreeGroupWord(fw, 'abcAab')
+            sage: w.is_reduced()
+            False
 
         """
         return all(self.parent().alphabet().are_inverse(
@@ -275,13 +281,13 @@ class FreeGroupWord(FiniteWord_list):
         ``True`` if ``self`` is the empty word.
 
         EXAMPLES::
-        sage: A =  AlphabetWithInverses(3)
-        sage: fw = FiniteWords(A)
-        sage: w = FreeGroupWord(fw,'abcACBAb')
-        sage: v = FreeGroupWord(fw,'abcACBAbBA')
-        sage: w.is_identity(v)
-        False
 
+            sage: A =  AlphabetWithInverses(3)
+            sage: fw = FiniteWords(A)
+            sage: w = FreeGroupWord(fw,'abcACBAb')
+            sage: v = FreeGroupWord(fw,'abcACBAbBA')
+            sage: w.is_identity(v)
+            False
         """
         return len(w.reduced()) == 0
 
@@ -297,12 +303,11 @@ class FreeGroupWord(FiniteWord_list):
 
         EXAMPLES::
 
-        sage: A =  AlphabetWithInverses(3)
-        sage: fw = FiniteWords(A)
-        sage: w = FreeGroupWord(fw,"aBaa")
-        sage: w.common_prefix_length("aBca")
-        2
-
+            sage: A =  AlphabetWithInverses(3)
+            sage: fw = FiniteWords(A)
+            sage: w = FreeGroupWord(fw,"aBaa")
+            sage: w.common_prefix_length("aBca")
+            2
         """
         k = 0
         while(k < len(self) and k < len(other) and self[k] == other[k]):
@@ -319,11 +324,12 @@ class FreeGroupWord(FiniteWord_list):
         assumed to be reduced.
 
         EXAMPLES::
-        sage: A =  AlphabetWithInverses(3)
-        sage: fw = FiniteWords(A)
-        sage: w = FreeGroupWord(fw,"aBaa")
-        sage: w.is_prefix("aBcb")
-        False
+
+            sage: A =  AlphabetWithInverses(3)
+            sage: fw = FiniteWords(A)
+            sage: w = FreeGroupWord(fw,"aBaa")
+            sage: w.is_prefix("aBcb")
+            False
         """
         i = 0
         l = len(self)
@@ -341,27 +347,25 @@ class FreeGroupWord(FiniteWord_list):
         Determines wether ``self`` is strictly before ``other``
         in the Nielsen order.
 
-        The Nielsen order is defined by u<v iff
+        The Nielsen order is defined by u<v if
 
-             (len(u)<len(v))
-          or
-             (  len(u)==len(v)
-              and
-                (   u=u'u'', v=v'v''
-                    u'<_lex v'
-                 or
-                    (u'=v' and u''<_lex v'')).
+        ....(len(u)<len(v))
+        or
+        ....( len(u)==len(v)
+        and
+        ....( u=u'u'', v=v'v''
+        ........u'<_lex v'
+        ....or
+        ........(u'=v' and u''<_lex v'')).
 
         Attended to be used in the Nielsen reduction algorithm.
 
         OUTPUT:
 
-        - ``len(v)-len(u)`` if it is >0,
-
-        - ``0`` if they have the same length, but ``u``<``v`` in the
+        - ``len(v)-len(u)`` if it is > 0,
+        - ``0`` if they have the same length, but ``u`` < ``v`` in the
           Nielsen order
-
-        - ``-1`` if ``v=<u`` in the Nielsen order
+        - ``-1`` if ``v`` =< ``u`` in the Nielsen order
 
         """
         l = len(self)

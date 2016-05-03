@@ -4,14 +4,13 @@ inverse_alphabet module, define Class for alphabet with inverse letters
 AUTHORS:
 
 - Thierry COULBOIS (2013-01-01): initial version
-
-- Dominique BENIELLI (2016-02_15):
-AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+- Dominique BENIELLI (2016-02_15): AMU University
+  <dominique.benielli@univ-amu.fr>, Integration in SageMath
 
 EXAMPLES::
 
-sage: AlphabetWithInverses(['a','b','c'],['A','B','C'])
-Alphabet with inverses on ['a', 'b', 'c']
+    sage: AlphabetWithInverses(['a','b','c'],['A','B','C'])
+    Alphabet with inverses on ['a', 'b', 'c']
 """
 #*****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
@@ -19,7 +18,6 @@ Alphabet with inverses on ['a', 'b', 'c']
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
-
 from sage.structure.parent import Parent
 from sage.rings.integer import Integer
 
@@ -49,9 +47,7 @@ class AlphabetWithInverses(Parent):
 
     AUTHORS:
 
-    - Thierry Coulbois (2013-05-16):  version V0
-    - Dominique Benielli (2016-03-09)
-
+    - Thierry Coulbois (2013-05-16)
     """
 
     def __init__(self, alphabet, inverse=None, type='abc'):
@@ -75,29 +71,28 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: AlphabetWithInverses(['a','b','c'],['A','B','C'])
-        Alphabet with inverses on ['a', 'b', 'c']
+            sage: AlphabetWithInverses(['a','b','c'],['A','B','C'])
+            Alphabet with inverses on ['a', 'b', 'c']
 
-        sage: AlphabetWithInverses(4, type='abc')
-        Alphabet with inverses on ['a', 'b', 'c', 'd']
+            sage: AlphabetWithInverses(4, type='abc')
+            Alphabet with inverses on ['a', 'b', 'c', 'd']
 
-        sage: AlphabetWithInverses(4, type='a0')
-        Alphabet with inverses on ['a0', 'a1', 'a2', 'a3']
+            sage: AlphabetWithInverses(4, type='a0')
+            Alphabet with inverses on ['a0', 'a1', 'a2', 'a3']
 
-        sage: AlphabetWithInverses(4, type='x0')
-        Alphabet with inverses on ['x0', 'x1', 'x2', 'x3']
+            sage: AlphabetWithInverses(4, type='x0')
+            Alphabet with inverses on ['x0', 'x1', 'x2', 'x3']
 
         TESTS::
 
-        sage: A = AlphabetWithInverses(['a', 'b'])
-        sage: B = loads(dumps(A))
-        sage: A._positive == B._positive
-        True
-        sage: A._negative == B._negative
-        True
-        sage: A._type == B._type
-        True
-
+            sage: A = AlphabetWithInverses(['a', 'b'])
+            sage: B = loads(dumps(A))
+            sage: A._positive == B._positive
+            True
+            sage: A._negative == B._negative
+            True
+            sage: A._type == B._type
+            True
         """
         if isinstance(alphabet, (int, Integer)):
             if type == 'abc':
@@ -152,10 +147,9 @@ class AlphabetWithInverses(Parent):
 
         TESTS::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-        sage: A.__repr__()
-        "Alphabet with inverses on ['a', 'b', 'c']"
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
+            sage: A.__repr__()
+            "Alphabet with inverses on ['a', 'b', 'c']"
         """
         return "Alphabet with inverses on %s" % str(self._positive)
 
@@ -171,9 +165,9 @@ class AlphabetWithInverses(Parent):
 
         TEST::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-        sage: A.__iter__().next()
-        'a'
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
+            sage: A.__iter__().next()
+            'a'
 
         WARNING:
 
@@ -195,10 +189,9 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.copy()
-        Alphabet with inverses on ['a', 'b', 'c']
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
+            sage: A.copy()
+            Alphabet with inverses on ['a', 'b', 'c']
         """
         return AlphabetWithInverses(self.positive_letters()[:],
                                     self.negative_letters()[:], self._type)
@@ -213,14 +206,13 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.cardinality()
-        3
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
+            sage: A.cardinality()
+            3
 
         WARNING:
 
-        This is equal to ``len()`.
+        This is equal to ``len()``.
         """
         return len(self._positive)
 
@@ -241,14 +233,13 @@ class AlphabetWithInverses(Parent):
 
         TESTS::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.__contains__('a')
-        True
-        sage: A.__contains__('B')
-        True
-        sage: A.__contains__('d')
-        False
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
+            sage: A.__contains__('a')
+            True
+            sage: A.__contains__('B')
+            True
+            sage: A.__contains__('d')
+            False
         """
         return letter in self._positive or letter in self._negative
 
@@ -262,10 +253,9 @@ class AlphabetWithInverses(Parent):
 
         TESTS::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.__len__()
-        3
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
+            sage: A.__len__()
+            3
         '''
         return len(self._positive)
 
@@ -285,14 +275,13 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.rank('b')
-        1
-        sage: A.rank('B')
-        4
-        sage: A.rank('d')
-        False
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
+            sage: A.rank('b')
+            1
+            sage: A.rank('B')
+            4
+            sage: A.rank('d')
+            False
         """
         if letter in self._positive:
             return self._positive.index(letter)
@@ -320,14 +309,13 @@ class AlphabetWithInverses(Parent):
 
         TESTS::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.__getitem__(2)
-        'c'
-        sage: A.__getitem__(4)
-        'B'
-        sage: A.__getitem__(7)
-        False
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'], type='abc')
+            sage: A.unrank(2)
+            'c'
+            sage: A.unrank(4)
+            'B'
+            sage: A.unrank(7)
+            False
         """
         if n < self.cardinality():
             return self._positive[n]
@@ -336,7 +324,11 @@ class AlphabetWithInverses(Parent):
         else:
             return False
 
-    unrank = __getitem__
+    def unrank(self, n):
+        """
+        .. automethod:: __getitem__
+        """
+        return  self.__getitem__(n)
         
     def inverse_letter(self, letter):
         """
@@ -352,12 +344,11 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.inverse_letter('b')
-        'B'
-        sage: A.inverse_letter('B')
-        'b'
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
+            sage: A.inverse_letter('b')
+            'B'
+            sage: A.inverse_letter('B')
+            'b'
         """
         return self._inverse[letter]
 
@@ -376,12 +367,11 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.are_inverse('a','A')
-        True
-        sage: A.are_inverse('b','A')
-        False
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
+            sage: A.are_inverse('a','A')
+            True
+            sage: A.are_inverse('b','A')
+            False
         """
         return self._inverse[a] == b
 
@@ -398,12 +388,11 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.is_positive_letter('a')
-        True
-        sage: A.is_positive_letter('A')
-        False
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
+            sage: A.is_positive_letter('a')
+            True
+            sage: A.is_positive_letter('A')
+            False
         """
         return letter in self._positive
 
@@ -421,12 +410,11 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
-        sage: A.is_negative_letter('a')
-        False
-        sage: A.is_negative_letter('A')
-        True
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'],type='abc')
+            sage: A.is_negative_letter('a')
+            False
+            sage: A.is_negative_letter('A')
+            True
         """
         return letter in self._negative
 
@@ -444,12 +432,11 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'],['A','B','C'])
-        sage: A.to_positive_letter('b')
-        'b'
-        sage: A.to_positive_letter('B')
-        'b'
-
+            sage: A = AlphabetWithInverses(['a','b','c'],['A','B','C'])
+            sage: A.to_positive_letter('b')
+            'b'
+            sage: A.to_positive_letter('B')
+            'b'
         """
         if letter in self._positive:
             return letter
@@ -469,10 +456,9 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'],['A','B','C'])
-        sage: A.positive_letters()
-        ['a', 'b', 'c']
-
+            sage: A = AlphabetWithInverses(['a','b','c'],['A','B','C'])
+            sage: A.positive_letters()
+            ['a', 'b', 'c']
         """
         return self._positive
 
@@ -486,10 +472,9 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'],['A','B','C'])
-        sage: A.negative_letters()
-        ['A', 'B', 'C']
-
+            sage: A = AlphabetWithInverses(['a','b','c'],['A','B','C'])
+            sage: A.negative_letters()
+            ['A', 'B', 'C']
         """
         return self._negative
 
@@ -501,7 +486,7 @@ class AlphabetWithInverses(Parent):
         INPUT:
 
         - ``a`` -- letter to compare with ''b''
-        - ''b`` -- letter to compare with ''a''
+        - ``b`` -- letter to compare with ''a''
 
         OUTPUT:
 
@@ -511,14 +496,13 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-        sage: A.compare_letters('a','A')
-        -1
-        sage: A.compare_letters('c','a')
-        1
-        sage: A.compare_letters('B','B')
-        0
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
+            sage: A.compare_letters('a','A')
+            -1
+            sage: A.compare_letters('c','a')
+            1
+            sage: A.compare_letters('B','B')
+            0
         """
         return cmp(self.rank(a), self.rank(b))
 
@@ -529,7 +513,7 @@ class AlphabetWithInverses(Parent):
         INPUT:
 
         - ``a`` -- letter to compare with ''b''
-        - ''b`` -- letter to compare with ''a''
+        - ``b`` -- letter to compare with ''a''
 
         OUTPUT:
 
@@ -537,12 +521,11 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-        sage: A.less_letter('a','A')
-        True
-        sage: A.less_letter('c','a')
-        False
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
+            sage: A.less_letter('a','A')
+            True
+            sage: A.less_letter('c','a')
+            False
         """
         return (self.rank(a) <= self.rank(b))
 
@@ -560,11 +543,9 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-        sage: A.random_letter(['a','b','c','A','C'])
-        'B'
-
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
+            sage: A.random_letter(['a','b','c','A','C'])
+            'B'
         """
         from sage.misc.prandom import randint
 
@@ -589,20 +570,19 @@ class AlphabetWithInverses(Parent):
         OUTPUT:
 
         - return a new pair of [positive_letter, negative_letter] followed the
-         alphabet
+          alphabet
 
         TESTS::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-        sage: A._new_letter()
-        ['d', 'D']
-        sage: A = AlphabetWithInverses(4, type='a0')
-        sage: A._new_letter()
-        ['a4', 'A4']
-        sage: A = AlphabetWithInverses(3, type='x0')
-        sage: A._new_letter()
-        ['x3', 'X3']
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
+            sage: A._new_letter()
+            ['d', 'D']
+            sage: A = AlphabetWithInverses(4, type='a0')
+            sage: A._new_letter()
+            ['a4', 'A4']
+            sage: A = AlphabetWithInverses(3, type='x0')
+            sage: A._new_letter()
+            ['x3', 'X3']
         """
         i = 0
         done = False
@@ -647,26 +627,25 @@ class AlphabetWithInverses(Parent):
         INPUT:
 
         - ``n`` -- (default: 1) the number of pairs of
-         [positve_letter, negative_letter]
+          [positve_letter, negative_letter]
 
         OUTPUT:
 
         - return a list of new pair of [positive_letter, negative_letter]
-        followed the alphabet
+          followed the alphabet
 
 
         TESTS::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-        sage: A._new_letters(n=3)
-        [['d', 'D'], ['e', 'E'], ['f', 'F']]
-        sage: A = AlphabetWithInverses(4, type='a0')
-        sage: A._new_letters(n=2)
-        [['a4', 'A4'], ['a5', 'A5']]
-        sage: A = AlphabetWithInverses(3, type='x0')
-        sage: A._new_letters(n=1)
-        [['x3', 'X3']]
-
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
+            sage: A._new_letters(n=3)
+            [['d', 'D'], ['e', 'E'], ['f', 'F']]
+            sage: A = AlphabetWithInverses(4, type='a0')
+            sage: A._new_letters(n=2)
+            [['a4', 'A4'], ['a5', 'A5']]
+            sage: A = AlphabetWithInverses(3, type='x0')
+            sage: A._new_letters(n=1)
+            [['x3', 'X3']]
         """
         i = 0
         result = []
@@ -700,24 +679,25 @@ class AlphabetWithInverses(Parent):
         """
         Adds a new letter to the alphabet.
         The pair[positive_letter,negative_letter].
+
         OUTPUT:
 
         - return a new pair of [positive_letter, negative_letter] followed the
-         alphabet
+          alphabet
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-        sage: A.add_new_letter()
-        ['d', 'D']
-        sage: A = AlphabetWithInverses(4, type='a0')
-        sage: A.add_new_letter()
-        ['a4', 'A4']
-        sage: A = AlphabetWithInverses(3, type='x0')
-        sage: A.add_new_letter()
-        ['x3', 'X3']
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
+            sage: A.add_new_letter()
+            ['d', 'D']
+            sage: A = AlphabetWithInverses(4, type='a0')
+            sage: A.add_new_letter()
+            ['a4', 'A4']
+            sage: A = AlphabetWithInverses(3, type='x0')
+            sage: A.add_new_letter()
+            ['x3', 'X3']
 
-        .. automethod:: __new_letter
+        .. automethod:: _new_letter
 
         """
         new_letter = self._new_letter()
@@ -734,7 +714,7 @@ class AlphabetWithInverses(Parent):
         INPUT:
 
         - ``n`` -- (default: 1) the number of pairs of
-         [positve_letter, negative_letter]
+          [positve_letter, negative_letter]
 
 
         OUTPUT:
@@ -744,17 +724,17 @@ class AlphabetWithInverses(Parent):
 
         EXAMPLES::
 
-        sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-        sage: A.add_new_letters(3)
-        [['d', 'D'], ['e', 'E'], ['f', 'F']]
-        sage: A = AlphabetWithInverses(4, type='a0')
-        sage: A.add_new_letters(2)
-        [['a4', 'A4'], ['a5', 'A5']]
-        sage: A = AlphabetWithInverses(3, type='x0')
-        sage: A.add_new_letters(1)
-        [['x3', 'X3']]
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
+            sage: A.add_new_letters(3)
+            [['d', 'D'], ['e', 'E'], ['f', 'F']]
+            sage: A = AlphabetWithInverses(4, type='a0')
+            sage: A.add_new_letters(2)
+            [['a4', 'A4'], ['a5', 'A5']]
+            sage: A = AlphabetWithInverses(3, type='x0')
+            sage: A.add_new_letters(1)
+            [['x3', 'X3']]
 
-        .. automethod:: __new_letters
+        .. automethod:: _new_letters
         """
         new_letters = self._new_letters(n)
         self._positive += [a[0] for a in new_letters]
@@ -777,7 +757,6 @@ class AlphabetWithInverses(Parent):
             sage: A.remove_letter('b')
             sage: print A
             Alphabet with inverses on ['a', 'c', 'd']
-
         """
         aa = self.to_positive_letter(a)
         aaa = self.inverse_letter(aa)
