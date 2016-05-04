@@ -5,15 +5,14 @@ free_group.py define FreeGroup class
 AUTHORS:
 
 - Thierry COULBOIS (2013-01-01): initial version
-
 - Dominique BENIELLI (2016-02_15):
-AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+  AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
 
 EXAMPLES::
 
-sage: A = AlphabetWithInverses(['a','b'])
-sage: FreeGroup(A)
-Free group over ['a', 'b']
+    sage: A = AlphabetWithInverses(['a','b'])
+    sage: FreeGroup(A)
+    Free group over ['a', 'b']
 """
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
@@ -40,20 +39,20 @@ class FreeGroup(FiniteWords):
 
     EXAMPLES::
 
-    sage: A = AlphabetWithInverses(['a','b'])
-    sage: FreeGroup(A)
-    Free group over ['a', 'b']
+        sage: A = AlphabetWithInverses(['a','b'])
+        sage: FreeGroup(A)
+        Free group over ['a', 'b']
 
-    sage: FreeGroup(3)
-    Free group over ['a', 'b', 'c']
+        sage: FreeGroup(3)
+        Free group over ['a', 'b', 'c']
 
-    sage: A = AlphabetWithInverses(2, type='x0')
-    sage: FreeGroup(A)
-    Free group over ['x0', 'x1']
+        sage: A = AlphabetWithInverses(2, type='x0')
+        sage: FreeGroup(A)
+        Free group over ['x0', 'x1']
 
-    sage: A = AlphabetWithInverses(2, type='a0')
-    sage: FreeGroup(A)
-    Free group over ['a0', 'a1']
+        sage: A = AlphabetWithInverses(2, type='a0')
+        sage: FreeGroup(A)
+        Free group over ['a0', 'a1']
 
     AUTHORS:
 
@@ -68,7 +67,9 @@ class FreeGroup(FiniteWords):
 
         - ``alphabet`` -- alphabet or number for len of Alphabet to construct
 
-        OUTPUT: instance of FreeGoupWord
+        OUTPUT:
+
+        instance of FreeGoupWord
 
         '''
 
@@ -93,11 +94,13 @@ class FreeGroup(FiniteWords):
         INPUT:
 
         - ``data`` -- (default: None) to  construct alphabet
-        -``length``  -- (default: None)
-        -``datatype``
-        -``caching`` -- (default: True)
+        - ``length``  -- (default: None)
+        - ``datatype``
+        - ``caching`` -- (default: True)
 
-        OUTPUT: instance of FreeGroupWord
+        OUTPUT:
+
+        instance of FreeGroupWord
 
         WARNING:
 

@@ -1,34 +1,15 @@
-r"""
-module test_train_track define tests for statistics behavior
-and tricky problems
-functions test, test_stat, bugs, bug_test
+# coding=utf-8
+r""" test_train_track.py testing module for train_track
+to run with long option
+
+./sage -t --long src/sage/combinat/words/test_train_track.py
 
 AUTHORS:
 
 - Thierry COULBOIS (2013-01-01): initial version
-
 - Dominique BENIELLI (2016-02_15):
-AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+  AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
 
-TESTS:
-
-    sage: from sage.combinat.words.test import *
-    sage: test(3, 2, 2) # random # long time (40 second)
-    0 : a->Bab,b->b,c->c
-    Graph self map:
-    Marked graph: a: 0->0, b: 0->0, c: 0->0
-    Marking: a->a, b->b, c->c
-    Edge map: a->Bab, b->b, c->c
-    Strata: [set(['b']), set(['a']), set(['c'])]
-    -------------------------
-    1 : a->a,b->Ab,c->ac
-    Graph self map:
-    Marked graph: a: 0->0, b: 0->0, c: 0->0
-    Marking: a->a, b->b, c->c
-    Edge map: a->a, b->Ab, c->ac
-    Strata: [set(['a']), set(['c']), set(['b'])]
-    -------------------------
-    rang:  3 longueur:  2  time:  0.016  train-tracks: 0.0
 
 """
 #*****************************************************************************
@@ -40,6 +21,7 @@ TESTS:
 from sage.combinat.words.free_group import FreeGroup
 from sage.combinat.words.free_group_automorphism import FreeGroupAutomorphism
 from sage.misc.misc import cputime
+
 
 def test(rang, longueur, nombre):
     """
@@ -62,14 +44,14 @@ def test(rang, longueur, nombre):
 
     """
 
-    F=FreeGroup(rang)
+    F = FreeGroup(rang)
 
-    stat=0
-    t=cputime()
+    stat = 0
+    t = cputime()
 
     for i in xrange(nombre):
         phi = FreeGroupAutomorphism.random_automorphism(F, longueur)
-        print i,":", phi
+        print i, ":", phi
         f = phi.train_track(stable=True, relative=True)
         if len(f._strata) == 1:
             stat = stat + 1
@@ -77,7 +59,8 @@ def test(rang, longueur, nombre):
         print "-------------------------"
         
     print "rang: ", rang, "longueur: ", longueur, " time: ", \
-        cputime(t) / nombre," train-tracks: %.1f"%(stat/nombre*100)
+        cputime(t) / nombre, " train-tracks: %.1f" % (stat/nombre*100)
+
 
 def test_stat(rangs, longueurs, puissance):
     """
@@ -104,7 +87,7 @@ def test_stat(rangs, longueurs, puissance):
             for i in xrange(puissance):
                 phi = FreeGroupAutomorphism.random_automorphism(F, l)
                 try:
-                    f=phi.train_track(relative=True, stable=True)
+                    f = phi.train_track(relative=True, stable=True)
                     if len(f._strata) == 1:
                         stat += 1
                 except Exception as err:
@@ -135,7 +118,7 @@ def bugs():
 
     """
     
-    result=[]
+    result = []
 
     # Problems while computing INPs of the RTT
     phi = FreeGroupAutomorphism("a->BafD,b->bcdFAbfbFBafDCB,c->dFAbbcdFAbfb,"
@@ -143,64 +126,64 @@ def bugs():
                                 FreeGroup(6))
     result.append(phi)    
 
-    phi=FreeGroupAutomorphism("a->efea,b->Ebcc,c->c,d->CBedaBFECBedaBe,"
-                              "e->CCBeAEF,f->efbADEbcEbcc", FreeGroup(6))
+    phi = FreeGroupAutomorphism("a->efea,b->Ebcc,c->c,d->CBedaBFECBedaBe,"
+                                "e->CCBeAEF,f->efbADEbcEbcc", FreeGroup(6))
     result.append(phi)
 
-    #The folding of an INP requires folding a path as a full edge
-    phi=FreeGroupAutomorphism("a->BaBaBBFbAcEC,b->bAbce,"
-                              "c->Ac,d->dBfbbAbAbceCa,e->ceCa,"
-                              "f->BfbCaECBaB", FreeGroup(6))
+    # The folding of an INP requires folding a path as a full edge
+    phi = FreeGroupAutomorphism("a->BaBaBBFbAcEC,b->bAbce,"
+                                "c->Ac,d->dBfbbAbAbceCa,e->ceCa,"
+                                "f->BfbCaECBaB", FreeGroup(6))
     result.append(phi)
 
-    #There is an essential INP in a stratum
-    phi=FreeGroupAutomorphism("a->FbccbcaB,b->bc,c->bcbcc,d->bAdCB,"
-                              "e->bAbAdbcebA,f->f", FreeGroup(6))
+    # There is an essential INP in a stratum
+    phi = FreeGroupAutomorphism("a->FbccbcaB,b->bc,c->bcbcc,d->bAdCB,"
+                                "e->bAbAdbcebA,f->f", FreeGroup(6))
     result.append(phi)
 
-    #An inessential connecting path not so easy to fold
-    phi=FreeGroupAutomorphism("a->aDacAd,b->BCbcb,c->bcb,d->BAdA",
-                              FreeGroup(4))
+    # An inessential connecting path not so easy to fold
+    phi = FreeGroupAutomorphism("a->aDacAd,b->BCbcb,c->bcb,d->BAdA",
+                                FreeGroup(4))
     result.append(phi)
 
-    #An inessential connecting path not so easy to fold
-    phi=FreeGroupAutomorphism("a->baB,b->b,c->bAAAdcbbAbAAAdcbDa,"
-                              "d->AdBCDaaaB", FreeGroup(4))
+    # An inessential connecting path not so easy to fold
+    phi = FreeGroupAutomorphism("a->baB,b->b,c->bAAAdcbbAbAAAdcbDa,"
+                                "d->AdBCDaaaB", FreeGroup(4))
     result.append(phi)
     
-    #An essential INP in stratum 0, and two exponential strata
-    phi=FreeGroupAutomorphism("a->BCBCaBCBCdabcba,b->bcb,c->cb,"
-                              "d->BCBCaBCBCdabcb", FreeGroup(4))
+    # An essential INP in stratum 0, and two exponential strata
+    phi = FreeGroupAutomorphism("a->BCBCaBCBCdabcba,b->bcb,c->cb,"
+                                "d->BCBCaBCBCdabcb", FreeGroup(4))
     result.append(phi)
     
-    #Difficult inessential connecting path
-    phi=FreeGroupAutomorphism("a->a,b->baEaba,c->Acdc,d->CDCBAecd,"
+    # Difficult inessential connecting path
+    phi = FreeGroupAutomorphism("a->a,b->baEaba,c->Acdc,d->CDCBAecd,"
                               "e->ABAeCDCAcdc", FreeGroup(5))
     result.append(phi)
 
-    #Difficult INP
-    phi=FreeGroupAutomorphism("a->CaBe,b->CedcEbCede,c->cEbCed,"
-                              "d->CedcEbCed,e->DEcBeDEcBeC", FreeGroup(5))
+    # Difficult INP
+    phi = FreeGroupAutomorphism("a->CaBe,b->CedcEbCede,c->cEbCed,"
+                               "d->CedcEbCed,e->DEcBeDEcBeC", FreeGroup(5))
     result.append(phi)
 
-    #Problem to correctly detect lines to fusion
-    phi=FreeGroupAutomorphism("a->daBacdbADC,b->dacdbADc,c->c,d->daB",
-                              FreeGroup(4))
+    # Problem to correctly detect lines to fusion
+    phi = FreeGroupAutomorphism("a->daBacdbADC,b->dacdbADc,c->c,d->daB",
+                                FreeGroup(4))
     result.append(phi)
 
-    #A complicated line to fusion
-    phi=FreeGroupAutomorphism("a->gBDaidbFe,b->Chdb,c->h,d->EfBDIGdd,"
-                              "e->HHcidbFee,f->Ef,g->DgidbFe,h->Chh,"
-                              "i->EfBDIAdbGidb", FreeGroup(9))
+    # A complicated line to fusion
+    phi = FreeGroupAutomorphism("a->gBDaidbFe,b->Chdb,c->h,d->EfBDIGdd,"
+                                "e->HHcidbFee,f->Ef,g->DgidbFe,h->Chh,"
+                                "i->EfBDIAdbGidb", FreeGroup(9))
     result.append(phi)
 
-    #Yet another inessential connecting path difficult to fold
-    phi=FreeGroupAutomorphism("a->DABBadBdBadBcDABadadBadBcDAbad,"
+    # Yet another inessential connecting path difficult to fold
+    phi = FreeGroupAutomorphism("a->DABBadBdBadBcDABadadBadBcDAbad,"
                               "b->DAbad,c->DABadBdBadBcDAbad,d->Bd",
                               FreeGroup(4))
     result.append(phi)
 
-    #Braids of Mark Bell which causes difficulties
+    # Braids of Mark Bell which causes difficulties
     F = FreeGroup(4)
 
     phi = FreeGroupAutomorphism.identity_automorphism(F)
@@ -254,4 +237,3 @@ def bug_test():
         print "\n\n------------------------------------"
         print i, ":", phi
         f = phi.train_track(stable=True, relative=True, verbose=True)
-            

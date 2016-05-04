@@ -4,17 +4,15 @@ marked_graph module, define Class for MarkedGraph and MarkedMetricGraph
 AUTHORS:
 
 - Thierry COULBOIS (2013-01-01): initial version
-
 - Dominique BENIELLI (2016-02_15):
-AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+  AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
 
 EXAMPLES::
 
-sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-sage: print MarkedGraph(G)
-Marked graph: a: 0->0, c: 1->0, b: 0->1
-Marking: a->a, b->bc
-
+    sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+    sage: print MarkedGraph(G)
+    Marked graph: a: 0->0, c: 1->0, b: 0->1
+    Marking: a->a, b->bc
 """
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
@@ -41,10 +39,10 @@ class MarkedGraph(GraphWithInverses):
 
     EXAMPLES::
 
-    sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-    sage: print MarkedGraph(G)
-    Marked graph: a: 0->0, c: 1->0, b: 0->1
-    Marking: a->a, b->bc
+        sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: print MarkedGraph(G)
+        Marked graph: a: 0->0, c: 1->0, b: 0->1
+        Marking: a->a, b->bc
 
     AUTHORS:
 
@@ -56,37 +54,37 @@ class MarkedGraph(GraphWithInverses):
         """
         INPUT:
 
-        -``graph`` -- (default None) GraphWithInverses is expected
-        or will be combute from ''grap''
-        -``marking`` -- (default None) GraphMap is expected
-        or will be compute
-        -``alphabet`` -- (default None) if ``graph`` is GraphWithInverses
-        ``alphabet`` will be use for ``self``
-        -``marking_alphabet`` -- (default None) alphabet used in the case of a
-        ``MarkedGraph`` is created from a GraphWithInverses`` by
-        computing (randomly) a rose equivalent to the graph.
+        - ``graph`` -- (default None) GraphWithInverses is expected
+          or will be combute from ''grap''
+        - ``marking`` -- (default None) GraphMap is expected
+          or will be compute
+        - ``alphabet`` -- (default None) if ``graph`` is GraphWithInverses
+          ``alphabet`` will be use for ``self``
+        - ``marking_alphabet`` -- (default None) alphabet used in the case of a
+          ``MarkedGraph`` is created from a GraphWithInverses`` by
+          computing (randomly) a rose equivalent to the graph.
 
         EXAMPLES::
-        sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-        sage: M = MarkedGraph(graph=G)
-        sage: print M
-        Marked graph: a: 0->0, c: 1->0, b: 0->1
-        Marking: a->a, b->bc
-        sage: A = AlphabetWithInverses(2)
-        sage: G = GraphWithInverses.rose_graph(A)
-        sage: H = GraphWithInverses.rose_graph(A)
-        sage: f = GraphMap(G,H,"a->aba,b->ab")
-        sage: M = MarkedGraph(marking=f)
-        sage: print M
-        Marked graph: a: 0->0, b: 0->0
-        Marking: a->aba, b->ab
-        sage: print MarkedGraph(marking=f, alphabet=A)
-        Marked graph: a: 0->0, b: 0->0
-        Marking: a->aba, b->ab
-        sage: print MarkedGraph(marking=f, marking_alphabet=A)
-        Marked graph: a: 0->0, b: 0->0
-        Marking: a->aba, b->ab
 
+            sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+            sage: M = MarkedGraph(graph=G)
+            sage: print M
+            Marked graph: a: 0->0, c: 1->0, b: 0->1
+            Marking: a->a, b->bc
+            sage: A = AlphabetWithInverses(2)
+            sage: G = GraphWithInverses.rose_graph(A)
+            sage: H = GraphWithInverses.rose_graph(A)
+            sage: f = GraphMap(G,H,"a->aba,b->ab")
+            sage: M = MarkedGraph(marking=f)
+            sage: print M
+            Marked graph: a: 0->0, b: 0->0
+            Marking: a->aba, b->ab
+            sage: print MarkedGraph(marking=f, alphabet=A)
+            Marked graph: a: 0->0, b: 0->0
+            Marking: a->aba, b->ab
+            sage: print MarkedGraph(marking=f, marking_alphabet=A)
+            Marked graph: a: 0->0, b: 0->0
+            Marking: a->aba, b->ab
         """
         if isinstance(marking, GraphMap):
             GraphWithInverses.__init__(self,
@@ -137,16 +135,17 @@ class MarkedGraph(GraphWithInverses):
         String representation of ``self``.
 
         OUTPUT:
+
         String representation of ``self``.
 
         EXAMPLES::
-        sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-        sage: print MarkedGraph(G)
-        Marked graph: a: 0->0, c: 1->0, b: 0->1
-        Marking: a->a, b->bc
-        sage: MarkedGraph(G).__str__()
-        'Marked graph: a: 0->0, c: 1->0, b: 0->1\nMarking: a->a, b->bc'
 
+            sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+            sage: print MarkedGraph(G)
+            Marked graph: a: 0->0, c: 1->0, b: 0->1
+            Marking: a->a, b->bc
+            sage: MarkedGraph(G).__str__()
+            'Marked graph: a: 0->0, c: 1->0, b: 0->1\nMarking: a->a, b->bc'
         """
         result = "Marked graph: "
         for a in self._alphabet.positive_letters():
@@ -165,18 +164,18 @@ class MarkedGraph(GraphWithInverses):
         A ``GraphMap`` from the rose to ``self``.
 
         OUTPUT:
+
         A ``GraphMap`` from the rose to ``self`` or ``marking`` input
 
         EXAMPLES::
 
-        sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-        sage: G=MarkedGraph(G)
-        sage: print G.marking()
-        Graph map:
-        Graph with inverses: a: 0->0, b: 0->0
-        Graph with inverses: a: 0->0, c: 1->0, b: 0->1
-        edge map: a->a, b->bc
-        
+            sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+            sage: G=MarkedGraph(G)
+            sage: print G.marking()
+            Graph map:
+            Graph with inverses: a: 0->0, b: 0->0
+            Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+            edge map: a->a, b->bc
         """
         return self._marking
 
@@ -185,18 +184,17 @@ class MarkedGraph(GraphWithInverses):
 
         INPUT:
 
-        - `automorphism`: an automorphism of the free group on the
+        - ``automorphism``: an automorphism of the free group on the
           rose that marks ``self``.
 
         EXAMPLES::
 
-        sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-        sage: G=MarkedGraph(G)
-        sage: phi=FreeGroupAutomorphism("a->aba,b->ab")
-        sage: print G.precompose(phi)
-        Marked graph: a: 0->0, c: 1->0, b: 0->1
-        Marking: a->abca, b->abc
-
+            sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+            sage: G=MarkedGraph(G)
+            sage: phi=FreeGroupAutomorphism("a->aba,b->ab")
+            sage: print G.precompose(phi)
+            Marked graph: a: 0->0, c: 1->0, b: 0->1
+            Marking: a->abca, b->abc
         """
         edge_map = dict()
         for a in self._marking.domain().alphabet().positive_letters():
@@ -214,19 +212,20 @@ class MarkedGraph(GraphWithInverses):
         - ``other``: a MarkedGraph
 
         OUTPUT:
+
         Marking differences
 
         EXAMPLES::
 
-        sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-        sage: G=MarkedGraph(G)
-        sage: H=GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
-        sage: H=MarkedGraph(H)
-        sage: print G.difference_of_marking(H)
-        Graph map:
-        Graph with inverses: a: 0->0, c: 1->0, b: 0->1
-        Graph with inverses: a: 0->0, b: 0->1, c: 1->1
-        edge map: a->a, c->, b->bcB
+            sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+            sage: G=MarkedGraph(G)
+            sage: H=GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
+            sage: H=MarkedGraph(H)
+            sage: print G.difference_of_marking(H)
+            Graph map:
+            Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+            Graph with inverses: a: 0->0, b: 0->1, c: 1->1
+            edge map: a->a, c->, b->bcB
         """
 
         return other.marking() * self.marking().inverse()
@@ -236,7 +235,8 @@ class MarkedGraph(GraphWithInverses):
         Subdivides each edge in the edge_list into two edges.
 
         INPUT:
-        -``edge_list`` edge list
+
+        - ``edge_list`` edge list
 
         OUTPUT:
         subdivide  map from subdivide GraphWithInverses
@@ -247,18 +247,18 @@ class MarkedGraph(GraphWithInverses):
 
         EXAMPLES::
 
-        sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
-        sage: G = MarkedGraph(G)
-        sage: G.subdivide(['a','c'])
-        {'A': word: DA,
-         'B': word: B,
-         'C': word: EC,
-         'a': word: ad,
-         'b': word: b,
-         'c': word: ce}
-        sage: print G
-        Marked graph: a: 0->2, b: 0->1, c: 1->3, d: 2->0, e: 3->1
-        Marking: a->ad, b->bceB
+            sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
+            sage: G = MarkedGraph(G)
+            sage: G.subdivide(['a','c'])
+            {'A': word: DA,
+             'B': word: B,
+             'C': word: EC,
+             'a': word: ad,
+             'b': word: b,
+             'c': word: ce}
+            sage: print G
+            Marked graph: a: 0->2, b: 0->1, c: 1->3, d: 2->0, e: 3->1
+            Marking: a->ad, b->bceB
 
         SEE ALSO::
 
@@ -288,28 +288,29 @@ class MarkedGraph(GraphWithInverses):
 
         INPUT:
           
-        -``edges_full``, are list of edges
-        -``edges_partial`` are list of edges (each
-        possibly empty, but the union must have at least two edges).
+        - ``edges_full``, are list of edges
+        - ``edges_partial`` are list of edges (each
+          possibly empty, but the union must have at least two edges).
 
 
         OUTPUT:
+
         A dictionary that maps old edges to new graph paths.
 
         EXAMPLES::
 
-        sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
-        sage: G = MarkedGraph(G)
-        sage: G.fold(['b'],['a'])
-        {'A': word: AB,
-         'B': word: B,
-         'C': word: C,
-         'a': word: ba,
-         'b': word: b,
-         'c': word: c}
-        sage: print G
-        Marked graph: a: 1->0, b: 0->1, c: 1->1
-        Marking: a->ba, b->bcB
+            sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
+            sage: G = MarkedGraph(G)
+            sage: G.fold(['b'],['a'])
+            {'A': word: AB,
+             'B': word: B,
+             'C': word: C,
+             'a': word: ba,
+             'b': word: b,
+             'c': word: c}
+            sage: print G
+            Marked graph: a: 1->0, b: 0->1, c: 1->1
+            Marking: a->ba, b->bcB
 
         SEE ALSO:
 
@@ -330,14 +331,12 @@ class MarkedGraph(GraphWithInverses):
 
         INPUT:
 
-        -``forest`` is a list of disjoint subtrees each given as
-        lists of edges.
+        - ``forest`` is a list of disjoint subtrees each given as
+          lists of edges.
 
         OUTPUT:
 
         A dictionary that maps old edges to new edges.
-
-
 
         SEE ALSO:
 
@@ -356,8 +355,8 @@ class MarkedGraph(GraphWithInverses):
 
         INPUT:
 
-        -``germ_components`` a list of classes of germs outgoing from a
-        vertex.
+        - ``germ_components`` a list of classes of germs outgoing from a
+          vertex.
 
         OUTPUT:
         
@@ -366,13 +365,12 @@ class MarkedGraph(GraphWithInverses):
 
         EXAMPLES::
 
-        sage: G = MarkedGraph.rose_marked_graph(AlphabetWithInverses(2))
-        sage: G.blow_up_vertices([['a','A'],['b'],['B']])
-        {'A': word: cAC, 'B': word: eBD, 'a': word: caC, 'b': word: dbE}
-        sage: print G
-        Marked graph: a: 1->1, b: 2->3, c: 0->1, d: 0->2, e: 0->3
-        Marking: a->caC, b->dbE
-
+            sage: G = MarkedGraph.rose_marked_graph(AlphabetWithInverses(2))
+            sage: G.blow_up_vertices([['a','A'],['b'],['B']])
+            {'A': word: cAC, 'B': word: eBD, 'a': word: caC, 'b': word: dbE}
+            sage: print G
+            Marked graph: a: 1->1, b: 2->3, c: 0->1, d: 0->2, e: 0->3
+            Marking: a->caC, b->dbE
         """
 
         blow_up_map = GraphWithInverses.blow_up_vertices(self, germ_components)
@@ -387,17 +385,17 @@ class MarkedGraph(GraphWithInverses):
 
         INPUT:
 
-        -``alphabet`` a alphabet
+        - ``alphabet`` a alphabet
 
         OUTPUT:
+
         The rose on ``alphabet`` marked with the identity.
 
         EXAMPLES::
 
-        sage: print MarkedGraph.rose_marked_graph(AlphabetWithInverses(2))
-        Marked graph: a: 0->0, b: 0->0
-        Marking: a->a, b->b
-
+            sage: print MarkedGraph.rose_marked_graph(AlphabetWithInverses(2))
+            Marked graph: a: 0->0, b: 0->0
+            Marking: a->a, b->b
         """
 
         marking = dict((a, Word([a])) for a in alphabet.positive_letters())
@@ -414,14 +412,13 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
 
     EXAMPLES::
 
-    sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-    sage: G = MarkedGraph(G)
-    sage: G = MarkedMetricGraph(G)
-    sage: print G
-    Marked graph: a: 0->0, c: 1->0, b: 0->1
-    Marking: a->a, b->bc
-    Length: a:1, c:1, b:1
-
+        sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+        sage: G = MarkedGraph(G)
+        sage: G = MarkedMetricGraph(G)
+        sage: print G
+        Marked graph: a: 0->0, c: 1->0, b: 0->1
+        Marking: a->a, b->bc
+        Length: a:1, c:1, b:1
     """
 
     def __init__(self, graph=None, marking=None, length=None, alphabet=None,
@@ -444,15 +441,16 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
         String representation for ``self``.
 
         OUTPUT:
+
         A string representation of ``self``
 
         EXAMPLES:
 
-        sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-        sage: G = MarkedGraph(G)
-        sage: G = MarkedMetricGraph(G)
-        sage: G.__str__()
-        'Marked graph: a: 0->0, c: 1->0, b: 0->1\nMarking: a->a, b->bc\nLength: a:1, c:1, b:1'
+            sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+            sage: G = MarkedGraph(G)
+            sage: G = MarkedMetricGraph(G)
+            sage: G.__str__()
+            'Marked graph: a: 0->0, c: 1->0, b: 0->1\nMarking: a->a, b->bc\nLength: a:1, c:1, b:1'
         """
         result = MarkedGraph.__str__(self) + "\n"
         result += "Length: "
@@ -467,18 +465,19 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
 
         INPUT:
 
-        -``a`` letter of alphabet
+        - ``a`` letter of alphabet
 
         OUTPUT:
+
         The length of the edge labeled by ``a``
 
         EXAMPLES::
-        sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-        sage: G = MarkedGraph(G)
-        sage: G = MarkedMetricGraph(G)
-        sage: G.length('a')
-        1
-        
+
+            sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+            sage: G = MarkedGraph(G)
+            sage: G = MarkedMetricGraph(G)
+            sage: G.length('a')
+            1
         """
         return self._length[a]
 
@@ -487,17 +486,18 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
         Sets the length of the edge ``a`` to ``l``.
 
         INPUT:
-        -``a`` label of edge
-        -``l`` length associated
+
+        - ``a`` label of edge
+        - ``l`` length associated
 
         EXAMPLES::
-        sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-        sage: G = MarkedGraph(G)
-        sage: G = MarkedMetricGraph(G)
-        sage: G.set_length('a', 2)
-        sage: G.length('a')
-        2
 
+            sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+            sage: G = MarkedGraph(G)
+            sage: G = MarkedMetricGraph(G)
+            sage: G.set_length('a', 2)
+            sage: G.length('a')
+            2
         """
         self._length[a] = l
         self._length[self.alphabet().inverse_letter(a)] = l
@@ -517,21 +517,22 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
         1.
 
         INPUT:
-        -``i`` integer correspond to the splitting index
-        -``A`` alphabet
+
+        - ``i`` integer correspond to the splitting index
+        - ``A`` alphabet
 
         OUTPUT:
+
         The ``MarkedMetricGraph`` corresponding to splitting
         
         EXAMPLES::
         
-        sage: A = AlphabetWithInverses(5)
-        sage: print MarkedMetricGraph.splitting(2,A)
-        Marked graph: a: 0->0, b: 0->0, c: 1->1, d: 1->1, e:
-        1->1, f: 0->1
-        Marking: a->a, b->b, c->fcF, d->fdF, e->feF
-        Length: a:0, b:0, c:0, d:0, e:0, f:1
-        
+            sage: A = AlphabetWithInverses(5)
+            sage: print MarkedMetricGraph.splitting(2,A)
+            Marked graph: a: 0->0, b: 0->0, c: 1->1, d: 1->1, e:
+            1->1, f: 0->1
+            Marking: a->a, b->b, c->fcF, d->fdF, e->feF
+            Length: a:0, b:0, c:0, d:0, e:0, f:1
         """
 
         graph = dict()
@@ -568,19 +569,20 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
         which is of length 1.
 
         INPUT:
-        -``A`` alphabet
+
+        - ``A`` alphabet
 
         OUTPUT:
+
         The marked metric graph corresponding to the HNN splitting
 
         EXAMPLES::
 
-        sage: A=AlphabetWithInverses(4)
-        sage: print MarkedMetricGraph.HNN_splitting(A)
-        Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0
-        Marking: a->a, b->b, c->c, d->d
-        Length: a:1, b:0, c:0, d:0
-
+            sage: A=AlphabetWithInverses(4)
+            sage: print MarkedMetricGraph.HNN_splitting(A)
+            Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0
+            Marking: a->a, b->b, c->c, d->d
+            Length: a:1, b:0, c:0, d:0
         """
 
         length = dict((a, 0) for a in A.positive_letters())

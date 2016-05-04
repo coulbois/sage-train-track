@@ -2,27 +2,25 @@
 r"""
 convex_core.py define ConvexCore class
 
-
 AUTHORS:
 
-- Thierry COULBOIS (2013-01-01): initial version
-
-- Dominique BENIELLI (2016-02_15):
-AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
+- Thierry COULBOIS (2013-01-01) : initial version
+- Dominique BENIELLI (2016-02_15) :
+  AMU University <dominique.benielli@univ-amu.fr>,
+  Integration in SageMath
 
 EXAMPLES::
 
-sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-sage: C=ConvexCore(phi)
-sage: C.vertices()
-[0, 1]
-sage: A = AlphabetWithInverses(2)
-sage: G1 = MarkedGraph(GraphWithInverses.rose_graph(A))
-sage: G2 = MarkedGraph(GraphWithInverses.rose_graph(A))
-sage: C = ConvexCore(G1, G2)
-sage: C.vertices()
-[0]
-
+    sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+    sage: C = ConvexCore(phi)
+    sage: C.vertices()
+    [0, 1]
+    sage: A = AlphabetWithInverses(2)
+    sage: G1 = MarkedGraph(GraphWithInverses.rose_graph(A))
+    sage: G2 = MarkedGraph(GraphWithInverses.rose_graph(A))
+    sage: C = ConvexCore(G1, G2)
+    sage: C.vertices()
+    [0]
 """
 # *****************************************************************************
 #       Copyright (C) 2013 Matt Clay and Thierry Coulbois
@@ -39,7 +37,7 @@ from graph_map import GraphMap
 from free_group_automorphism import FreeGroupAutomorphism
 from numpy import cos
 from numpy import sin
-from numpy import pi
+
 import bisect
 
 
@@ -69,49 +67,45 @@ class ConvexCore():
     MetricGraph with edges of length 0 can be used for trees with a
     non-free action of FN. 
 
-    ``ConvexCore(phi)``: where ``phi`` is an automorphism of the free
+    - ``ConvexCore(phi)``: where ``phi`` is an automorphism of the free
     group F. The convex core of the Cayley tree TA of the free group F
     with respect to its alphabet A, and of the tree TA.Phi, where Phi
     is the outer class of ``phi``.
-
-    ``ConvexCore(G1,G2)``: where ``G1`` and ``G2`` are two marked
+    - ``ConvexCore(G1,G2)``: where ``G1`` and ``G2`` are two marked
     graphs (or two marked metric graphs): The convex core of the
     universal covers T1 and T2 of ``G1`` and ``G2``
     respectively. Edges of length 0 are quotient out.
-
-    ``ConvexCore(f)``: where ``f`` is a homotopy equivalence between
+    - ``ConvexCore(f)``: where ``f`` is a homotopy equivalence between
     graphs G1 and G2: The convex core of the universal covers T1 and
     T2 of G1 and G2, with the fundamental group F of G1 acting on G2
     through ``f``. Edges of length 0 are quotient out.
 
-    WARNING:
+    .. WARNING::
 
-    It is assumed that boths graphs G1 and G2 do not have vertices
-    of valence 1 or 2.
+        It is assumed that boths graphs G1 and G2 do not have vertices
+        of valence 1 or 2.
 
     EXAMPLES::
 
-    sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-    sage: phi=phi*phi
-    sage: C=ConvexCore(phi)
-    sage: print C.slice('c',0)
-    Looped multi-digraph on 2 vertices
+        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi=phi*phi
+        sage: C=ConvexCore(phi)
+        sage: print C.slice('c',0)
+        Looped multi-digraph on 2 vertices
 
-    sage: C.vertices()
-    [0, 1, 2, 3]
+        sage: C.vertices()
+        [0, 1, 2, 3]
 
-    sage: C.squares()
-    [[3, 0, 2, 1, 'c', 'a']]
+        sage: C.squares()
+        [[3, 0, 2, 1, 'c', 'a']]
     
-    sage: C.twice_light_squares()
-    [[1, 4, 0, 5, 'a', 'c']]
+        sage: C.twice_light_squares()
+        [[1, 4, 0, 5, 'a', 'c']]
 
     AUTHORS:
 
     - Matt Clay
-    
-    -Modified by Thierry Coulbois
-
+    - Thierry Coulbois Modified by
     """
 
     def __init__(self, *args, **keywords):
@@ -684,12 +678,9 @@ class ConvexCore():
         It is assumed that ``f=self._f01``: G0->G1 is 
 
         - a continuous ``GraphMap``
-
         - a homotopy equivalence
-
         - that maps the root v0 of ``G0.spanning_tree()`` to the root v1 of
-        ``G1.spanning_tree()``
-        
+          ``G1.spanning_tree()``
         - the image of each vertex has at least two gates.
 
         Conversely ``g=self._f10``: G1->G0 is a continuous
@@ -703,6 +694,7 @@ class ConvexCore():
         Fix an edge e1 in T1. An edge e0 in T0 is assigned a + if its
         image f(e0) crosses e1 positively.
         """
+
         G0 = self._G0
         G1 = self._G1
 
@@ -763,21 +755,16 @@ class ConvexCore():
           a vertex in G1 standing for the vertex at the end of t1(v)
           in T1, a is a positive letter in A0 and b is a positive
           letter in A1
-        
         - d=1: edges: (w,v,(a,0)) or (w,v,(b,1)) with w and v as
           above. Note that edges are oriented and that wa needs not be
           reduced.
-
         - d=0: vertices: (w,v) with w and v as above
-
-
         - The boundary of a square is a list [e0,e1,e2,e3] of edges such that
-        e0=(w,v,(a,0)) and e2 are edges with a positive letter
-        a, and e1=(w,v,(b,1)) and e3 are edges with b a
-        positive letter.
-
+          e0=(w,v,(a,0)) and e2 are edges with a positive letter
+          a, and e1=(w,v,(b,1)) and e3 are edges with b a
+          positive letter.
         - The boundary of an edge it is the list [v0,v1] of the initial vertex
-        v0=(w,v) followed by the terminal vertex.
+          v0=(w,v) followed by the terminal vertex.
 
         Whereas for lists:
 
@@ -785,46 +772,48 @@ class ConvexCore():
           integers standing for vertices and a,b are positive letters
           labeling edges of G0 and G1:
 
-                a
-          v3 ------> v2
-           ^         ^
-           |         |
-           |b        |b
-           |         |
-           |    a    |
-          v0 ------>v1
+             a
+        v3 ------> v2
+          ^        ^
+          |        |
+          |b       |b
+          |        |
+          |    a   |
+        v0 ------>v1
 
-        - edges: ``[v0,v1,(a,side)]`` where ``v0`` and ``v1`` are
+        - edges : ``[v0,v1,(a,side)]`` where ``v0`` and ``v1`` are
           integers standing for vertices a is a label of the tree on
           ``side``.
 
         INPUT:
 
-        -``cell``square, an edge or a vertex. Squares are bounded
-        by four vertices, edges by two vertices.
+        - ``cell`` square, an edge or a vertex. Squares are bounded
+          by four vertices, edges by two vertices.
 
         OUTPUT:
+
         The boundary of a cell is the list of vertices bounding it.
 
         EXAMPLES::
 
-        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C = ConvexCore(phi)
-        sage: C.boundary((Word('C'), 0, 'c', 'a')) # boundary of a square
-        [(word: C, 0, ('c', 0)),
-        (word: , 0, ('a', 1)),
-        (word: Bc, 0, ('C', 0)),
-        (word: B, 0, ('A', 1))]
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
+            sage: C.boundary((Word('C'), 0, 'c', 'a')) # boundary of a square
+            [(word: C, 0, ('c', 0)),
+            (word: , 0, ('a', 1)),
+            (word: Bc, 0, ('C', 0)),
+            (word: B, 0, ('A', 1))]
 
-        sage: C.boundary([3, 0, 2, 1, 'c', 'a']) # boundary of a square
-        [[3, 0, ('c', 0)], [0, 2, ('a', 1)], [2, 1, ('C', 0)], [1, 3, ('A', 1)]]
+            sage: C.boundary([3, 0, 2, 1, 'c', 'a']) # boundary of a square
+            [[3, 0, ('c', 0)], [0, 2, ('a', 1)], [2, 1, ('C', 0)], [1, 3, ('A', 1)]]
 
-        sage: C.boundary((Word('Bc'),0,('C',0))) # boundary of an edge 
-        [(word: Bc, 0), (word: B, 0)]
+            sage: C.boundary((Word('Bc'),0,('C',0))) # boundary of an edge
+            [(word: Bc, 0), (word: B, 0)]
 
-        sage: C.boundary([2,1,'C']) # boundary of an edge
-        [2, 1]
+            sage: C.boundary([2,1,'C']) # boundary of an edge
+            [2, 1]
         """
+
         if isinstance(cell, tuple):
             if len(cell) == 4:  # cell is a square
                 w, v, a, b = cell
@@ -870,7 +859,7 @@ class ConvexCore():
 
         - (v0,w1) with v0 the origin of G0 and w1 a vertex of G1.
 
-        or 
+        or
 
         - (w0,v1) with w0 a path of the form t0[v] and v1 the origin
         of G1.
@@ -883,31 +872,30 @@ class ConvexCore():
           of w, v is a vertex in G1 standing for the vertex at the end
           of t1(v) in T1. Or either an integer standing for a vertex
           of ``self``.
-
         - ``side``: 0 or 1 standing for ``T0`` or ``T1``
-
-        -``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default False) for verbose option
 
         OUTPUT:
+
         Path from the origin of ``self`` to ``vertex`` on ``side``.
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: C.path_from_origin(2,0)
-        word: Bc
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: C.path_from_origin(2,0)
+            word: Bc
         
-        sage: C.path_from_origin(2,1)
-        word: a
+            sage: C.path_from_origin(2,1)
+            word: a
 
-        sage: C.path_from_origin(('Bc',0),0)
-        'Bc'
+            sage: C.path_from_origin(('Bc',0),0)
+            'Bc'
 
-        sage: C.path_from_origin(('Bc',0),1)
-        word: a
-
+            sage: C.path_from_origin(('Bc',0),1)
+            word: a
         """
+
         if not isinstance(vertex, tuple):  # The vertex is an integer
             vertex = self._vertex_labels[vertex]
 
@@ -934,20 +922,21 @@ class ConvexCore():
 
         INPUT:
 
-        |-``side`` 0 or 1 standing for ``T0`` or ``T1``
+        - ``side`` 0 or 1 standing for ``T0`` or ``T1``
 
         OUTPUT:
+
         ``T0`` or ``T1`` (according to ``side``) where ``self`` is the
         convex core of the trees ``T0`` and ``T1``.
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: print C.tree(0)
-        Graph with inverses: a: 0->0, b: 0->0, c: 0->0
-
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: print C.tree(0)
+            Graph with inverses: a: 0->0, b: 0->0, c: 0->0
         """
+
         if side == 0:
             return self._G0
         else:
@@ -958,16 +947,17 @@ class ConvexCore():
         List of squares of ``self``.
 
         OUTPUT:
+
         List of squares of ``self``.
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: C.squares()
-        [[3, 0, 2, 1, 'c', 'a']]
-        
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: C.squares()
+            [[3, 0, 2, 1, 'c', 'a']]
         """
+
         return self._squares
 
     def twice_light_squares(self):
@@ -975,16 +965,17 @@ class ConvexCore():
         List of twice light squares of ``self``.
 
         OUTPUT:
+
         List of twice light squares of ``self``
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: C.twice_light_squares()
-        [[1, 4, 0, 5, 'a', 'c']]
-
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: C.twice_light_squares()
+            [[1, 4, 0, 5, 'a', 'c']]
         """
+
         return self._twice_light_squares
 
     def edges(self):
@@ -995,20 +986,22 @@ class ConvexCore():
         of the twice-light squares.
 
         OUTPUT:
+
         List of edges of ``self``.
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: C.edges()
-        [[3, 1, ('a', 1)],
-        [1, 0, ('b', 0)],
-        [2, 3, ('b', 1)],
-        [1, 2, ('c', 0)],
-        [0, 2, ('a', 1)],
-        [3, 0, ('c', 0)]]
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: C.edges()
+            [[3, 1, ('a', 1)],
+            [1, 0, ('b', 0)],
+            [2, 3, ('b', 1)],
+            [1, 2, ('c', 0)],
+            [0, 2, ('a', 1)],
+            [3, 0, ('c', 0)]]
         """
+
         return self._edges
 
     def vertices(self):
@@ -1021,16 +1014,17 @@ class ConvexCore():
         the core are not vertices of ``self``.
 
         OUTPUT:
+
         List of vertices of ``self``.
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: C.vertices()
-        [0, 1, 2, 3]
-
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: C.vertices()
+            [0, 1, 2, 3]
         """
+
         return self._vertices
 
     def isolated_edges(self):
@@ -1038,16 +1032,17 @@ class ConvexCore():
         List of isolated edges
 
         OUTPUT:
+
         List of isolated edges
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: C.isolated_edges()
-        [[2, 3, ('b', 1)], [1, 0, ('b', 0)]]
-
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: C.isolated_edges()
+            [[2, 3, ('b', 1)], [1, 0, ('b', 0)]]
         """
+
         return self._isolated_edges
 
     def slice(self, a, side):
@@ -1060,12 +1055,11 @@ class ConvexCore():
 
         INPUT:
 
-        -``a``
-        If ``self`` is the core of the trees ``T0`` and ``T1`` and
-        ``side==0`` then ``a`` is an edge of ``T0``. Conversely if
-        ``side==1`` then ``a`` is an edge of ``T1``.
-
-        -``side`` 0 or 1 standing for ``T0`` or ``T1``
+        - ``a``
+          If ``self`` is the core of the trees ``T0`` and ``T1`` and
+          ``side==0`` then ``a`` is an edge of ``T0``. Conversely if
+          ``side==1`` then ``a`` is an edge of ``T1``.
+        - ``side`` 0 or 1 standing for ``T0`` or ``T1``
 
         OUTPUT:
 
@@ -1074,11 +1068,10 @@ class ConvexCore():
 
         EXAMPLES::
         
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: print C.slice('c',0)
-        Looped multi-digraph on 2 vertices
-
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: print C.slice('c',0)
+            Looped multi-digraph on 2 vertices
         """
 
         G = DiGraph(loops=True, multiedges=True)
@@ -1102,7 +1095,6 @@ class ConvexCore():
         INPUT:
 
         - ``side`` is 0 or 1, standing for ``T0`` or ``T1``
-
         - ``augmented`` -- (default False) if ``True`` twice light
           edges bounded a twice light squares are considered as edges.
 
@@ -1113,14 +1105,13 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: C.one_squeleton(0)
-        Looped multi-digraph on 4 vertices
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: C.one_squeleton(0)
+            Looped multi-digraph on 4 vertices
 
-        sage: C.one_squeleton(0,augmented=True)
-        Looped multi-digraph on 5 vertices
-
+            sage: C.one_squeleton(0,augmented=True)
+            Looped multi-digraph on 5 vertices
         """
 
         G = self.tree(side)
@@ -1156,15 +1147,15 @@ class ConvexCore():
         If the trees are metric trees, then this is the volume.
 
         OUTPUT:
+
         Volume of ``self``.
 
         EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-        sage: C=ConvexCore(phi)
-        sage: C.volume()
-        1
-
+            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C=ConvexCore(phi)
+            sage: C.volume()
+            1
         """
 
         G0 = self.tree(0)
@@ -1197,7 +1188,7 @@ class ConvexCore():
 
         INPUT:
 
-        -``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
@@ -1207,10 +1198,10 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
-        sage: C = ConvexCore(phi)        
-        sage: C.squares_of_the_boundary()
-        [(2, 0), (4, 2), (8, 1), (1, 1), (5, 3), (6, 3), (0, 0), (3, 2)]
+            sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
+            sage: C = ConvexCore(phi)
+            sage: C.squares_of_the_boundary()
+            [(2, 0), (4, 2), (8, 1), (1, 1), (5, 3), (6, 3), (0, 0), (3, 2)]
 
         """
 
@@ -1260,9 +1251,8 @@ class ConvexCore():
         INPUT: 
         
         - ``orientation`` (default 1): the orientation of the first
-        square of ``self``. It can be either 1 or -1.
-
-        -``verbose`` -- (default False) for verbose option
+          square of ``self``. It can be either 1 or -1.
+        - ``verbose`` -- (default False) for verbose option
 
         OUTPUT:
         
@@ -1271,61 +1261,69 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
-        sage: C = ConvexCore(phi)        
-        sage: C.squares_orientation()
-        [1, -1, -1, -1, 1, -1, -1, 1, -1]
-
+            sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
+            sage: C = ConvexCore(phi)
+            sage: C.squares_orientation()
+            [1, -1, -1, -1, 1, -1, -1, 1, -1]
         """
 
-        squares=self.squares()
+        squares = self.squares()
         
-        if len(squares)==0:
+        if len(squares) == 0:
             return []
         
-        squares_orientation=[orientation]+[0 for i in xrange(1,len(squares))]
+        squares_orientation = [orientation] + \
+                              [0 for i in xrange(1, len(squares))]
 
-        todo=[0] # oriented squares with not yet oriented neighboors
+        todo = [0]  # oriented squares with not yet oriented neighboors
 
-        oriented=1 #number of oriented squares
+        oriented = 1  #number of oriented squares
 
-
-        while oriented<len(squares):
-            while len(todo)>0 and oriented<len(squares):
-                i=todo.pop()
-                sqi=squares[i]
-                for j in xrange(1,len(squares)):
-                    if squares_orientation[j]==0:
-                        sqj=squares[j]
-                        if sqi[4]==sqj[4] and ((sqi[0]==sqj[0] and sqi[1]==sqj[1]) or (sqi[3]==sqj[3] and sqi[2]==sqj[2])):
-                            squares_orientation[j]=-squares_orientation[i]
+        while oriented < len(squares):
+            while len(todo) > 0 and oriented < len(squares):
+                i = todo.pop()
+                sqi = squares[i]
+                for j in xrange(1, len(squares)):
+                    if squares_orientation[j] == 0:
+                        sqj = squares[j]
+                        if sqi[4] == sqj[4] and (
+                                    (sqi[0] == sqj[0] and sqi[1] == sqj[1]) or
+                                    (sqi[3] == sqj[3] and sqi[2] == sqj[2])):
+                            squares_orientation[j] = - squares_orientation[i]
                             todo.append(j)
-                            oriented+=1
-                        elif sqi[4]==sqj[4] and ((sqi[0]==sqj[3] and sqi[1]==sqj[2]) or (sqi[3]==sqj[0] and sqi[2]==sqj[1])):
+                            oriented += 1
+                        elif sqi[4] == sqj[4] and (
+                                    (sqi[0] == sqj[3] and sqi[1] == sqj[2]) or
+                                    (sqi[3] == sqj[0] and sqi[2] == sqj[1])):
                             squares_orientation[j]=squares_orientation[i]
                             todo.append(j)
-                            oriented+=1
-                        elif sqi[5]==sqj[5] and ((sqi[0]==sqj[0] and sqi[3]==sqj[3]) or (sqi[1]==sqj[1] and sqi[2]==sqj[2])):
-                            squares_orientation[j]=-squares_orientation[i]
+                            oriented += 1
+                        elif sqi[5] == sqj[5] and (
+                                    (sqi[0] == sqj[0] and sqi[3] == sqj[3]) or
+                                    (sqi[1] == sqj[1] and sqi[2] == sqj[2])):
+                            squares_orientation[j] = - squares_orientation[i]
                             todo.append(j)
-                            oriented+=1
-                        elif sqi[5]==sqj[5] and ((sqi[0]==sqj[1] and sqi[3]==sqj[2]) or (sqi[1]==sqj[0] and sqi[2]==sqj[3])):
-                            squares_orientation[j]=squares_orientation[i]
+                            oriented += 1
+                        elif sqi[5] == sqj[5] and (
+                                    (sqi[0] == sqj[1] and sqi[3] == sqj[2]) or
+                                    (sqi[1] == sqj[0] and sqi[2] == sqj[3])):
+                            squares_orientation[j] = squares_orientation[i]
                             todo.append(j)
-                            oriented+=1
-            if oriented<len(squares): # there is more than one strongly connected component
+                            oriented += 1
+            if oriented < len(squares):  # there is more than one
+                # strongly connected component
                 if verbose:
                     print "There is another strongly connected component"
-                for i in xrange(1,len(squares)):
-                    if squares_orientation[i]==0:
+                for i in xrange(1, len(squares)):
+                    if squares_orientation[i] == 0:
                         break
                 todo.append(i)
-                if orientation>0:
-                    orientation+=1
+                if orientation > 0:
+                    orientation += 1
                 else:
-                    orientation-=1
-                squares_orientation[i]=orientation
-                oriented+=1
+                    orientation -= 1
+                squares_orientation[i] = orientation
+                oriented += 1
 
         return squares_orientation
     
@@ -1339,8 +1337,7 @@ class ConvexCore():
         INPUT:
 
         - ``orientation`` (default None): list of square  orientation
-
-        -``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
@@ -1352,26 +1349,25 @@ class ConvexCore():
 
         EXAMPLES::
 
-        sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
-        sage: C = ConvexCore(phi)        
-        sage: C.surface_boundary()
-        [(8, 0, ('b', 0, -1)),
-        (0, 8, ('B', 0, 1)),
-        (3, 2, ('a', 0, -1)),
-        (2, 3, ('A', 0, 1)),
-        (7, 8, ('b', 1, -1)),
-        (8, 7, ('B', 1, 1)),
-        (2, 7, ('a', 1, -1)),
-        (7, 2, ('A', 1, 1)),
-        (11, 1, ('a', 1, 1)),
-        (1, 11, ('A', 1, -1)),
-        (4, 11, ('b', 1, 1)),
-        (11, 4, ('B', 1, -1)),
-        (1, 0, ('a', 0, 1)),
-        (0, 1, ('A', 0, -1)),
-        (3, 4, ('b', 0, 1)),
-        (4, 3, ('B', 0, -1))]
-
+            sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
+            sage: C = ConvexCore(phi)
+            sage: C.surface_boundary()
+            [(8, 0, ('b', 0, -1)),
+            (0, 8, ('B', 0, 1)),
+            (3, 2, ('a', 0, -1)),
+            (2, 3, ('A', 0, 1)),
+            (7, 8, ('b', 1, -1)),
+            (8, 7, ('B', 1, 1)),
+            (2, 7, ('a', 1, -1)),
+            (7, 2, ('A', 1, 1)),
+            (11, 1, ('a', 1, 1)),
+            (1, 11, ('A', 1, -1)),
+            (4, 11, ('b', 1, 1)),
+            (11, 4, ('B', 1, -1)),
+            (1, 0, ('a', 0, 1)),
+            (0, 1, ('A', 0, -1)),
+            (3, 4, ('b', 0, 1)),
+            (4, 3, ('B', 0, -1))]
         """
 
         if orientation is None:
@@ -1421,7 +1417,6 @@ class ConvexCore():
     def plot_ideal_curve_diagram(self, radius=1, orientation=1,
                                  cyclic_order_0=None, cyclic_order_1=None,
                                  verbose=False):
-
         """
         Plot the set of ideal curves on the surface S=S(g,1) of genus g
         with one puncture.
@@ -1447,33 +1442,30 @@ class ConvexCore():
 
         - ``radius``: (default 1) the radius of the regular 2N-gone
           which is the fondamental domain of the surface.
-
-        -``cyclic_order_0``: (default None) List of edges outgoing
-         from the sole vertex of T0 ordered according to the embedding
-         in the surface. A typical value in rank 4, compatible with
-         the definition of ``FreeGroup.surface_dehn_twist()`` is :
-         ['A','B','a','C','D','c','d','b']
-
-        -``cyclic_order_1``: (default None) List of edges outgoing
-         from the sole vertex of T1 ordered according to the embedding
-         in the surface.
+        - ``cyclic_order_0``: (default None) List of edges outgoing
+          from the sole vertex of T0 ordered according to the embedding
+          in the surface. A typical value in rank 4, compatible with
+          the definition of ``FreeGroup.surface_dehn_twist()`` is :
+          ['A','B','a','C','D','c','d','b']
+        - ``cyclic_order_1``: (default None) List of edges outgoing
+          from the sole vertex of T1 ordered according to the embedding
+          in the surface.
 
         OUTPUT:
+
         the set of ideal curves on the surface S=S(g,1) of genus g
         with one puncture.
 
         EXAMPLES::
         
-        sage: F=FreeGroup(4)
-        sage: phi=mul([FreeGroupAutomorphism.surface_dehn_twist(F,i) for i in [2,1,1,4]])
-        sage: C=ConvexCore(phi)
-        sage: C.plot_ideal_curve_diagram(cyclic_order_0=['A','B','a','C','D','c','d','b'])
-        Graphics object consisting of 28 graphics primitives
-
+            sage: F=FreeGroup(4)
+            sage: phi=mul([FreeGroupAutomorphism.surface_dehn_twist(F,i) for i in [2,1,1,4]])
+            sage: C=ConvexCore(phi)
+            sage: C.plot_ideal_curve_diagram(cyclic_order_0=['A','B','a','C','D','c','d','b'])
+            Graphics object consisting of 28 graphics primitives
         """
-
         from sage.plot.graphics import Graphics
-        from sage.plot.line import Line,line
+        from sage.plot.line import Line, line
         from sage.plot.text import text
         from sage.plot.arrow import Arrow
         from sage.rings.real_mpfr import RR
@@ -1667,7 +1659,7 @@ class ConvexCore():
                             aa = A0.inverse_letter(tmp_cyclic_0[j])
                             j = 0
                             while j < len(tmp_cyclic_0) and tmp_cyclic_0[
-                                j] != aa:
+                                  j] != aa:
                                 j += 1
                             if j == len(tmp_cyclic_0) or j == 0:
                                 i += 1
@@ -1697,7 +1689,7 @@ class ConvexCore():
                             aa = A1.inverse_letter(tmp_cyclic_1[j])
                             j = 0
                             while j < len(tmp_cyclic_1) and tmp_cyclic_1[
-                                j] != aa:
+                                  j] != aa:
                                 j += 1
                             if j == len(tmp_cyclic_1) or j == 0:
                                 i += 1
@@ -2099,7 +2091,7 @@ class ConvexCore():
         # Coherent orientation of the squares
 
         orientation = self.squares_orientation(
-            orientation = orientation,
+            orientation=orientation,
             verbose=verbose and verbose > 1 and verbose - 1)
 
         if verbose:
@@ -2118,4 +2110,4 @@ class ConvexCore():
             print "Edges of the boundary:"
             print boundary
 
-        #TODO
+        # TODO
