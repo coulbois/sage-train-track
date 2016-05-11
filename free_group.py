@@ -292,6 +292,108 @@ class FreeGroupElement(ElementLibGAP):
         """
         return (self.parent(), (self.Tietze(),))
 
+    def __len__(self):
+        """
+        Reduced dord length of self.
+
+        Returns:
+            A non-negative integer.
+
+        """
+        return len(self.Tietze())
+
+    def __getitem__(self, item):
+        """
+        An element of a free group can be viewed as a reduced word in the generators and their inverses.
+
+        As such it is a container.
+
+        Args:
+            item: an integer or a slice object
+
+        Returns:
+            A free group element.
+
+        """
+        if type(item) is slice:
+            return self.parent(self.Tietze()[item])
+        else:
+            return self.parent([self.Tietze()[item]])
+
+    def __le__(self, other):
+        """
+        Lexicographic comparison of the reduced words ``self`` and ``other``.
+
+        Args:
+            other: a free group element
+
+        Returns:
+            ``True`` if ``self``<=``other``
+        """
+        return self.Tietze() <= other.Tietze()
+
+    def __lt__(self, other):
+        """
+        Lexicographic comparison of the reduced words ``self`` and ``other``.
+
+        Args:
+            other: a free group element
+
+        Returns:
+            ``True`` if ``self``<``other``
+        """
+        return self.Tietze() < other.Tietze()
+
+    def __ge__(self, other):
+        """
+        Lexicographic comparison of the reduced words ``self`` and ``other``.
+
+        Args:
+            other: a free group element
+
+        Returns:
+            ``True`` if ``self``>=``other``
+        """
+        return self.Tietze() >= other.Tietze()
+
+    def __gt__(self, other):
+        """
+        Lexicographic comparison of the reduced words ``self`` and ``other``.
+
+        Args:
+            other: a free group element
+
+        Returns:
+            ``True`` if ``self``>``other``
+        """
+        return self.Tietze() > other.Tietze()
+
+    def __eq__(self, other):
+        """
+        Lexicographic comparison of the reduced words ``self`` and ``other``.
+
+        Args:
+            other: a free group element
+
+        Returns:
+            ``True`` if ``self``==``other``
+        """
+        return self.Tietze() == other.Tietze()
+
+
+    def __ne__(self, other):
+        """
+        Lexicographic comparison of the reduced words ``self`` and ``other``.
+
+        Args:
+            other: a free group element
+
+        Returns:
+            ``True`` if ``self``!=``other``
+        """
+        return self.Tietze() != other.Tietze()
+
+
     @cached_method
     def Tietze(self):
         """
@@ -563,6 +665,77 @@ class FreeGroupElement(ElementLibGAP):
         replace = dict(zip(G.gens(), values))
         from sage.misc.all import prod
         return prod( replace[gen] ** power for gen, power in self.syllables() )
+
+
+    def nielsen_compare(self, other):
+        """
+        Determines whether ``self`` is strictly before ``other``
+        in the Nielsen order.
+
+        The Nielsen order is defined by u<v if
+
+        ....(len(u)<len(v))
+        or
+        ....( len(u)==len(v)
+        and
+        ....( let u' be the left end of u and u'' be the left end of u^-1
+        ....( let v' be the left enf of v and v'' be the left end of v^-1
+        ....( let umin be the min between u' and u'' and umax be their max
+        ....( similarly define vmin and vmax
+        ........umin < vmin in lexicographic order
+        ....or
+        ........(umin = vmin and umax < vmax)).
+
+        Intended to be used in the Nielsen reduction algorithm. In particular while inverting a free group automorphism.
+
+        OUTPUT:
+
+            len(u)-len(v)+1 if len(u)>len(v),
+            1 if they have the same length, but u < v in the
+                Nielsen order
+            0 if u==v
+            1 if len(u)==len(v) and u > v in the Nielsen order
+            len(u)-len(v)-1 if len(u)<len(v)
+
+        """
+        l = len(self)
+        result = l-len(other)
+        if result > 0:
+            return result + 1
+        if result < 0:
+            return result - 1
+
+        if l == 0:
+            return 0
+
+        if l == 1:
+            if self < other:
+                return -1
+            if self == other:
+                return 0
+            return 1
+
+        half = (l + 1) // 2
+
+        u = self.Tietze()
+        u1 = u[0:half]
+        u2 = [-x for x in u[l:l-half-1:-1]]
+        if u1 > u2:
+            u1, u2 = u2, u1
+
+        v=other.Tietze()
+        v1 = v[0:half]
+        v2 = [-x for x in v[l:l-half-1:-1]]
+        if v1 > v2:
+            v1, v2 = v2, v1
+        if u1 < v1:
+            return -1
+        if u1 == u2:
+            if v1 < v2:
+                return -1
+            if v1 == v2:
+                return 0
+        return 1
 
 
 def FreeGroup(n=None, names='x', index_set=None, abelian=False, **kwds):

@@ -456,8 +456,8 @@ class FreeGroupMorphism(WordMorphism):
                         if (x != y and x != A.inverse_letter(y)):
                             w2 = self.image(y)
                             w3 = w1 * w2
-                            d = w3.nielsen_strictly_less(w1)
-                            if (delta < d and d >= 0):
+                            d = w3.nielsen_compare(w1)
+                            if (delta < d):
                                 delta = d
                                 a = x
                                 b = y
