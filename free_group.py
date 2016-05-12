@@ -205,10 +205,13 @@ class FreeGroupElement(ElementLibGAP):
             sage: TestSuite(x).run()
         """
         if not isinstance(x, GapElement):
-            try:
-                l = x.Tietze()
-            except AttributeError:
-                l = list(x)
+            if isinstance(x,str):
+                l=[parent._names.index(a)+1 for a in x]
+            else:
+                try:
+                    l = x.Tietze()
+                except AttributeError:
+                    l = list(x)
             if len(l)>0:
                 if min(l) < -parent.ngens() or parent.ngens() < max(l):
                     raise ValueError('generators not in the group')
