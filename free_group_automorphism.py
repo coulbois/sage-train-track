@@ -240,6 +240,8 @@ class FreeGroupMorphism():
         as a word. If you want the image of a letter use :meth:`image` instead.
         """
         F = self.codomain()
+        if not isinstance(w,FreeGroupElement):
+            w = self.domain()(w)
         while order > 0:
             result = F.one()
             order = order - 1

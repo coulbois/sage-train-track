@@ -362,8 +362,11 @@ class FreeGroupElement(ElementLibGAP):
             False
 
         """
-        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
-            return self.is_one()
+        if not isinstance(other,FreeGroupElement):
+            if (other==1 or other==() or other==[]):
+                return self.is_one()
+            else:
+                raise NotImplementedError
         return self.Tietze() <= other.Tietze()
 
     def __lt__(self, other):
@@ -384,8 +387,11 @@ class FreeGroupElement(ElementLibGAP):
             True
 
         """
-        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
-            return False
+        if not isinstance(other,FreeGroupElement):
+            if (other==1 or other==() or other==[]):
+                return False
+            else:
+                raise NotImplementedError
 
         return self.Tietze() < other.Tietze()
 
@@ -408,8 +414,11 @@ class FreeGroupElement(ElementLibGAP):
             True
 
         """
-        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
-            return True
+        if not isinstance(other,FreeGroupElement):
+            if (other==1 or other==() or other==[]):
+                return True
+            else:
+                raise NotImplementedError
         return self.Tietze() >= other.Tietze()
 
 
@@ -431,8 +440,11 @@ class FreeGroupElement(ElementLibGAP):
             True
 
         """
-        if not isinstance(other,FreeGroupElement) and other==1:
-            return self.is_one()
+        if not isinstance(other,FreeGroupElement):
+            if other==1 or other==() or other==[]:
+                return self.is_one()
+            else:
+                raise NotImplementedError("%s is not a free group element."%other)
         return self.Tietze() > other.Tietze()
 
 
@@ -453,8 +465,11 @@ class FreeGroupElement(ElementLibGAP):
             True
 
         """
-        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
-            return self.is_one()
+        if not isinstance(other,FreeGroupElement):
+            if (other==1 or other==() or other==[]):
+                return self.is_one()
+            else:
+                return False
         return self.Tietze() == other.Tietze()
 
 
@@ -474,8 +489,11 @@ class FreeGroupElement(ElementLibGAP):
             sage: F([1,2,1,-1,3,-2]) != F([1,2,3,-2])
             False
         """
-        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
-            return not self.is_one()
+        if not isinstance(other,FreeGroupElement):
+            if (other==1 or other==() or other==[]):
+                return not self.is_one()
+            else:
+                return True
         return self.Tietze() != other.Tietze()
 
 
