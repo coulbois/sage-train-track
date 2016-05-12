@@ -294,10 +294,17 @@ class FreeGroupElement(ElementLibGAP):
 
     def __len__(self):
         """
-        Reduced dord length of self.
+        Reduced word length of self.
 
         Returns:
             A non-negative integer.
+
+        TESTS::
+
+            sage: F = FreeGroup(3)
+            sage: w = F([1,2,1,-1,3,-2])
+            sage: len(w)
+            4
 
         """
         return len(self.Tietze())
@@ -314,6 +321,16 @@ class FreeGroupElement(ElementLibGAP):
         Returns:
             A free group element.
 
+        EXAMPLES::
+
+            sage: F = FreeGroup(3)
+            sage: w = F([1,2,1,-1,3,-2])
+            sage: w[2]
+            x2
+            sage: w[1:]
+            x1*x2*x1^-1
+
+
         """
         if type(item) is slice:
             return self.parent(self.Tietze()[item])
@@ -329,7 +346,17 @@ class FreeGroupElement(ElementLibGAP):
 
         Returns:
             ``True`` if ``self``<=``other``
+
+        EXAMPLES::
+
+            sage: F = FreeGroup(3)
+            sage: w = F([1,2,1,-1,3,-2])
+            sage: w <= F([])
+            False
+
         """
+        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
+            return self.is_one()
         return self.Tietze() <= other.Tietze()
 
     def __lt__(self, other):
@@ -341,8 +368,20 @@ class FreeGroupElement(ElementLibGAP):
 
         Returns:
             ``True`` if ``self``<``other``
+
+        EXAMPLES::
+
+            sage: F = FreeGroup(3)
+            sage: w = F([1,2,1,-1,3,-2])
+            sage: w[:-1] < w
+            True
+
         """
+        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
+            return False
+
         return self.Tietze() < other.Tietze()
+
 
     def __ge__(self, other):
         """
@@ -353,8 +392,19 @@ class FreeGroupElement(ElementLibGAP):
 
         Returns:
             ``True`` if ``self``>=``other``
+
+        EXAMPLES::
+
+            sage: F = FreeGroup(3)
+            sage: w = F([1,2,1,-1,3,-2])
+            sage: w*w >= w
+            True
+
         """
+        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
+            return True
         return self.Tietze() >= other.Tietze()
+
 
     def __gt__(self, other):
         """
@@ -365,8 +415,19 @@ class FreeGroupElement(ElementLibGAP):
 
         Returns:
             ``True`` if ``self``>``other``
+
+        EXAMPLES::
+
+            sage: F = FreeGroup(3)
+            sage: w = F([1,2,1,-1,3,-2])
+            sage: F([2]) > w
+            True
+
         """
+        if not isinstance(other,FreeGroupElement) and other==1:
+            return self.is_one()
         return self.Tietze() > other.Tietze()
+
 
     def __eq__(self, other):
         """
@@ -377,7 +438,16 @@ class FreeGroupElement(ElementLibGAP):
 
         Returns:
             ``True`` if ``self``==``other``
+
+        EXAMPLES::
+
+            sage: F = FreeGroup(3)
+            sage: F([1,2,1,-1,3,-2]) == F([1,2,3,-2])
+            True
+
         """
+        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
+            return self.is_one()
         return self.Tietze() == other.Tietze()
 
 
@@ -390,8 +460,18 @@ class FreeGroupElement(ElementLibGAP):
 
         Returns:
             ``True`` if ``self``!=``other``
+
+        EXAMPLES::
+
+            sage: F = FreeGroup(3)
+            sage: F([1,2,1,-1,3,-2]) != F([1,2,3,-2])
+            False
         """
+        if not isinstance(other,FreeGroupElement) and (other==1 or other==() or other==[]):
+            return not self.is_one()
         return self.Tietze() != other.Tietze()
+
+
 
 
     @cached_method

@@ -31,7 +31,205 @@ from sage.combinat.words.morphism import WordMorphism
 from free_group import FreeGroup
 
 
-class FreeGroupMorphism(WordMorphism):
+class FreeGroupMorphism():
+    def __init__(self, data, domain=None, codomain=None):
+        r"""
+        Construction of the morphism.
+
+        EXAMPLES:
+
+        1. If data is a str::
+
+            sage: FreeGroupMorphism('a->ab,b->ba')
+            FreeGroupMorphism: a->ab, b->ba
+            sage: FreeGroupMorphism('a->ab,b->Ba')
+            FreeGroupMorphism: a->ab, b->Ba
+            sage: FreeGroupMorphism('a->a*b*c,b->b,c->a*b')
+            FreeGroupMorphism: a->abc, b->bca, c->cab
+            sage: FreeGroupMorphism('a->abdsf,b->hahdad,c->asdhasd')
+            FreeGroupMorphism: a->abdsf, b->hahdad, c->asdhasd
+            sage: FreeGroupMorphism('(->(),)->)(')
+            FreeGroupMorphism: (->(), )->)(
+            sage: FreeGroupMorphism('a->53k,b->y5?,$->49i')
+            FreeGroupMorphism: $->49i, a->53k, b->y5?
+
+        An erasing morphism::
+
+            sage: FreeGroupMorphism('a->ab,b->')
+            FreeGroupMorphism: a->ab, b->
+
+        Use the arrows ('->') correctly::
+
+            sage: FreeGroupMorphism('a->ab,b-')
+            Traceback (most recent call last):
+            ...
+            ValueError: The second and third characters must be '->' (not '-')
+            sage: FreeGroupMorphism('a->ab,b')
+            Traceback (most recent call last):
+            ...
+            ValueError: The second and third characters must be '->' (not '')
+            sage: FreeGroupMorphism('a->ab,a-]asdfa')
+            Traceback (most recent call last):
+            ...
+            ValueError: The second and third characters must be '->' (not '-]')
+
+        Each letter must be defined only once::
+
+            sage: FreeGroupMorphism('a->ab,a->ba')
+            Traceback (most recent call last):
+            ...
+            ValueError: The image of 'a' is defined twice.
+
+        2. From a dictionary::
+
+            sage: FreeGroupMorphism({"a":"ab","b":"ba"})
+            FreeGroupMorphism: a->ab, b->ba
+            sage: FreeGroupMorphism({2:[4,5,6],3:[1,2,3]})
+            FreeGroupMorphism: 2->456, 3->123
+            sage: FreeGroupMorphism({'a':['a',6,'a'],6:[6,6,6,'a']})
+            FreeGroupMorphism: 6->666a, a->a6a
+
+        The image of a letter can be a set, but the order is not
+        preserved::
+
+            sage: FreeGroupMorphism({2:[4,5,6],3:set([4,1,8])}) #random results
+            FreeGroupMorphism: 2->456, 3->814
+
+        If the image of a letter is not iterable, it is considered as a
+        letter::
+
+            sage: FreeGroupMorphism({0:1, 1:0})
+            FreeGroupMorphism: 0->1, 1->0
+            sage: FreeGroupMorphism({0:123, 1:789})
+            FreeGroupMorphism: 0->123, 1->789
+            sage: FreeGroupMorphism({2:[4,5,6], 3:123})
+            FreeGroupMorphism: 2->456, 3->123
+
+        3. From a FreeGroupMorphism::
+
+            sage: FreeGroupMorphism(FreeGroupMorphism('a->ab,b->ba'))
+            FreeGroupMorphism: a->ab, b->ba
+
+        TESTS::
+
+            sage: FreeGroupMorphism(',,,a->ab,,,b->ba,,')
+            FreeGroupMorphism: a->ab, b->ba
+        """
+        if isinstance(data,FreeGroupMorphism):
+            self._domain=data._domain
+            self._codomain=data._codomain
+            self._morph=data._morph
+        elif isinstance(data, WordMorphism):
+            self._domain = FreeGroup(data._domain.alphabet())
+            self._codomain = FreeGroup(data._codomain.alphabet())
+            self._morph = data._morph
+        else:
+            if isinstance(data, str):
+                data = self._build_dict(data)
+            elif not isinstance(data, dict):
+                raise NotImplementedError
+
+            if codomain is None:
+                codomain = self._build_codomain(data)
+
+            if isinstance(codomain, FiniteOrInfiniteWords):
+                codomain = codomain.finite_words()
+            elif not isinstance(codomain, FiniteWords):
+                raise TypeError("the codomain must be a set of finite words")
+            self._codomain = codomain
+
+            self._morph = {}
+
+            dom_alph = list()
+            for (key, val) in data.iteritems():
+                dom_alph.append(key)
+                if val in codomain.alphabet():
+                    self._morph[key] = codomain([val])
+                else:
+                    self._morph[key] = codomain(val)
+
+            if domain is not None:
+                if isinstance(domain, FiniteOrInfiniteWords):
+                    domain = domain.finite_words()
+                elif not isinstance(domain, FiniteWords):
+                    raise TypeError("the codomain must be a set of finite words")
+            else:
+                dom_alph.sort()
+                domain = FiniteWords(dom_alph)
+            self._domain = domain
+
+    def _build_dict(self, s):
+        r"""
+        Parse the string input to FreeGroupMorphism and build the dictionary
+        it represents.
+
+        TESTS::
+
+            sage: wm = FreeGroupMorphism('a->ab,b->ba')
+            sage: wm._build_dict('a->ab,b->ba') == {'a': 'ab', 'b': 'ba'}
+            True
+            sage: wm._build_dict('a->ab,a->ba')
+            Traceback (most recent call last):
+            ...
+            ValueError: The image of 'a' is defined twice.
+            sage: wm._build_dict('a->ab,b>ba')
+            Traceback (most recent call last):
+            ...
+            ValueError: The second and third characters must be '->' (not '>b')
+        """
+        tmp_dict = {}
+        for fleche in s.split(','):
+            if len(fleche) == 0:
+                continue
+
+            if len(fleche) < 3 or fleche[1:3] != '->':
+                raise ValueError("The second and third characters must be '->' (not '%s')" % fleche[1:3])
+
+            lettre = fleche[0]
+            image = fleche[3:]
+
+            if lettre in tmp_dict:
+                raise ValueError("The image of %r is defined twice." % lettre)
+
+            tmp_dict[lettre] = image
+        return tmp_dict
+
+    def _build_codomain(self, data):
+        r"""
+        Returns a Words domain containing all the letter in the keys of
+        data (which must be a dictionary).
+
+        TESTS:
+
+        If the image of all the letters are iterable::
+
+            sage: wm = FreeGroupMorphism('a->ab,b->ba')
+            sage: wm._build_codomain({'a': 'ab', 'b': 'ba'})
+            Finite words over {'a', 'b'}
+            sage: wm._build_codomain({'a': 'dcb', 'b': 'a'})
+            Finite words over {'a', 'b', 'c', 'd'}
+            sage: wm._build_codomain({2:[4,5,6],3:[1,2,3]})
+            Finite words over {1, 2, 3, 4, 5, 6}
+            sage: wm._build_codomain({2:[4,5,6],3:set([4,1,8])})
+            Finite words over {1, 4, 5, 6, 8}
+
+        If the image of a letter is not iterable, it is considered as
+        a letter::
+
+            sage: wm._build_codomain({2:[4,5,6],3:123})
+            Finite words over {4, 5, 6, 123}
+            sage: wm._build_codomain({0:1, 1:0, 2:2})
+            Finite words over {0, 1, 2}
+        """
+        codom_alphabet = set()
+        for key, val in data.iteritems():
+            try:
+                it = iter(val)
+            except Exception:
+                it = [val]
+            codom_alphabet.update(it)
+        return FiniteWords(sorted(codom_alphabet))
+
     def __init__(self, data, group=None):
         """
         Builds a FreeGroupMorphism from data.
@@ -56,7 +254,7 @@ class FreeGroupMorphism(WordMorphism):
         if group is not None and not isinstance(group, FreeGroup):
             raise ValueError("the group must be a Free Group")
 
-        WordMorphism.__init__(self, data)
+        FreeGroupMorphism.__init__(self, data)
 
         if group is None:
             A = AlphabetWithInverses(self.domain().alphabet())
@@ -66,7 +264,7 @@ class FreeGroupMorphism(WordMorphism):
             A = group.alphabet()
 
         self._domain = F
-        self._codomain = F  # unuseful... consistency with WordMorphism
+        self._codomain = F  # unuseful... consistency with FreeGroupMorphism
         for letter in self._morph.keys():
             self._morph[letter] = F(self._morph[letter]).reduced()
             self._morph[A.inverse_letter(letter)] = \
