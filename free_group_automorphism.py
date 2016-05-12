@@ -121,8 +121,14 @@ class FreeGroupMorphism():
             self._morph=data._morph
         elif isinstance(data, WordMorphism):
             self._domain = FreeGroup(data._domain.alphabet())
-            self._codomain = FreeGroup(data._codomain.alphabet())
-            self._morph = data._morph
+            co_alphabet = set(a.lower() for a in data._codomain.alphabet())
+            self._codomain = FreeGroup(co_alphabet)
+            self._morph = dict()
+            for a,im in data._morph.iteritems():
+                a = self._domain(a)
+                im = self._codomain(im)
+                self._morph[a] = im
+                self._morph[a.inverse()] = im.inverse()
         else:
             if isinstance(data, str):
                 data = self._build_dict(data)
@@ -132,31 +138,20 @@ class FreeGroupMorphism():
             if codomain is None:
                 codomain = self._build_codomain(data)
 
-            if isinstance(codomain, FiniteOrInfiniteWords):
-                codomain = codomain.finite_words()
-            elif not isinstance(codomain, FiniteWords):
-                raise TypeError("the codomain must be a set of finite words")
             self._codomain = codomain
+
+            if domain is None:
+                domain = FreeGroup(sorted(data.keys()))
+
+            self._domain = domain
 
             self._morph = {}
 
-            dom_alph = list()
             for (key, val) in data.iteritems():
-                dom_alph.append(key)
-                if val in codomain.alphabet():
-                    self._morph[key] = codomain([val])
-                else:
-                    self._morph[key] = codomain(val)
-
-            if domain is not None:
-                if isinstance(domain, FiniteOrInfiniteWords):
-                    domain = domain.finite_words()
-                elif not isinstance(domain, FiniteWords):
-                    raise TypeError("the codomain must be a set of finite words")
-            else:
-                dom_alph.sort()
-                domain = FiniteWords(dom_alph)
-            self._domain = domain
+                key = domain(key)
+                val = codomain(val)
+                self._morph[key] = val
+                self._morph[key.inverse()] = val.inverse()
 
     def _build_dict(self, s):
         r"""
@@ -223,56 +218,20 @@ class FreeGroupMorphism():
         """
         codom_alphabet = set()
         for key, val in data.iteritems():
-            try:
-                it = iter(val)
-            except Exception:
-                it = [val]
-            codom_alphabet.update(it)
-        return FiniteWords(sorted(codom_alphabet))
-
-    def __init__(self, data, group=None):
-        """
-        Builds a FreeGroupMorphism from data.
-
-        INPUT:
-
-        - ``data`` -- the data used to build the morphism
-        - ``group`` -- an optional free group
-
-        EXAMPLES::
-
-            sage: phi = FreeGroupMorphism('a->ab,b->A')
-            sage: print phi
-            a->ab,b->A
-            sage: phi = FreeGroupMorphism('a->abc,b->Ac,c->C,d->ac')
-            sage: A = AlphabetWithInverses('abcd')
-            sage: F = FreeGroup(A)
-            sage: phi = FreeGroupMorphism('a->abc,b->Ac,c->C,d->ac', F)
-            sage: print phi
-            a->abc,b->Ac,c->C,d->ac
-        """
-        if group is not None and not isinstance(group, FreeGroup):
-            raise ValueError("the group must be a Free Group")
-
-        FreeGroupMorphism.__init__(self, data)
-
-        if group is None:
-            A = AlphabetWithInverses(self.domain().alphabet())
-            F = FreeGroup(A)
-        else:
-            F = group
-            A = group.alphabet()
-
-        self._domain = F
-        self._codomain = F  # unuseful... consistency with FreeGroupMorphism
-        for letter in self._morph.keys():
-            self._morph[letter] = F(self._morph[letter]).reduced()
-            self._morph[A.inverse_letter(letter)] = \
-                self._morph[letter].inverse()
+            for a in val:
+                if isinstance(a,str):
+                    a = a.lower()
+                    codom_alphabet.add(a)
+                else:
+                    try:
+                        codom_alphabet.update(a.parent().gens())
+                    except AttributeError:
+                        codom_alphabet.add(a)
+        return FreeGroup(sorted(codom_alphabet))
 
     def __call__(self, w, order=1):
         """
-        Apply the morphism to the word w.
+        Apply the morphism to w.
 
         .. WARNING::
 
@@ -282,10 +241,10 @@ class FreeGroupMorphism():
         """
         F = self.codomain()
         while order > 0:
-            result = F()
+            result = F.one()
             order = order - 1
             for a in w:
-                result = result * self.image(a)
+                result = result * self._morph[a]
             w = result
         return result
 
@@ -413,6 +372,12 @@ class FreeGroupMorphism():
             if test:
                 return test
         return 0
+
+    def domain(self):
+        return self._domain
+
+    def codomain(self):
+        return self._codomain
 
     def to_automorphism(self):
         """
