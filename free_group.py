@@ -99,6 +99,7 @@ def is_FreeGroup(x):
     from sage.groups.indexed_free_group import IndexedFreeGroup
     return isinstance(x, IndexedFreeGroup)
 
+
 def _lexi_gen(zeroes=False):
     """
     Return a generator object that produces variable names suitable for the
@@ -162,7 +163,9 @@ class FreeGroupElement(ElementLibGAP):
 
     - ``x`` -- something that determines the group element. Either a
       :class:`~sage.libs.gap.element.GapElement` or the Tietze list
-      (see :meth:`Tietze`) of the group element.
+      (see :meth:`Tietze`) of the group element or anything accepted
+      by list(). In the last case, by convention capital letters are
+      considered as inverses.
 
     - ``parent`` -- the parent :class:`FreeGroup`.
 
@@ -175,6 +178,11 @@ class FreeGroupElement(ElementLibGAP):
         sage: y = G([2, 2, 2, 1, -2, -2, -2])
         sage: y
         b^3*a*b^-3
+        sage: z = G("abAbBAB")
+        sage: z
+        a*b*a^-2*b^-1
+        sage: z == G(['a','b','A','A','B'])
+        True
         sage: x*y
         a*b*a^-1*b^2*a*b^-3
         sage: y*x
@@ -200,7 +208,11 @@ class FreeGroupElement(ElementLibGAP):
             sage: y = G([2, 2, 2, 1, -2, -2, -1])
             sage: y # indirect doctest
             b^3*a*b^-2*a^-1
-
+            sage: G("abAbBAB") 
+            a*b*a^-2*b^-1
+            sage: G(['a','b','A','a','A','B'])
+            a*b*a^-1*b^-1
+            
             sage: TestSuite(G).run()
             sage: TestSuite(x).run()
         """
@@ -306,19 +318,24 @@ class FreeGroupElement(ElementLibGAP):
         Returns:
             A non-negative integer.
 
-        TESTS::
+        EXAMPLES::
 
             sage: F = FreeGroup(3)
             sage: w = F([1,2,1,-1,3,-2])
             sage: len(w)
             4
+            sage: len(F(['x0','X1','x1','x2']))
+            2
 
         """
         return len(self.Tietze())
 
     def __getitem__(self, item):
         """
-        An element of a free group can be viewed as a reduced word in the generators and their inverses.
+        Letter(s) at position ``item`` of ``self``.
+
+        An element of a free group can be viewed as a reduced word in
+        the generators and their inverses.
 
         As such it is a container.
 
@@ -336,8 +353,6 @@ class FreeGroupElement(ElementLibGAP):
             x2
             sage: w[1:]
             x1*x2*x1^-1
-
-
         """
         if type(item) is slice:
             return self.parent(self.Tietze()[item])
@@ -346,7 +361,8 @@ class FreeGroupElement(ElementLibGAP):
 
     def __le__(self, other):
         """
-        Lexicographic comparison of the reduced words ``self`` and ``other``.
+        Lexicographic comparison of the reduced words ``self`` and
+        ``other``.
 
         Args:
             other: a free group element
@@ -360,7 +376,6 @@ class FreeGroupElement(ElementLibGAP):
             sage: w = F([1,2,1,-1,3,-2])
             sage: w <= F([])
             False
-
         """
         if not isinstance(other,FreeGroupElement):
             if (other==1 or other==() or other==[]):
@@ -371,7 +386,8 @@ class FreeGroupElement(ElementLibGAP):
 
     def __lt__(self, other):
         """
-        Lexicographic comparison of the reduced words ``self`` and ``other``.
+        Lexicographic comparison of the reduced words ``self`` and
+        ``other``.
 
         Args:
             other: a free group element
@@ -385,7 +401,6 @@ class FreeGroupElement(ElementLibGAP):
             sage: w = F([1,2,1,-1,3,-2])
             sage: w[:-1] < w
             True
-
         """
         if not isinstance(other,FreeGroupElement):
             if (other==1 or other==() or other==[]):
@@ -424,7 +439,8 @@ class FreeGroupElement(ElementLibGAP):
 
     def __gt__(self, other):
         """
-        Lexicographic comparison of the reduced words ``self`` and ``other``.
+        Lexicographic comparison of the reduced words ``self`` and
+        ``other``.
 
         Args:
             other: a free group element
@@ -438,19 +454,20 @@ class FreeGroupElement(ElementLibGAP):
             sage: w = F([1,2,1,-1,3,-2])
             sage: F([2]) > w
             True
-
         """
         if not isinstance(other,FreeGroupElement):
             if other==1 or other==() or other==[]:
                 return self.is_one()
             else:
-                raise NotImplementedError("%s is not a free group element."%other)
+                raise NotImplementedError("%s is not a free group "
+                                          "element."%other)
         return self.Tietze() > other.Tietze()
 
 
     def __eq__(self, other):
         """
-        Lexicographic comparison of the reduced words ``self`` and ``other``.
+        Lexicographic comparison of the reduced words ``self`` and
+        ``other``.
 
         Args:
             other: a free group element
@@ -463,7 +480,6 @@ class FreeGroupElement(ElementLibGAP):
             sage: F = FreeGroup(3)
             sage: F([1,2,1,-1,3,-2]) == F([1,2,3,-2])
             True
-
         """
         if not isinstance(other,FreeGroupElement):
             if (other==1 or other==() or other==[]):
@@ -475,7 +491,8 @@ class FreeGroupElement(ElementLibGAP):
 
     def __ne__(self, other):
         """
-        Lexicographic comparison of the reduced words ``self`` and ``other``.
+        Lexicographic comparison of the reduced words ``self`` and
+        ``other``.
 
         Args:
             other: a free group element
@@ -651,7 +668,8 @@ class FreeGroupElement(ElementLibGAP):
             0
         """
         if not gen in self.parent().generators():
-            raise ValueError("Fox derivative can only be computed with respect to generators of the group")
+            raise ValueError("Fox derivative can only be computed with "
+                             "respect to generators of the group")
         l = list(self.Tietze())
         if im_gens is None:
             F = self.parent()
@@ -766,10 +784,11 @@ class FreeGroupElement(ElementLibGAP):
                 pass
         G = self.parent()
         if len(values) != G.ngens():
-            raise ValueError('number of values has to match the number of generators')
+            raise ValueError('number of values has to match the number of '
+                             'generators')
         replace = dict(zip(G.gens(), values))
         from sage.misc.all import prod
-        return prod( replace[gen] ** power for gen, power in self.syllables() )
+        return prod(replace[gen] ** power for gen, power in self.syllables())
 
 
     def nielsen_compare(self, other):
@@ -791,7 +810,8 @@ class FreeGroupElement(ElementLibGAP):
         ....or
         ........(umin = vmin and umax < vmax)).
 
-        Intended to be used in the Nielsen reduction algorithm. In particular while inverting a free group automorphism.
+        Intended to be used in the Nielsen reduction algorithm. In
+        particular while inverting a free group automorphism.
 
         OUTPUT:
 
