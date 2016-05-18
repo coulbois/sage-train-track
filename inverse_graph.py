@@ -137,7 +137,7 @@ class GraphWithInverses(DiGraph):
         """
         return self.__class__(self, alphabet=self._alphabet)
 
-    def __str__(self):
+    def __repr__(self):
         """
         String representation of ``self``.
 
@@ -148,6 +148,23 @@ class GraphWithInverses(DiGraph):
             'Graph with inverses: a: 0->0, c: 1->0, b: 0->1'
         """
         result = "Graph with inverses: "
+        for a in self._alphabet.positive_letters():
+            result = result + a + ": {0}->{1}, ".format(
+                self.initial_vertex(a), self.terminal_vertex(a))
+        result = result[:-2]
+        return result
+
+    def __str__(self):
+        """
+        String representation of ``self``.
+
+        TESTS::
+
+            sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
+            sage: str(G)
+            'a: 0->0, c: 1->0, b: 0->1'
+        """
+        result = ""
         for a in self._alphabet.positive_letters():
             result = result + a + ": {0}->{1}, ".format(
                 self.initial_vertex(a), self.terminal_vertex(a))
@@ -1425,7 +1442,7 @@ class MetricGraph(GraphWithInverses):
 
         self._length = lengths
 
-    def __str__(self):
+    def __repr__(self):
         """
         String representation of ``self``.
 
@@ -1449,7 +1466,30 @@ class MetricGraph(GraphWithInverses):
         result = result[:-2]
         return result
 
-    
+    def __str__(self):
+        """
+        String representation of ``self``.
+
+        OUTPUT:
+        String representation of ``self``.
+
+        EXAMPLES::
+
+            sage: MetricGraph([[0,0,'a'],[0,1,'b'],[1,2,'c']]).__str__()
+            'a: 0->0, b: 0->1, c: 1->2\nLengths: a: 1, b: 1, c: 1'
+        """
+        result = ""
+        for a in self._alphabet.positive_letters():
+            result = result + a + ": {0}->{1}, ".format(
+                self.initial_vertex(a), self.terminal_vertex(a))
+        result = result[:-2]
+        result+="\nLengths: "
+        for a in self._alphabet.positive_letters():
+            result = result + a + ": {0}, ".format(
+                self.length(a))
+        result = result[:-2]
+        return result
+
     def length(self, a):
         """
         Length of the edge ``a``.

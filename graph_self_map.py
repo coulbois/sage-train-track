@@ -105,7 +105,7 @@ class GraphSelfMap(GraphMap):
         else:
             self._strata = None
 
-    def __str__(self):
+    def __repr__(self):
         """
         String representation of ``self``.
         """

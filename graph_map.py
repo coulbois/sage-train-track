@@ -147,7 +147,7 @@ class GraphMap:
             result_map[a] = self(other._edge_map.image(a))
         return GraphMap(other._domain, self._codomain, result_map)
 
-    def __str__(self):
+    def __repr__(self):
         """
         String represetation of ``self``.
 

@@ -419,18 +419,23 @@ class FreeGroupMorphism(object):
                  [word: CCADaCCADacADDBdaCCCADaCCADacADDBdaCAdac...,
                   word: DBDBdaCADDBDBdaCADbddaCCCADacADDBDBDBdaC...]]
         """
-        A=self.domain().gens()
-        Anames = self.domain().variable_names()
-        morph = dict((a,self(a).to_word()) for a in A)
+        A = self._domain.gens()
         if forget_inverse:
-            for key,value in morph.iteritems():
-                for i,b in enumerate(value):
+            morph = dict()
+            for a in A:
+                w = []
+                for b in self(a):
                     if b not in A:
-                        value[i] = b**-1
-            return WordMorphism(morph)
+                        w.append(str(b**-1))
+                    else:
+                        w.append(str(b))
+                morph[str(a)] = w
+        else:
+            morph = dict((a, self(a).to_word(use_str=False)) for a in A)
+            for a in A:
+                morph[a**-1] = self(a).inverse().to_word(use_str=False)
 
-        for a,u in morph.iteritems():
-            morph[a**-1] = u**-1
+        return WordMorphism(morph)
 
     def size(self):
         """
@@ -820,10 +825,10 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         from inverse_graph import GraphWithInverses
         from inverse_alphabet import AlphabetWithInverses
 
-        A=AlphabetWithInverses(self._domain.gens())
-        return GraphSelfMap(
-            GraphWithInverses.rose_graph(A), self)
-
+        A = AlphabetWithInverses(self._domain.variable_names())
+        rose = GraphWithInverses.rose_graph(A)
+        edge_map = dict((str(a), self(a).to_word()) for a in self._domain.gens())
+        return GraphSelfMap(rose, edge_map)
 
     def rose_representative(self):
         """
@@ -846,12 +851,11 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         from marked_graph import MarkedGraph
         from inverse_alphabet import AlphabetWithInverses
 
-        F=self._domain
-        A = self._domain.variable_names()
-        for i in xrange(F.rank()):
-            morph[A[i]] = self(F.gen(i)).to_word()
-        A=AlphabetWithInverses(A)
-        return GraphSelfMap(MarkedGraph.rose_marked_graph(A),self)
+        A = AlphabetWithInverses(self._domain.variable_names())
+        rose = MarkedGraph.rose_marked_graph(A)
+        edge_map = dict((str(a), self(a).to_word()) for a in self._domain.gens())
+        return GraphSelfMap(rose, edge_map)
+
 
     def train_track(self, stable=True, relative=True, verbose=False):
         """Computes a train-track representative of ``self``.
@@ -1019,6 +1023,8 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         from train_track_map import TrainTrackMap
 
+        if verbose:
+            print "Computing a train-track representative"
         f = self.train_track(relative=False, stable=False,
                              verbose=(verbose and verbose > 1 and verbose - 1))
         if f.is_train_track(verbose=(verbose and verbose > 1 and verbose - 1)):
@@ -1075,13 +1081,13 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         EXAMPLES::
 
             sage: F = FreeGroup('a,b,c')
-            sage: FreeGroupAutomorphism.dehn_twist(F, 'a', 'b', on_left=True)
+            sage: FreeGroupAutomorphism.Nielsen_automorphism(F, 'a', 'b', on_left=True)
             Automorphism of the Free group over ['a', 'b', 'c']: a->ba,b->b,c->c
 
             sage: F=FreeGroup(3)
-            sage: FreeGroupAutomorphism.dehn_twist(F,'a','c')
+            sage: FreeGroupAutomorphism.Nielsen_automorphism(F,'a','c')
             Automorphism of the Free group over ['a', 'b', 'c']: a->ac,b->b,c->c
-            sage: FreeGroupAutomorphism.dehn_twist(F,'A','c')
+            sage: FreeGroupAutomorphism.Nielsen_automorphism(F,'A','c')
             Automorphism of the Free group over ['a', 'b', 'c']: a->Ca,b->b,c->c
         """
 
@@ -1129,15 +1135,15 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         from sage.groups.perm_gps.permgroup_named import SymmetricGroup
 
         A = F.gens()
-        s = SymmetricGroup(P).random_element()
+        s = SymmetricGroup(A).random_element()
         f = {}
-        for a in P:
+        for a in A:
             if randint(0, 1):
                 f[a] = s(a)
             else:
                 f[a] = s(a)**-1
 
-        return FreeGroupAutomorphism(f, group=F)
+        return FreeGroupAutomorphism(f, domain=F)
 
     @staticmethod
     def random_automorphism(F, length=1):
@@ -1164,30 +1170,51 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             sage: FreeGroupAutomorphism.random_automorphism(F, length=2).is_invertible()
             True
         """
+        from sage.misc.prandom import randint
+
         if length == 0:
             return FreeGroupAutomorphism.identity_automorphism(F)
 
-        A = F.gens()
-        a = A.random_letter()
-        b = A.random_letter([a, A.inverse_letter(a)])
-        result = FreeGroupAutomorphism.dehn_twist(F, a, b)
-        for i in xrange(length - 1):
-            new_a = A.random_letter()
-            if new_a == a:
-                b = A.random_letter([a, A.inverse_letter(a),
-                                     A.inverse_letter(b)])
-            else:
-                a = new_a
-                b = A.random_letter([a, A.inverse_letter(a)])
-            result *= FreeGroupAutomorphism.dehn_twist(F, a, b)
+        l = F.rank()
+        i = randint(1,l)
+        side = randint(0,1)
+        j = randint(-l,l-3)
+        k = i + l * side + 2 * l * (j + l)   # 1 <= k <= 2l(2l-2)
+
+        if j>=-i:
+            j += 1
+        if j>=0:
+            j += 1
+        if j>=i:
+            j += 1   # -l <= j <= l and j!=0 and j!=i and j!=-i
+        a = F([i])
+        b = F([j])
+        result = FreeGroupAutomorphism.Nielsen_automorphism(F, a, b, on_left=side)
+        for i in xrange(length-1):
+            new_k = randint(1, 2*l*(2*l-2)-1)
+            if new_k>=k:
+                new_k += 1
+
+            k = new_k
+
+            j = ((k - 1) // (2 * l)) - l
+            i = k - 2 * l * (j +l)
+            side = (i - 1) // l
+            i = i - side * l
+
+            if j >= -i:
+                j += 1
+            if j >= 0:
+                j += 1
+            if j >= i:
+                j += 1
+
+            result *= FreeGroupAutomorphism.Nielsen_automorphism(F, F([i]), F([j]), on_left=side)
         return result
 
     @staticmethod
     def _surface_dehn_twist_e(F, i):
-        A = F.alphabet()
-        a = A[2 * i]
-        b = A[2 * i + 1]
-        return FreeGroupAutomorphism.dehn_twist(F, a, b, True)
+        return FreeGroupAutomorphism.Nielsen_automorphism(F, F.gen(2 * i), F.gen(2 * i + 1), True)
 
     @staticmethod
     def _surface_dehn_twist_c(F, i):
@@ -1704,7 +1731,7 @@ class free_group_automorphisms:
         F = FreeGroup(4)
         phi = FreeGroupAutomorphism("a->a,b->ba,c->caa,d->dc", F)
         if k > 1:
-            phi = phi * pow(FreeGroupAutomorphism.dehn_twist(F, 'c', 'a'), k - 1)
+            phi = phi * pow(FreeGroupAutomorphism.Nielsen_automorphism(F, 'c', 'a'), k - 1)
         return phi
 
     @staticmethod

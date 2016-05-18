@@ -790,78 +790,65 @@ class FreeGroupElement(ElementLibGAP):
         from sage.misc.all import prod
         return prod(replace[gen] ** power for gen, power in self.syllables())
 
-
-    def nielsen_compare(self, other):
+    def to_word(self, use_str=True, use_upper_case=True):
         """
-        Determines whether ``self`` is strictly before ``other``
-        in the Nielsen order.
+        Convert ``self`` to a Word.
 
-        The Nielsen order is defined by u<v if
+        A free group element is a reduced words in the generators and their
+        inverses. This is naturally a finite word. Some choices have to be
+        done:
 
-        ....(len(u)<len(v))
-        or
-        ....( len(u)==len(v)
-        and
-        ....( let u' be the left end of u and u'' be the left end of u^-1
-        ....( let v' be the left enf of v and v'' be the left end of v^-1
-        ....( let umin be the min between u' and u'' and umax be their max
-        ....( similarly define vmin and vmax
-        ........umin < vmin in lexicographic order
-        ....or
-        ........(umin = vmin and umax < vmax)).
+        1. ``use_str==True``: the letters of the words are strings (
+        possibly a single character, but not necessarily).
 
-        Intended to be used in the Nielsen reduction algorithm. In
-        particular while inverting a free group automorphism.
+        ``use_str==False``: the letters of the word are the generators
+        and their inverses themselves, that is to say the letters are
+        FreeGroupElement.
 
-        OUTPUT:
+         2. ``use_upper_case==True``: the inverse of a generator is
+         written as the same string in upper case. This is used only with the
+         ``use_string==True`` option.
 
-            len(u)-len(v)+1 if len(u)>len(v),
-            1 if they have the same length, but u < v in the
-                Nielsen order
-            0 if u==v
-            1 if len(u)==len(v) and u > v in the Nielsen order
-            len(u)-len(v)-1 if len(u)<len(v)
+        Returns:
+
+            A finite Word.
+
+        INPUT:
+
+            - ``use_str`` -- (default: True) use strings rather than
+            FreeGroupElement as letters.
+
+            - ``use_upper_case`` -- (default: True) use upper case letters
+            as inverses.
+
+
+        EXAMPLES::
+
+            sage: F = FreeGroup(3)
+            sage: w = F([1,-2,1,3,-1])
+            sage: w.to_word()
+            word: X0,x1,x2,x2
+            sage: type(w.to_word()[1])
+            <type 'str'>
+            sage: w.to_word(use_str=False)
+            word: x0^-1,x1,x2,x2
+            sage: w.to_word(use_str=False)[1] == w[1]
 
         """
-        l = len(self)
-        result = l-len(other)
-        if result > 0:
-            return result + 1
-        if result < 0:
-            return result - 1
+        from sage.combinat.words.word import Word
 
-        if l == 0:
-            return 0
-
-        if l == 1:
-            if self < other:
-                return -1
-            if self == other:
-                return 0
-            return 1
-
-        half = (l + 1) // 2
-
-        u = self.Tietze()
-        u1 = u[0:half]
-        u2 = [-x for x in u[l:l-half-1:-1]]
-        if u1 > u2:
-            u1, u2 = u2, u1
-
-        v=other.Tietze()
-        v1 = v[0:half]
-        v2 = [-x for x in v[l:l-half-1:-1]]
-        if v1 > v2:
-            v1, v2 = v2, v1
-        if u1 < v1:
-            return -1
-        if u1 == u2:
-            if v1 < v2:
-                return -1
-            if v1 == v2:
-                return 0
-        return 1
-
+        if use_str and use_upper_case:
+            w=[]
+            A=self.parent().gens()
+            for a in self:
+                if a in A:
+                    w.append(str(a))
+                else:
+                    w.append(str(a**-1).upper())
+            return Word(w)
+        if use_str:
+            return Word([str(a) for a in self])
+        return Word(list(self))
 
 def FreeGroup(n=None, names='x', index_set=None, abelian=False, **kwds):
     """
