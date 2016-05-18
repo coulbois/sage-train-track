@@ -26,7 +26,7 @@ from sage.combinat.words.morphism import WordMorphism
 from free_group import FreeGroup, FreeGroupElement
 
 
-class FreeGroupMorphism():
+class FreeGroupMorphism(object):
     def __init__(self, data, domain=None, codomain=None):
         r"""
         Construction of the morphism.
@@ -369,7 +369,7 @@ class FreeGroupMorphism():
 
     def to_automorphism(self):
         """
-        Automorphism defined by `self`.
+        Automorphism defined by ``self``.
 
         OUTPUT:
 
@@ -419,8 +419,9 @@ class FreeGroupMorphism():
                  [word: CCADaCCADacADDBdaCCCADaCCADacADDBdaCAdac...,
                   word: DBDBdaCADDBDBdaCADbddaCCCADacADDBDBDBdaC...]]
         """
-        A = self.domain().gens()
-        morph = dict((a,list(self(a))) for a in A)
+        A=self.domain().gens()
+        Anames = self.domain().variable_names()
+        morph = dict((a,self(a).to_word()) for a in A)
         if forget_inverse:
             for key,value in morph.iteritems():
                 for i,b in enumerate(value):
@@ -670,7 +671,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
         """
-        super(FreeGroupAutomorphism,self).__init__(data,domain=domain,codomain=domain)
+        super(FreeGroupAutomorphism, self).__init__(data, domain=domain, codomain=domain)
 
     def is_invertible(self):
         """
@@ -759,54 +760,55 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
-            sage: phi=FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
+            sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: phi.simple_outer_representative()
             Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
         """
         F = self._domain
-        A = F._alphabet
-        l = len(A)
-        result = dict(((a, self.image(a)) for a in A.positive_letters()))
+        A = F.gens()
+        l = 2*len(A)
+        result = dict(((a, self(a)) for a in A))
         done = False
         while not done:
             done = True
             gain = dict(((a, 0) for a in A))
-            for a in A.positive_letters():
+            for a in A:
                 gain[result[a][0]] += 1
-                gain[A.inverse_letter(result[a][-1])] += 1
+                gain[result[a][-1]**-1] += 1
             for a in A:
                 if gain[a] > l:
                     done = False
                     b = a
+                    break
             if not done:
-                B = A.inverse_letter(b)
-                for a in A.positive_letters():
-                    if result[a][0] == b and result[a][-1] == B:
-                        result[a] = result[a][1:-1]
-                    elif result[a][0] == b:
-                        result[a] = result[a][1:] * F([b])
-                    elif result[a][-1] == B:
-                        result[a] = F([B]) * result[a][:-1]
-                    else:
-                        result[a] = F([B]) * result[a] * F([b])
+                bb = b**-1
+                for a in A:
+                    result[a] = bb * result[a] * b
 
-        return FreeGroupAutomorphism(result, F)
+        return FreeGroupAutomorphism(result, domain=F)
 
     def rose_conjugacy_representative(self):
         """
         Topological representative of the conjugacy class of ``self``.
 
+        A Topological representative is a graph G together with a homotopy
+        equivalence f: G->G such that the fundamental group of G is
+        isomorphic to the domain of ``self`` and f and ``self`` commutes
+        through this isomorphism. Note that as the isomorphism between the
+        free group and the fundamental group of the graph is not specified,
+        this depends on the conjugacy class of ``self``. Thus, the graph is
+        just a graph (indeed a ``GraphWithInverses``) and not a
+        ``MarkedGraph``.
+
         OUTPUT:
 
-        A topological representative of the
+        A GraphSelfMap that is a topological representative of the
          conjugacy class of ``self``.
 
         EXAMPLES::
 
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
-            sage: g = phi.rose_conjugacy_representative()
-            sage: g.train_track()
-            WordMorphism: A->eADE, B->eBE, C->DE, a->edaE, b->ebE, c->ed
+            sage: phi.rose_conjugacy_representative()
 
         SEE ALSO:
 
@@ -816,9 +818,11 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         from graph_self_map import GraphSelfMap
         from inverse_graph import GraphWithInverses
+        from inverse_alphabet import AlphabetWithInverses
 
+        A=AlphabetWithInverses(self._domain.gens())
         return GraphSelfMap(
-            GraphWithInverses.rose_graph(self._domain.alphabet()), self)
+            GraphWithInverses.rose_graph(A), self)
 
 
     def rose_representative(self):
@@ -840,8 +844,14 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         from graph_self_map import GraphSelfMap
         from marked_graph import MarkedGraph
+        from inverse_alphabet import AlphabetWithInverses
 
-        return GraphSelfMap(MarkedGraph.rose_marked_graph(self._domain.alphabet()),self)
+        F=self._domain
+        A = self._domain.variable_names()
+        for i in xrange(F.rank()):
+            morph[A[i]] = self(F.gen(i)).to_word()
+        A=AlphabetWithInverses(A)
+        return GraphSelfMap(MarkedGraph.rose_marked_graph(A),self)
 
     def train_track(self, stable=True, relative=True, verbose=False):
         """Computes a train-track representative of ``self``.
@@ -1041,7 +1051,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         morph = dict((a, a) for a in F.gens())
 
-        return FreeGroupAutomorphism(morph)
+        return FreeGroupAutomorphism(morph, domain=F)
 
     @staticmethod
     def Nielsen_automorphism(F, a, b, on_left=False):
