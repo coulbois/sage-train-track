@@ -23,7 +23,7 @@ EXAMPLES::
 # *****************************************************************************
 
 from sage.combinat.words.morphism import WordMorphism
-from sage.groups.free_group import FreeGroup, FreeGroupElement
+from free_group import FreeGroup, FreeGroupElement
 
 
 class FreeGroupMorphism(object):
@@ -123,7 +123,10 @@ class FreeGroupMorphism(object):
             self._morph = {}
 
             for (key, val) in data.iteritems():
-                key = domain(key)
+                if isinstance(key,str):
+                    key = domain([key])
+                else:
+                    key = domain(key)
                 val = codomain(val)
                 self._morph[key] = val
                 self._morph[key.inverse()] = val.inverse()
@@ -1233,29 +1236,26 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
     @staticmethod
     def _surface_dehn_twist_c(F, i):
 
-        A = F.alphabet()
-        result = dict((a, F([a])) for a in A.positive_letters())
-        result[A[2 * i + 1]] = F([A[2 * i + 2],
-                                  A.inverse_letter(A[2 * i]), A[2 * i + 1]])
-        result[A[2 * i + 3]] = F([A[2 * i + 3], A[2 * i],
-                                  A.inverse_letter(A[2 * i + 2])])
+        result = dict((a, a) for a in F.gens())
+        result[F.gen(2 * i + 1)] = F.gen(2 * i + 2) * (F.gen(2 * i)**-1) * F.gen(2 * i + 1)
+        result[F.gen(2 * i + 3)] = F.gen(2 * i + 3) * F.gen(2 * i) * (F.gen(2 * i + 2)**-1)
 
-        return FreeGroupAutomorphism(result, group=F)
+        return FreeGroupAutomorphism(result, domain=F)
 
     @staticmethod
     def _surface_dehn_twist_m(F, i):
-        A = F.alphabet()
-        result = {}
-        for j in xrange(2 * i + 1):
-            result[A[j]] = F([A[j]])
-        a = A[2 * i]
 
-        result[A[2 * i + 1]] = F([a, A[2 * i + 1]])
-        aa = A.inverse_letter(a)
-        for j in xrange(2 * i + 2, len(A)):
-            result[A[j]] = F([a, A[j], aa])
+        result = dict((F.gen(j),F.gen(j)) for j in xrange(2 * i +1))
 
-        return FreeGroupAutomorphism(result, group=F)
+        a = F.gen(2 * i)
+        aa = a**-1
+
+        result[F.gen(2 * i + 1)] = a * F.gen(2 * i + 1)
+
+        for j in xrange(2 * i + 2, F.rank()):
+            result[F.gen(j)] = a * F.gen(j) * aa
+
+        return FreeGroupAutomorphism(result, domain=F)
 
     @staticmethod
     def surface_dehn_twist(F, k):
@@ -1320,17 +1320,16 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         ``F`` is assumed to be of even rank.
 
         """
-        assert len(F._alphabet) % 2 == 0
+        assert F.rank() % 2 == 0
 
-        g = len(F._alphabet) / 2
+        g = F.rank() / 2
         if (0 <= k and k < g):
-            result = FreeGroupAutomorphism._surface_dehn_twist_e(F, k)
+            return FreeGroupAutomorphism._surface_dehn_twist_e(F, k)
         elif (g <= k and k < 2 * g):
-            result = FreeGroupAutomorphism._surface_dehn_twist_m(F, k - g)
+            return FreeGroupAutomorphism._surface_dehn_twist_m(F, k - g)
         elif (2 * g <= k and k < 3 * g - 1):
-            result = FreeGroupAutomorphism._surface_dehn_twist_c(F, k - 2 * g)
+            return FreeGroupAutomorphism._surface_dehn_twist_c(F, k - 2 * g)
 
-        return result
 
     @staticmethod
     def random_mapping_class(F, length=1, verbose=False):
@@ -1368,36 +1367,40 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         from sage.misc.prandom import randint
 
-        assert len(F.alphabet()) % 2 == 0
+        assert F.rank() % 2 == 0
 
         if length == 0:
             return FreeGroupAutomorphism.identity_automorphism(F)
 
-        r = 3 * len(F.alphabet()) / 2 - 2
+        r = 3 * F.rank() / 2 - 2
         i = randint(0, r)
         j = randint(0, 1)
+        k = i + j * (r + 1)
         if j == 0:
             result = FreeGroupAutomorphism.surface_dehn_twist(F, i)
         else:
-            result = FreeGroupAutomorphism.surface_dehn_twist(F, i).inverse()
-        used_dehn_twists = [(i, 1 - 2 * j)]
+            result = FreeGroupAutomorphism.surface_dehn_twist(F, i)**-1
+        if verbose:
+            used_dehn_twists = [(i, 1 - 2 * j)]
         for ii in xrange(length - 1):
-            l = randint(0, 1)
-            if j == l:
-                i = randint(0, r)
+            new_k=randint(0,2*r)
+            if k<=new_k:
+                new_k += 1
+            k = new_k
+            if k > r:
+                result = result * (FreeGroupAutomorphism.surface_dehn_twist(
+                    F, k - r -1)**-1)
+                if verbose:
+                    used_dehn_twists.append((k - r - 1,-1))
             else:
-                k = randint(0, r - 1)
-                if k >= i: i = k + 1
-                j = l
-            if j == 0:
                 result = result * FreeGroupAutomorphism.surface_dehn_twist(
-                    F, i)
-            else:
-                result = result * FreeGroupAutomorphism.surface_dehn_twist(
-                    F, i).inverse()
-            used_dehn_twists.append((i, 1 - 2 * j))
+                    F, k)
+                if verbose:
+                    used_dehn_twists.append((k, 1))
+
         if verbose:
             print "List of surface Dehn twists used:",used_dehn_twists
+
         return result
 
     @staticmethod
@@ -1432,18 +1435,17 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             sage: FreeGroupAutomorphism.braid_automorphism(F, 2)
             Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->a,b->bcB,c->b,d->d
         """
-        A = F.alphabet()
-        result = dict((a, F([a])) for a in A.positive_letters())
+        result = dict((a, a) for a in F.gens())
         if not inverse:
-            a = A[i - 1]
-            result[a] = F([a, A[i], A.inverse_letter(a)])
-            result[A[i]] = F([a])
+            a = F.gen(i-1)
+            result[a] = a * F.gen(i) * (a**-1)
+            result[F.gen(i)] = a
         else:
-            a = A[i]
-            result[a] = F([A.inverse_letter(a), A[i - 1], a])
-            result[A[i - 1]] = F(a)
+            a = F.gen(i)
+            result[a] = (a**-1) * F.gen(i-1) * a
+            result[F.gen(i - 1)] = a
 
-        return FreeGroupAutomorphism(result,group=F)
+        return FreeGroupAutomorphism(result,domain=F)
 
     @staticmethod
     def random_braid(F, length=1):
@@ -1470,21 +1472,23 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         from sage.misc.prandom import randint
 
-        A = F._alphabet
         if length == 0:
             return FreeGroupAutomorphism.identity_automorphism(F)
-        i = randint(1, len(A) - 1)
+        l = F.rank()
+        i = randint(1, l - 1)
         j = randint(0, 1)
+        k = i + (l - 1) * j
         result = FreeGroupAutomorphism.braid_automorphism(F, i, j != 0)
         for ii in xrange(length-1):
-            l = randint(0, 1)
-            if l == j:
-                i = randint(1, len(A) - 1)
+            new_k = randint(1, 2 * l - 3)
+            if k < new_k:
+                new_k += 1
+            k = new_k
+            if k >= l:
+                result *= FreeGroupAutomorphism.braid_automorphism(F, k - l + 1, True)
             else:
-                k = randint(1, len(A) - 2)
-                if j <= k:
-                    i = k + 1
-            result *= FreeGroupAutomorphism.braid_automorphism(F, i, j)
+                result *= FreeGroupAutomorphism.braid_automorphism(F, k, False)
+
         return result
 
 
@@ -1509,7 +1513,7 @@ class free_group_automorphisms:
             Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
         """
-        return FreeGroupAutomorphism("a->ab,b->ac,c->a", FreeGroup(3))
+        return FreeGroupAutomorphism("a->ab,b->ac,c->a")
 
     @staticmethod
     def Handel_Mosher_inverse_with_same_lambda():
@@ -1536,9 +1540,8 @@ class free_group_automorphisms:
         automorphisms of free groups, Transactions of
         Amer. Math. Soc. 359, 3153-3183, 2007.
         """
-        F = FreeGroup(3)
-        theta = pow(FreeGroupAutomorphism("a->b,b->c,c->Ba", F), 4)
-        psi = FreeGroupAutomorphism("a->b,b->a,c->c", F)
+        theta = pow(FreeGroupAutomorphism("a->b,b->c,c->Ba"), 4)
+        psi = FreeGroupAutomorphism("a->b,b->a,c->c")
         return psi * theta * psi * theta.inverse()
 
     @staticmethod
@@ -1566,7 +1569,7 @@ class free_group_automorphisms:
         [BH-train-track] M. Bestvina, M.  Handel, Train tracks and
         automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
         """
-        return FreeGroupAutomorphism("a->b,b->c,c->d,d->ADBC", FreeGroup(4))
+        return FreeGroupAutomorphism("a->b,b->c,c->d,d->ADBC")
 
     @staticmethod
     def Bestvina_Handel_train_track_1_9():
@@ -1592,7 +1595,7 @@ class free_group_automorphisms:
         [BH-train-track] M. Bestvina, M.  Handel, Train tracks and
         automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
         """
-        return FreeGroupAutomorphism("a->ba,b->bba,c->cAbaB", FreeGroup(3))
+        return FreeGroupAutomorphism("a->ba,b->bba,c->cAbaB")
 
     @staticmethod
     def Bestvina_Handel_train_track_3_6():
@@ -1619,7 +1622,7 @@ class free_group_automorphisms:
         automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
 
         """
-        return FreeGroupAutomorphism("a->ba,b->bba", FreeGroup(2))
+        return FreeGroupAutomorphism("a->ba,b->bba")
 
     @staticmethod
     def Bestvina_Handel_train_track_5_16():
@@ -1646,8 +1649,7 @@ class free_group_automorphisms:
         automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
 
         """
-        return FreeGroupAutomorphism("a->a,b->CAbac,c->CAbacacACABac",
-                                     FreeGroup(3))
+        return FreeGroupAutomorphism("a->a,b->CAbac,c->CAbacacACABac")
 
     @staticmethod
     def Handel_Mosher_axes_3_4():
@@ -1678,8 +1680,7 @@ class free_group_automorphisms:
         in Outer space, Mem. Amer. Math. Soc. 213, 2011.
 
         """
-        A = AlphabetWithInverses(['a', 'g', 'f'], ['A', 'G', 'F'])
-        return FreeGroupAutomorphism("a->afgfgf,f->fgf,g->gfafg", FreeGroup(A))
+        return FreeGroupAutomorphism("a->afgfgf,f->fgf,g->gfafg")
 
     @staticmethod
     def Handel_Mosher_axes_5_5():
@@ -1709,8 +1710,7 @@ class free_group_automorphisms:
         in Outer space, Mem. Amer. Math. Soc. 213, 2011.
 
         """
-        return FreeGroupAutomorphism("a->bacaaca,b->baca,c->caaca",
-                                     FreeGroup(3))
+        return FreeGroupAutomorphism("a->bacaaca,b->baca,c->caaca")
 
     @staticmethod
     def Hilion_parabolic(k=1):
@@ -1742,8 +1742,7 @@ class free_group_automorphisms:
 
         """
 
-        F = FreeGroup(4)
-        phi = FreeGroupAutomorphism("a->a,b->ba,c->caa,d->dc", F)
+        phi = FreeGroupAutomorphism("a->a,b->ba,c->caa,d->dc")
         if k > 1:
             phi = phi * pow(FreeGroupAutomorphism.Nielsen_automorphism(F, 'c', 'a'), k - 1)
         return phi
@@ -1779,7 +1778,7 @@ class free_group_automorphisms:
         Amer. Math. Soc. 359, 3153-3183, 2007.
 
         """
-        return FreeGroupAutomorphism("a->ac,b->a,c->b", FreeGroup(3))
+        return FreeGroupAutomorphism("a->ac,b->a,c->b")
 
     @staticmethod
     def Cohen_Lustig_1_6():
@@ -1808,8 +1807,7 @@ class free_group_automorphisms:
 
         """
         return FreeGroupAutomorphism("a->cccaCCC,b->CaccAbC,"
-                                     "c->accAbccaCCBaCCAccccACCC",
-                                     FreeGroup(3))
+                                     "c->accAbccaCCBaCCAccccACCC")
 
     @staticmethod
     def Cohen_Lustig_7_2():
@@ -1837,7 +1835,7 @@ class free_group_automorphisms:
 
 
         """
-        return FreeGroupAutomorphism("a->aabc,b->abc,c->abcc", FreeGroup(3))
+        return FreeGroupAutomorphism("a->aabc,b->abc,c->abcc")
 
     @staticmethod
     def Cohen_Lustig_7_3():
@@ -1864,7 +1862,7 @@ class free_group_automorphisms:
            Math. 96, 613-638, 1989.
 
         """
-        return FreeGroupAutomorphism("a->cabaa,b->baa,c->caba", FreeGroup(3))
+        return FreeGroupAutomorphism("a->cabaa,b->baa,c->caba")
 
     @staticmethod
     def Turner_Stallings():
@@ -1895,8 +1893,7 @@ class free_group_automorphisms:
            Edinburg, 1993 (Lond. Math. Soc. Lect. Note Ser., 204), Cambridge,
            Cambridge Univ. Press., 1995, 300-313.
         """
-        return FreeGroupAutomorphism("a->dac,b->CADac,c->CABac,d->CAbc",
-                                     FreeGroup(4))
+        return FreeGroupAutomorphism("a->dac,b->CADac,c->CABac,d->CAbc")
 
     @staticmethod
     def Bestvina_Handel_surface_homeo():
@@ -1929,7 +1926,7 @@ class free_group_automorphisms:
 
         """
 
-        return FreeGroupAutomorphism("a->b,b->c,c->dA,d->DC", FreeGroup(4))
+        return FreeGroupAutomorphism("a->b,b->c,c->dA,d->DC")
 
     @staticmethod
     def Levitt_Lustig_periodic():
@@ -1956,7 +1953,7 @@ class free_group_automorphisms:
         groups have asymptotically periodic dynamics,
 
         """
-        return FreeGroupAutomorphism("a->cb,b->a,c->ba", FreeGroup(3))
+        return FreeGroupAutomorphism("a->cb,b->a,c->ba")
 
     @staticmethod
     def Clay_Pettet_twisting_out():
@@ -1983,7 +1980,7 @@ class free_group_automorphisms:
         irreducible automorphisms, ArXiv:0906.4050
 
         """
-        return FreeGroupAutomorphism("a->b,b->c,c->ab", FreeGroup(3))
+        return FreeGroupAutomorphism("a->b,b->c,c->ab")
 
     @staticmethod
     def Hokkaido():

@@ -30,7 +30,7 @@ from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.rings.qqbar import AA
 from inverse_alphabet import AlphabetWithInverses
-from sage.groups.free_group import FreeGroup
+from free_group import FreeGroup
 from free_group_automorphism import FreeGroupAutomorphism
 from sage.graphs.graph import DiGraph
 from sage.graphs.graph import Graph
@@ -3356,7 +3356,7 @@ class GraphSelfMap(GraphMap):
 
         # Build the automorphism of the free group on loops defined by self
         B = AlphabetWithInverses(loops, [A.inverse_letter(a) for a in loops])
-        FB = FreeGroup(B)
+        FB = FreeGroup(B.positive_letters())
 
         phi_map = {}
         for b in loops:
@@ -3364,7 +3364,6 @@ class GraphSelfMap(GraphMap):
                 rootpath[G.initial_vertex(b)]) * Word([b]) * \
                  rootpath[G.terminal_vertex(b)]
             wwb = self(wb)
-
             phi_map[b] = FB(c for c in wwb if c in B)
         phi = FreeGroupAutomorphism(phi_map, FB)
 
@@ -3387,7 +3386,7 @@ class GraphSelfMap(GraphMap):
                     u2 = rootpath[v2]
                     w = self(G.reverse_path(u1) * u2)
                     wB = FB(c for c in w if c in B)
-                    wwB = phi_inv(wB)
+                    wwB = phi_inv(wB).to_word(use_str=True)
                     ww = Word([])
                     for b in wwB:
                         ww = ww * G.reverse_path(rootpath[G.initial_vertex(b)])

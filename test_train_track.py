@@ -18,8 +18,8 @@ AUTHORS:
 #  Distributed under the terms of the GNU General Public License (GPL) 
 #                  http://www.gnu.org/licenses/ 
 #***************************************************************************** 
-from sage.combinat.words.free_group import FreeGroup
-from sage.combinat.words.free_group_automorphism import FreeGroupAutomorphism
+from free_group import FreeGroup
+from free_group_automorphism import FreeGroupAutomorphism
 from sage.misc.misc import cputime
 
 
@@ -122,65 +122,61 @@ def bugs():
 
     # Problems while computing INPs of the RTT
     phi = FreeGroupAutomorphism("a->BafD,b->bcdFAbfbFBafDCB,c->dFAbbcdFAbfb,"
-                                "d->dFAbfeFdBBFBafDCB,e->eF,f->bcdFAbfbdFAbfb",
-                                FreeGroup(6))
+                                "d->dFAbfeFdBBFBafDCB,e->eF,f->bcdFAbfbdFAbfb")
     result.append(phi)    
 
     phi = FreeGroupAutomorphism("a->efea,b->Ebcc,c->c,d->CBedaBFECBedaBe,"
-                                "e->CCBeAEF,f->efbADEbcEbcc", FreeGroup(6))
+                                "e->CCBeAEF,f->efbADEbcEbcc")
     result.append(phi)
 
     # The folding of an INP requires folding a path as a full edge
     phi = FreeGroupAutomorphism("a->BaBaBBFbAcEC,b->bAbce,"
                                 "c->Ac,d->dBfbbAbAbceCa,e->ceCa,"
-                                "f->BfbCaECBaB", FreeGroup(6))
+                                "f->BfbCaECBaB")
     result.append(phi)
 
     # There is an essential INP in a stratum
     phi = FreeGroupAutomorphism("a->FbccbcaB,b->bc,c->bcbcc,d->bAdCB,"
-                                "e->bAbAdbcebA,f->f", FreeGroup(6))
+                                "e->bAbAdbcebA,f->f")
     result.append(phi)
 
     # An inessential connecting path not so easy to fold
-    phi = FreeGroupAutomorphism("a->aDacAd,b->BCbcb,c->bcb,d->BAdA",
-                                FreeGroup(4))
+    phi = FreeGroupAutomorphism("a->aDacAd,b->BCbcb,c->bcb,d->BAdA")
     result.append(phi)
 
     # An inessential connecting path not so easy to fold
     phi = FreeGroupAutomorphism("a->baB,b->b,c->bAAAdcbbAbAAAdcbDa,"
-                                "d->AdBCDaaaB", FreeGroup(4))
+                                "d->AdBCDaaaB")
     result.append(phi)
     
     # An essential INP in stratum 0, and two exponential strata
     phi = FreeGroupAutomorphism("a->BCBCaBCBCdabcba,b->bcb,c->cb,"
-                                "d->BCBCaBCBCdabcb", FreeGroup(4))
+                                "d->BCBCaBCBCdabcb")
     result.append(phi)
     
     # Difficult inessential connecting path
     phi = FreeGroupAutomorphism("a->a,b->baEaba,c->Acdc,d->CDCBAecd,"
-                              "e->ABAeCDCAcdc", FreeGroup(5))
+                              "e->ABAeCDCAcdc")
     result.append(phi)
 
     # Difficult INP
     phi = FreeGroupAutomorphism("a->CaBe,b->CedcEbCede,c->cEbCed,"
-                               "d->CedcEbCed,e->DEcBeDEcBeC", FreeGroup(5))
+                               "d->CedcEbCed,e->DEcBeDEcBeC")
     result.append(phi)
 
     # Problem to correctly detect lines to fusion
-    phi = FreeGroupAutomorphism("a->daBacdbADC,b->dacdbADc,c->c,d->daB",
-                                FreeGroup(4))
+    phi = FreeGroupAutomorphism("a->daBacdbADC,b->dacdbADc,c->c,d->daB")
     result.append(phi)
 
     # A complicated line to fusion
     phi = FreeGroupAutomorphism("a->gBDaidbFe,b->Chdb,c->h,d->EfBDIGdd,"
                                 "e->HHcidbFee,f->Ef,g->DgidbFe,h->Chh,"
-                                "i->EfBDIAdbGidb", FreeGroup(9))
+                                "i->EfBDIAdbGidb")
     result.append(phi)
 
     # Yet another inessential connecting path difficult to fold
     phi = FreeGroupAutomorphism("a->DABBadBdBadBcDABadadBadBcDAbad,"
-                              "b->DAbad,c->DABadBdBadBcDAbad,d->Bd",
-                              FreeGroup(4))
+                              "b->DAbad,c->DABadBdBadBcDAbad,d->Bd")
     result.append(phi)
 
     # Braids of Mark Bell which causes difficulties
