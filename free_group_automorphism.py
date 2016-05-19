@@ -23,7 +23,7 @@ EXAMPLES::
 # *****************************************************************************
 
 from sage.combinat.words.morphism import WordMorphism
-from free_group import FreeGroup, FreeGroupElement
+from sage.groups.free_group import FreeGroup, FreeGroupElement
 
 
 class FreeGroupMorphism(object):
@@ -36,9 +36,9 @@ class FreeGroupMorphism(object):
         1. If data is a str::
 
             sage: FreeGroupMorphism('a->ab,b->ba')
-            FreeGroupMorphism: a->ab, b->ba
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b*a
             sage: FreeGroupMorphism('a->ab,b->Ba')
-            FreeGroupMorphism: a->ab, b->Ba
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b^-1*aFreeGroupMorphism: a->ab, b->Ba
             sage: FreeGroupMorphism('a->a*b*c,b->b,c->a*b')
             FreeGroupMorphism: a->abc, b->bca, c->cab
 
@@ -72,7 +72,7 @@ class FreeGroupMorphism(object):
         2. From a dictionary::
 
             sage: FreeGroupMorphism({"a":"ab","b":"ba"})
-            FreeGroupMorphism: a->ab, b->ba
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b*a
             sage: FreeGroupMorphism({'x0':['x0','X1','x0'],'x2':['x2','x2','x1']})
 
         3. From a FreeGroupMorphism::
@@ -85,10 +85,10 @@ class FreeGroupMorphism(object):
             sage: FreeGroupMorphism(',,,a->ab,,,b->ba,,')
             FreeGroupMorphism: a->ab, b->ba
         """
-        if isinstance(data,FreeGroupMorphism):
-            self._domain=data._domain
-            self._codomain=data._codomain
-            self._morph=data._morph
+        if isinstance(data, FreeGroupMorphism):
+            self._domain = data._domain
+            self._codomain = data._codomain
+            self._morph = data._morph
         elif isinstance(data, WordMorphism):
             if domain is None:
                 domain = FreeGroup(data._domain.alphabet())
@@ -98,7 +98,7 @@ class FreeGroupMorphism(object):
                 codomain = FreeGroup(co_alphabet)
             self._codomain = codomain
             self._morph = dict()
-            for a,im in data._morph.iteritems():
+            for a, im in data._morph.iteritems():
                 a = self._domain(a)
                 im = self._codomain(im)
                 self._morph[a] = im
@@ -216,7 +216,7 @@ class FreeGroupMorphism(object):
             b^-1*a^-1
         """
         F = self.codomain()
-        if not isinstance(w,FreeGroupElement):
+        if not isinstance(w, FreeGroupElement):
             w = self.domain()(w)
         while order > 0:
             result = F.one()
@@ -269,8 +269,7 @@ class FreeGroupMorphism(object):
 
             sage: phi = FreeGroupMorphism('a->ab,b->A')
             sage: phi**2
-            Morphism from Free Group on generators {a, b} to Free Group on
-            generators {a, b}: a->a*b*a^-1,b->b^-1*a^-1
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b*a^-1,b->b^-1*a^-1
 
         TESTS::
 
@@ -300,7 +299,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
-            sage: phi = FreeGroupAutomorphism('a->ab,b->A')
+            sage: phi = FreeGroupMorphism('a->ab,b->A')
             sage: phi.__str__()
             'a->ab,b->A'
             sage: print phi
@@ -327,7 +326,7 @@ class FreeGroupMorphism(object):
             sage: print phi
             a->ab,b->A
         """
-        result = "Morphism from %s to %s: " %(str(self._domain),str(self._codomain))
+        result = "Morphism from %s to %s: " %(str(self._domain), str(self._codomain))
         result = result + "%s" % str(self)
         return result
 
@@ -630,7 +629,6 @@ class FreeGroupMorphism(object):
                     self = self * na
 
 
-
 class FreeGroupAutomorphism(FreeGroupMorphism):
     """
     Free group automorphism.
@@ -653,7 +651,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
     - Thierry Coulbois (2013-05-16): beta.0 version
     """
 
-    def __init__(self,data,domain=None,codomain=None):
+    def __init__(self, data, domain=None, codomain=None):
         """
         Build a FreeGroupAutomorphism.
 
@@ -676,7 +674,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
         """
-        super(FreeGroupAutomorphism, self).__init__(data, domain=domain, codomain=domain)
+        FreeGroupMorphism.__init__(self, data, domain=domain, codomain=domain)
 
     def is_invertible(self):
         """
@@ -710,7 +708,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             sage: print phi
             a->ab,b->A
         """
-        result = "Automorphism of the %s: " % str(self._domain)
+        result = 'Automorphism of the %s: ' % str(self._domain)
         result = result + "%s" % str(self)
         return result
 
@@ -948,14 +946,14 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         7/ If there is one iwip check whether it is contained in a
         non-trivial free factor.
 
-        .. SEEALSO::
+        SEEALSO::
 
-        TrainTrackMap.is_iwip()
+            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.is_iwip()'
 
         REFERENCES
 
-        [Kapo-algo] I. Kapovich, Algorithmic detectability of iwip
-        automorphisms, 2012, arXiv:1209.3732
+            [Kapo-algo] I. Kapovich, Algorithmic detectability of iwip
+            automorphisms, 2012, arXiv:1209.3732
         """
         from train_track_map import TrainTrackMap
 
@@ -1345,11 +1343,11 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         WARNING:
 
-        The rank of ``F` is assumed to be even.
+            The rank of ``F`` is assumed to be even.
 
         ...SEE ALSO::
 
-           :meth:`sage.combinat.words.fre_grop_automorphism.FreeGroupAutomorphism.surface_dehn_twist()`
+           :meth:`sage.combinat.words.free_group_automorphism.FreeGroupAutomorphism.surface_dehn_twist()`
 
         """
         from sage.misc.prandom import randint
