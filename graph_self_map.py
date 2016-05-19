@@ -30,7 +30,7 @@ from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.rings.qqbar import AA
 from inverse_alphabet import AlphabetWithInverses
-from free_group import FreeGroup
+from sage.groups.free_group import FreeGroup
 from free_group_automorphism import FreeGroupAutomorphism
 from sage.graphs.graph import DiGraph
 from sage.graphs.graph import Graph

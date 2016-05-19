@@ -37,8 +37,9 @@ class FreeGroupMorphism(object):
 
             sage: FreeGroupMorphism('a->ab,b->ba')
             Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b*a
+
             sage: FreeGroupMorphism('a->ab,b->Ba')
-            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b^-1*aFreeGroupMorphism: a->ab, b->Ba
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b^-1*a
             sage: FreeGroupMorphism('a->a*b*c,b->b,c->a*b')
             FreeGroupMorphism: a->abc, b->bca, c->cab
 
@@ -72,7 +73,7 @@ class FreeGroupMorphism(object):
         2. From a dictionary::
 
             sage: FreeGroupMorphism({"a":"ab","b":"ba"})
-            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b*a
+            FreeGroupMorphism: a->ab, b->ba
             sage: FreeGroupMorphism({'x0':['x0','X1','x0'],'x2':['x2','x2','x1']})
 
         3. From a FreeGroupMorphism::
@@ -83,12 +84,12 @@ class FreeGroupMorphism(object):
         TESTS::
 
             sage: FreeGroupMorphism(',,,a->ab,,,b->ba,,')
-            FreeGroupMorphism: a->ab, b->ba
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b*a
         """
         if isinstance(data, FreeGroupMorphism):
-            self._domain = data._domain
-            self._codomain = data._codomain
-            self._morph = data._morph
+            self._domain=data._domain
+            self._codomain=data._codomain
+            self._morph=data._morph
         elif isinstance(data, WordMorphism):
             if domain is None:
                 domain = FreeGroup(data._domain.alphabet())
@@ -98,7 +99,7 @@ class FreeGroupMorphism(object):
                 codomain = FreeGroup(co_alphabet)
             self._codomain = codomain
             self._morph = dict()
-            for a, im in data._morph.iteritems():
+            for a,im in data._morph.iteritems():
                 a = self._domain(a)
                 im = self._codomain(im)
                 self._morph[a] = im
@@ -179,7 +180,7 @@ class FreeGroupMorphism(object):
             sage: phi._build_codomain({'a': 'ab', 'b': 'bA'})
             FreeGroup on generators {a, b}
             sage: phi._build_codomain({'a': 'dcb', 'b': 'a'})
-            FreeGroup on genrators {a, b, c, d}
+            FreeGroup on generators {a, b, c, d}
 
         """
         codom_alphabet = set()
@@ -275,9 +276,10 @@ class FreeGroupMorphism(object):
 
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi**-3
-            Automorphism of the Free group over ['a', 'b']: a->bAB,b->baBAB
+            Automorphism of the Free Group on generators {a, b}: a->b*a^-1*b^-1,b->b*a*b^-1*a^-1*b^-1
             sage: phi**0
-            Automorphism of the Free group over ['a', 'b']: a->a,b->b
+            Automorphism of the Free Group on generators {a, b}: a->a,b->b
+
         """
         if n > 0:
             from sage.structure.element import generic_power
@@ -299,7 +301,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
-            sage: phi = FreeGroupMorphism('a->ab,b->A')
+            sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.__str__()
             'a->ab,b->A'
             sage: print phi
@@ -322,11 +324,13 @@ class FreeGroupMorphism(object):
 
             sage: phi = FreeGroupMorphism('a->ab,b->A')
             sage: phi.__repr__()
-            "Morphism of the Free group over ['a', 'b']: a->ab,b->A"
+            'Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->a^-1'
+
             sage: print phi
-            a->ab,b->A
+            a->a*b,b->a^-1
+
         """
-        result = "Morphism from %s to %s: " %(str(self._domain), str(self._codomain))
+        result = "Morphism from %s to %s: " %(str(self._domain),str(self._codomain))
         result = result + "%s" % str(self)
         return result
 
@@ -378,13 +382,13 @@ class FreeGroupMorphism(object):
 
             sage: phi = FreeGroupMorphism('a->ab,b->A')
             sage: phi.to_automorphism()
-            Automorphism of the Free group over ['a', 'b']: a->ab,b->A
+            Automorphism of the Free Group on generators {a, b}: a->a*b,b->a^-1
         """
         if not self.is_invertible():
             raise ValueError("the morphism is not invertible")
+
         return FreeGroupAutomorphism(dict(
-            (a, self.image(a))
-            for a in self.domain().alphabet().positive_letters()))
+            (a, self._morph[a]) for a in self.domain().gens()))
         #,domain=self.domain())
 
     def to_word_morphism(self, forget_inverse=False):
@@ -393,6 +397,7 @@ class FreeGroupMorphism(object):
 
 
         INPUT:
+
         - ``forget_inverse`` -- (default: False) forget the inverse or not.
 
         OUTPUT:
@@ -409,14 +414,14 @@ class FreeGroupMorphism(object):
 
             sage: f = FreeGroupAutomorphism('a->AD,b->Adac,c->bd,d->c')
             sage: f.to_word_morphism()
-            WordMorphism: A->da, B->CADa, C->DB, D->C, a->AD, b->Adac, c->bd, d->c
+            WordMorphism: a->a^-1,d^-1, a^-1->da, b->a^-1,d,a,c, b^-1->c^-1,a^-1,d^-1,a, c->bd, c^-1->d^-1,b^-1, d->c, d^-1->c^-1
             sage: f.to_word_morphism().periodic_points()
-                [[word: AdacccADDBdacADbdbdbddaCCCADacADbddaCAda...,
-                  word: dacADbdbdbddaCCCADacADbddaCAdaccAdaccAda...,
-                  word: cADbddaCAdaccAdaccAdacccADDBDBDBdaCADbdd...,
-                  word: bddaCAdacccADDBdacADbdbddacADbdbddacADbd...],
-                 [word: CCADaCCADacADDBdaCCCADaCCADacADDBdaCAdac...,
-                  word: DBDBdaCADDBDBdaCADbddaCCCADacADDBDBDBdaC...]]
+                [[word: a^-1,d,a,c,c,c,a^-1,d^-1,d^-1,b^-1,d,a,c,a^-1,d^-1,b,d,b,d,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,b,d,d,a,c^-1,a^-1,d,a,...,
+                  word: d,a,c,a^-1,d^-1,b,d,b,d,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,b,d,d,a,c^-1,a^-1,d,a,c,c,a^-1,d,a,c,c,a^-1,d,a,...,
+                  word: c,a^-1,d^-1,b,d,d,a,c^-1,a^-1,d,a,c,c,a^-1,d,a,c,c,a^-1,d,a,c,c,c,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,b,d,d,...,
+                  word: b,d,d,a,c^-1,a^-1,d,a,c,c,c,a^-1,d^-1,d^-1,b^-1,d,a,c,a^-1,d^-1,b,d,b,d,d,a,c,a^-1,d^-1,b,d,b,d,d,a,c,a^-1,d^-1,b,d,...],
+                 [word: d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,...,
+                   word: c^-1,c^-1,a^-1,d^-1,a,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d,a,c^-1,a^-1,d,a,c,...]]
         """
         A = self._domain.gens()
         if forget_inverse:
@@ -564,7 +569,7 @@ class FreeGroupMorphism(object):
 
             sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: phi.inverse()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->c,b->Ca,c->Cb
+            Automorphism of the Free Group on generators {a, b, c}: a->c,b->c^-1*a,c->c^-1*b
 
         ALGORITHM::
 
@@ -629,6 +634,7 @@ class FreeGroupMorphism(object):
                     self = self * na
 
 
+
 class FreeGroupAutomorphism(FreeGroupMorphism):
     """
     Free group automorphism.
@@ -639,7 +645,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
         sage: F = FreeGroup('abc')
-        sage: FreeGroupAutomorphism("a->ab,b->ac,c->a",F)
+        sage: FreeGroupAutomorphism("a->ab,b->ac,c->a", F)
         Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
 
         sage: map = {'a': 'ab', 'b':'ac', 'c':'a'}
@@ -651,7 +657,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
     - Thierry Coulbois (2013-05-16): beta.0 version
     """
 
-    def __init__(self, data, domain=None, codomain=None):
+    def __init__(self,data,domain=None,codomain=None):
         """
         Build a FreeGroupAutomorphism.
 
@@ -667,14 +673,13 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: F = FreeGroup('a,b,c')
             sage: FreeGroupAutomorphism("a->ab,b->ac,c->a",F)
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
-
+            Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
             sage: map = {'a': 'ab', 'b':'ac', 'c':'a'}
             sage: FreeGroupAutomorphism(map)
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+            Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
 
         """
-        FreeGroupMorphism.__init__(self, data, domain=domain, codomain=domain)
+        super(FreeGroupAutomorphism, self).__init__(data, domain=domain, codomain=domain)
 
     def is_invertible(self):
         """
@@ -704,11 +709,11 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.__repr__()
-            "Automorphism of the Free group over ['a', 'b']: a->ab,b->A"
+            'Automorphism of the Free Group on generators {a, b}: a->a*b,b->a^-1'
             sage: print phi
             a->ab,b->A
         """
-        result = 'Automorphism of the %s: ' % str(self._domain)
+        result = "Automorphism of the %s: " % str(self._domain)
         result = result + "%s" % str(self)
         return result
 
@@ -732,17 +737,20 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: print phi
-            a->ab,b->A
+            a->a*b,b->a^-1
             sage: phi1 = FreeGroupAutomorphism('a->aB,b->A')
             sage: phi * phi1
-            Automorphism of the Free group over ['a', 'b']: a->aba,b->BA
+            Automorphism of the Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
             sage: phi2 = WordMorphism('a->aB,b->A')
             sage: phi * phi2
-            WordMorphism: a->aba, b->BA
+            Automorphism of the Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
+
             sage: phi3 =  FreeGroupMorphism('a->aB,b->A')
             sage: phi * phi3
-            Automorphism of the Free group over ['a', 'b']: a->aba,b->BA
+            Automorphism of the Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
         """
+        if isinstance(other, WordMorphism):
+            other = FreeGroupAutomorphism(other)
 
         m = dict((a, self(other(a))) for a in other.domain().gens())
 
@@ -766,19 +774,24 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: phi.simple_outer_representative()
             Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
-        """
+            Automorphism of the Free Group on generators {a, b, c}: a->c^-1*a*b*c,b->c^-1*a*c^2,c->c^-1*a*c
+
+         """
         F = self._domain
         A = F.gens()
-        l = 2*len(A)
+        Atot = list(A)
+        for a in A:
+            Atot.append(a**-1)
+        l = 2*len(Atot)
         result = dict(((a, self(a)) for a in A))
         done = False
         while not done:
             done = True
-            gain = dict(((a, 0) for a in A))
+            gain = dict(((a, 0) for a in Atot))
             for a in A:
                 gain[result[a][0]] += 1
                 gain[result[a][-1]**-1] += 1
-            for a in A:
+            for a in Atot:
                 if gain[a] > l:
                     done = False
                     b = a
@@ -812,12 +825,15 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: phi.rose_conjugacy_representative()
+            Graph self map:
+            a: 0->0, b: 0->0, c: 0->0
+            Edge map: a->Cabc, b->Cacc, c->Cac
 
         SEE ALSO:
 
-        This is the same as ``self.rose_representative()`` but the
-        base graph of the ``GraphSelfMap`` is a
-        ``GraphWithInverses`` instead of a ``MarkedGraph``.
+            This is the same as ``self.rose_representative()`` but the
+            base graph of the ``GraphSelfMap`` is a
+            ``GraphWithInverses`` instead of a ``MarkedGraph``.
         """
         from graph_self_map import GraphSelfMap
         from inverse_graph import GraphWithInverses
@@ -948,7 +964,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         SEEALSO::
 
-            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.is_iwip()'
+            TrainTrackMap.is_iwip()
 
         REFERENCES
 
@@ -1004,19 +1020,20 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         REFERENCES:
 
-        [GJLL] D. Gaboriau, A. Jaeger, G. Levitt, M. Lustig, An index
-        for counting fixed points of automorphisms of free
-        groups. Duke Math. J., 93(3):425-452, 1998.
+            [GJLL] D. Gaboriau, A. Jaeger, G. Levitt, M. Lustig, An index
+            for counting fixed points of automorphisms of free
+            groups. Duke Math. J., 93(3):425-452, 1998.
 
-        [HM-axes] M. Handel, L. Mosher, Axes in Outer Space, Memoirs
-        AMS 1004, Amer Mathematical Society, 2011.
+            [HM-axes] M. Handel, L. Mosher, Axes in Outer Space, Memoirs
+            AMS 1004, Amer Mathematical Society, 2011.
 
-        [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
+            [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
 
 
-        WARNING: ``self`` is assumed to be iwip (or at least to
-        have an expanding absolute train-track representative).
+        WARNING:
 
+            ``self`` is assumed to be iwip (or at least to
+            have an expanding absolute train-track representative).
         """
 
         from train_track_map import TrainTrackMap
@@ -1080,15 +1097,14 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: F = FreeGroup('a,b,c')
             sage: FreeGroupAutomorphism.Nielsen_automorphism(F, 'a', 'b', on_left=True)
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ba,b->b,c->c
+            Automorphism of the Free Group on generators {a, b, c}: a->a,b->b,c->c
 
-            sage: F=FreeGroup(3)
-            sage: FreeGroupAutomorphism.Nielsen_automorphism(F,'a','c')
             Automorphism of the Free group over ['a', 'b', 'c']: a->ac,b->b,c->c
             sage: FreeGroupAutomorphism.Nielsen_automorphism(F,'A','c')
-            Automorphism of the Free group over ['a', 'b', 'c']: a->Ca,b->b,c->c
+            Automorphism of the Free Group on generators {a, b, c}: a->c^-1*a,b->b,c->c
         """
-
+        a = F(a)
+        b = F(b)
         if a in b or a**-1 in b:
             raise ValueError("%s must not appear in %s" % (str(a),str(b)))
 
@@ -1106,7 +1122,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             else:
                 morph[a] = b**-1 * a
 
-        return FreeGroupAutomorphism(morph,domain=F)
+        return FreeGroupAutomorphism(morph, domain=F)
 
     @staticmethod
     def random_permutation(F):
@@ -1343,11 +1359,11 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         WARNING:
 
-            The rank of ``F`` is assumed to be even.
+        The rank of ``F` is assumed to be even.
 
         ...SEE ALSO::
 
-           :meth:`sage.combinat.words.free_group_automorphism.FreeGroupAutomorphism.surface_dehn_twist()`
+           :meth:`sage.combinat.words.fre_grop_automorphism.FreeGroupAutomorphism.surface_dehn_twist()`
 
         """
         from sage.misc.prandom import randint
