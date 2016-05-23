@@ -397,66 +397,66 @@ class GraphMap:
         from free_group import FreeGroup
         from free_group_automorphism import FreeGroupAutomorphism
 
-        g1 = self.domain()
-        a1 = g1.alphabet()
-        t1 = g1.spanning_tree()
+        G1 = self.domain()
+        A1 = G1.alphabet()
+        T1 = G1.spanning_tree()
 
-        g2 = self.codomain()
-        a2 = g2.alphabet()
-        t2 = g2.spanning_tree()
+        G2 = self.codomain()
+        A2 = G2.alphabet()
+        T2 = G2.spanning_tree()
 
-        A = AlphabetWithInverses(len(a1) - len(g1.vertices()) + 1)
-        f = FreeGroup(A)
+        A = AlphabetWithInverses(len(A1) - len(G1.vertices()) + 1)
+        F = FreeGroup(A.positive_letters())
 
         map = dict()
         translate = dict()
 
         i = 0
-        for a in a1.positive_letters():
-            l = len(t1[g1.initial_vertex(a)]) - len(t1[g1.terminal_vertex(a)])
-            if (l != 1 or t1[g1.initial_vertex(a)][-1] != a1.inverse_letter(
-                    a)) and (l != -1 or t1[g1.terminal_vertex(a)][-1] != a):
+        for a in A1.positive_letters():
+            l = len(T1[G1.initial_vertex(a)]) - len(T1[G1.terminal_vertex(a)])
+            if (l != 1 or T1[G1.initial_vertex(a)][-1] != A1.inverse_letter(
+                    a)) and (l != -1 or T1[G1.terminal_vertex(a)][-1] != a):
                 # a is not in the spanning tree
                 map[A[i]] = self(
-                    t1[g1.initial_vertex(a)] * Word([a]) * g1.reverse_path(
-                        t1[g1.terminal_vertex(a)]))
+                    T1[G1.initial_vertex(a)] * Word([a]) * G1.reverse_path(
+                        T1[G1.terminal_vertex(a)]))
                 translate[A[i]] = a
-                translate[A.inverse_letter(A[i])] = a1.inverse_letter(a)
+                translate[A.inverse_letter(A[i])] = A1.inverse_letter(a)
                 i += 1
 
         rename = dict()
         edge_map = dict()
 
         i = 0
-        for a in a2.positive_letters():
-            l = len(t2[g2.initial_vertex(a)]) - len(t2[g2.terminal_vertex(a)])
-            if (l != 1 or t2[g2.initial_vertex(a)][-1] != a2.inverse_letter(
-                    a)) and (l != -1 or t2[g2.terminal_vertex(a)][-1] != a):
+        for a in A2.positive_letters():
+            l = len(T2[G2.initial_vertex(a)]) - len(T2[G2.terminal_vertex(a)])
+            if (l != 1 or T2[G2.initial_vertex(a)][-1] != A2.inverse_letter(
+                    a)) and (l != -1 or T2[G2.terminal_vertex(a)][-1] != a):
                 # a is not in the spanning tree
                 rename[a] = A[i]
-                rename[a2.inverse_letter(a)] = A.inverse_letter(A[i])
+                rename[A2.inverse_letter(a)] = A.inverse_letter(A[i])
                 i += 1
             else:
                 edge_map[a] = Word()
 
         for a in map:
-            map[a] = f([rename[b] for b in map[a] if b in rename])
+            map[a] = F([rename[b] for b in map[a] if b in rename])
 
-        phi = FreeGroupAutomorphism(map, f)
+        phi = FreeGroupAutomorphism(map, F)
         psi = phi.inverse()
 
         i = 0
-        for a in a2.positive_letters():
+        for a in A2.positive_letters():
             if a not in edge_map:
                 result = Word()
-                for b in psi.image(A[i]):
+                for b in psi(A[i]):
                     c = translate[b]
-                    result = result * t1[g1.initial_vertex(c)] * Word(
-                        [c]) * g1.reverse_path(t1[g1.terminal_vertex(c)])
-                edge_map[a] = g1.reduce_path(result)
+                    result = result * T1[G1.initial_vertex(c)] * Word(
+                        [c]) * G1.reverse_path(T1[G1.terminal_vertex(c)])
+                edge_map[a] = G1.reduce_path(result)
                 i += 1
 
-        return GraphMap(g2, g1, edge_map)
+        return GraphMap(G2, G1, edge_map)
 
     def tighten(self):
         """
@@ -864,6 +864,6 @@ class GraphMap:
             edge map: a->ab, b->ac, c->a
         """
 
-        graph = GraphWithInverses.rose_graph(
-            automorphism.domain().alphabet().copy())
+        A = AlphabetWithInverses(automorphism.domain().variable_names())
+        graph = GraphWithInverses.rose_graph(A)
         return GraphMap(graph, graph, automorphism)

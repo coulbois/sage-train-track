@@ -833,18 +833,19 @@ class FreeGroupElement(ElementLibGAP):
             sage: w.to_word(use_str=False)
             word: x0^-1,x1,x2,x2
             sage: w.to_word(use_str=False)[1] == w[1]
+            True
 
         """
         from sage.combinat.words.word import Word
 
         if use_str and use_upper_case:
-            w=[]
-            A=self.parent().gens()
-            for a in self:
-                if a in A:
-                    w.append(str(a))
+            wt = self.Tietze()
+            A = self.parent().variable_names()
+            for a in wt:
+                if a > 0:
+                    w.append(A[a - 1])
                 else:
-                    w.append(str(a**-1).upper())
+                    w.append(A[1 - a].upper())
             return Word(w)
         if use_str:
             return Word([str(a) for a in self])
