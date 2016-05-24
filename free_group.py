@@ -220,6 +220,14 @@ class FreeGroupElement(ElementLibGAP):
             try:
                 l = x.Tietze()
             except AttributeError:
+                if isinstance(x,str): # First check wether x is a string of a generator like 'x0'
+                    try:
+                        x = [parent._names.index(x) + 1]
+                    except ValueError:
+                        try:
+                            x = [-parent._names.index(x.lower()) - 1]
+                        except ValueError:
+                            pass
                 l = list(x)
             for i,a in enumerate(l):
                 if isinstance(a,(int,Integer)):
@@ -790,7 +798,7 @@ class FreeGroupElement(ElementLibGAP):
         from sage.misc.all import prod
         return prod(replace[gen] ** power for gen, power in self.syllables())
 
-    def to_word(self, use_str=True, use_upper_case=True):
+    def to_word(self, use_str=True, upper_case_as_inverse=True):
         """
         Convert ``self`` to a Word.
 
@@ -805,7 +813,7 @@ class FreeGroupElement(ElementLibGAP):
         and their inverses themselves, that is to say the letters are
         FreeGroupElement.
 
-         2. ``use_upper_case==True``: the inverse of a generator is
+         2. ``upper_case_as_inverse==True``: the inverse of a generator is
          written as the same string in upper case. This is used only with the
          ``use_string==True`` option.
 
@@ -818,7 +826,7 @@ class FreeGroupElement(ElementLibGAP):
             - ``use_str`` -- (default: True) use strings rather than
             FreeGroupElement as letters.
 
-            - ``use_upper_case`` -- (default: True) use upper case letters
+            - ``upper_case_as_inverse`` -- (default: True) use upper case letters
             as inverses.
 
 
@@ -838,14 +846,15 @@ class FreeGroupElement(ElementLibGAP):
         """
         from sage.combinat.words.word import Word
 
-        if use_str and use_upper_case:
+        if use_str and upper_case_as_inverse:
             wt = self.Tietze()
             A = self.parent().variable_names()
+            w = []
             for a in wt:
                 if a > 0:
                     w.append(A[a - 1])
                 else:
-                    w.append(A[1 - a].upper())
+                    w.append(A[-a - 1].upper())
             return Word(w)
         if use_str:
             return Word([str(a) for a in self])

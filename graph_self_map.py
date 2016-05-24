@@ -332,7 +332,7 @@ class GraphSelfMap(GraphMap):
 
         OUTPUT:
 
-        ``FreeGroupAutomorphism`` a Automorphism represented by ``self``
+        ``FreeGroupAutomorphism`` an automorphism represented by ``self``
 
         EXAMPLES::
 
@@ -371,12 +371,12 @@ class GraphSelfMap(GraphMap):
         if verbose:
             print "Rename morphism: ", rename
 
-        FA = FreeGroup(A)
+        FA = FreeGroup(A.positive_letters())
         h = FreeGroupAutomorphism(rename * G.marking().edge_map(),
-                                  group=FA).inverse()
-
+                                  domain=FA).inverse()
+        h = h.to_word_morphism(use_str=True, upper_case_as_inverse=True)
         return FreeGroupAutomorphism(h * rename * self._edge_map *
-                                     G.marking().edge_map(), group=FA)
+                                     G.marking().edge_map(), domain=FA)
 
     def find_folding(self):
         """
@@ -3365,7 +3365,7 @@ class GraphSelfMap(GraphMap):
                  rootpath[G.terminal_vertex(b)]
             wwb = self(wb)
             phi_map[b] = FB(c for c in wwb if c in B)
-        phi = FreeGroupAutomorphism(phi_map, FB)
+        phi = FreeGroupAutomorphism(phi_map, domain=FB)
 
         if verbose:
             print "Automorphism: ", phi

@@ -219,11 +219,11 @@ class FreeGroupMorphism(object):
             sage: phi(a**-1)
             b^-1*a^-1
         """
-        F = self.codomain()
+        one = self.codomain().one()
         if not isinstance(w, FreeGroupElement):
             w = self.domain()(w)
         while order > 0:
-            result = F.one()
+            result = one
             order = order - 1
             for a in w:
                 result = result * self._morph[a]
@@ -256,6 +256,7 @@ class FreeGroupMorphism(object):
             sage: phi * psi3
             Morphism of the Free group over ['a', 'b']: a->aba,b->BA
         """
+
         morph = dict((a, self(other(a))) for a in other.domain().gens())
         return FreeGroupMorphism(morph, domain=other._domain, codomain=self._codomain)
 
@@ -394,14 +395,16 @@ class FreeGroupMorphism(object):
             (a, self._morph[a]) for a in self.domain().gens()))
         #,domain=self.domain())
 
-    def to_word_morphism(self, forget_inverse=False):
+    def to_word_morphism(self, use_str=False, upper_case_as_inverse=False):
         r"""
         Return a word morphism.
 
 
         INPUT:
 
-        - ``forget_inverse`` -- (default: False) forget the inverse or not.
+        - ``use_str`` -- (default: False) use ``str`` as letters (not FreeGroupElement).
+
+        - ``upper_case_as_inverse`` -- (default: False) inverse of generators are translated to upper case ``str``
 
         OUTPUT:
 
@@ -426,17 +429,15 @@ class FreeGroupMorphism(object):
                  [word: d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,...,
                    word: c^-1,c^-1,a^-1,d^-1,a,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d,a,c^-1,a^-1,d,a,c,...]]
         """
-        A = self._domain.gens()
-        if forget_inverse:
-            morph = dict()
-            for a in A:
-                w = []
-                for b in self(a):
-                    if b not in A:
-                        w.append(str(b**-1))
-                    else:
-                        w.append(str(b))
-                morph[str(a)] = w
+        F = self._domain
+        A = F.gens()
+        An = F.variable_names()
+
+        if use_str:
+            morph = dict((An[i],self(a).to_word(use_str=True,upper_case_as_inverse=upper_case_as_inverse)) for i,a in enumerate(A))
+            if upper_case_as_inverse:
+                for i,a in enumerate(A):
+                    morph[An[i].upper()] = self(a**-1).to_word(use_str=True,upper_case_as_inverse=upper_case_as_inverse)
         else:
             morph = dict((a, self(a).to_word(use_str=False)) for a in A)
             for a in A:
@@ -752,15 +753,12 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             sage: phi * phi3
             Automorphism of the Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
         """
-        if isinstance(other, WordMorphism):
-            other = FreeGroupAutomorphism(other)
 
-        m = dict((a, self(other(a))) for a in other.domain().gens())
-
-        if isinstance(other, FreeGroupAutomorphism) or other.is_invertible():
+        if isinstance(other, FreeGroupAutomorphism):
+            m = dict((a, self(other(a))) for a in other.domain().gens())
             return FreeGroupAutomorphism(m, domain = self.domain())
 
-        return FreeGroupMorphism(m, domain = other.domain(), codomain = self.codomain())
+        return FreeGroupMorphism.__mul__(self,other)
 
 
     def simple_outer_representative(self):
