@@ -835,11 +835,11 @@ class FreeGroupElement(ElementLibGAP):
             sage: F = FreeGroup(3)
             sage: w = F([1,-2,1,3,-1])
             sage: w.to_word()
-            word: X0,x1,x2,x2
+            word: x0,X1,x0,x2,X0
             sage: type(w.to_word()[1])
             <type 'str'>
             sage: w.to_word(use_str=False)
-            word: x0^-1,x1,x2,x2
+            word: x0,x1^-1,x0,x2,x0^-1
             sage: w.to_word(use_str=False)[1] == w[1]
             True
 
