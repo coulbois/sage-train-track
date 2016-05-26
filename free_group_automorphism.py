@@ -13,7 +13,8 @@ AUTHORS:
 EXAMPLES::
     sage: phi = FreeGroupAutomorphism('a->ab,b->A')
     sage: print phi
-    a->ab,b->A
+    a->a*b,b->a^-1
+
 """
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
@@ -23,7 +24,7 @@ EXAMPLES::
 # *****************************************************************************
 
 from sage.combinat.words.morphism import WordMorphism
-from free_group import FreeGroup, FreeGroupElement
+from sage.groups.free_group import FreeGroup, FreeGroupElement
 
 
 class FreeGroupMorphism(object):
@@ -40,46 +41,48 @@ class FreeGroupMorphism(object):
 
             sage: FreeGroupMorphism('a->ab,b->Ba')
             Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b^-1*a
-            sage: FreeGroupMorphism('a->a*b*c,b->b,c->a*b')
-            FreeGroupMorphism: a->abc, b->bca, c->cab
 
         An erasing morphism::
 
             sage: FreeGroupMorphism('a->ab,b->')
-            FreeGroupMorphism: a->ab, b->
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->1
 
         Use the arrows ('->') correctly::
 
             sage: FreeGroupMorphism('a->ab,b-')
             Traceback (most recent call last):
-            ...
-            ValueError: The second and third characters must be '->' (not '-')
+            ....
+            ValueError: the sentence must have '->'
+
             sage: FreeGroupMorphism('a->ab,b')
             Traceback (most recent call last):
-            ...
-            ValueError: The second and third characters must be '->' (not '')
+            ....
+            ValueError: the sentence must have '->'
+
             sage: FreeGroupMorphism('a->ab,a-]asdfa')
             Traceback (most recent call last):
-            ...
-            ValueError: The second and third characters must be '->' (not '-]')
+            ....
+            ValueError: the sentence must have '->'
 
         Each letter must be defined only once::
 
             sage: FreeGroupMorphism('a->ab,a->ba')
             Traceback (most recent call last):
-            ...
+            ....
             ValueError: The image of 'a' is defined twice.
 
         2. From a dictionary::
 
             sage: FreeGroupMorphism({"a":"ab","b":"ba"})
-            FreeGroupMorphism: a->ab, b->ba
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b*a
             sage: FreeGroupMorphism({'x0':['x0','X1','x0'],'x2':['x2','x2','x1']})
+            Morphism from Free Group on generators {x0, x2} to Free Group on generators {x0, x1, x2}: x0->x0*x1^-1*x0,x2->x2^2*x1
+
 
         3. From a FreeGroupMorphism::
 
             sage: FreeGroupMorphism(FreeGroupMorphism('a->ab,b->ba'))
-            FreeGroupMorphism: a->ab, b->ba
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b*a
 
         TESTS::
 
@@ -141,26 +144,38 @@ class FreeGroupMorphism(object):
             sage: phi = FreeGroupMorphism('a->ab,b->ba')
             sage: phi._build_dict('a->ab,b->ba') == {'a': 'ab', 'b': 'ba'}
             True
-            sage: phi._build_dict('a->ab,a->ba')
+            sage: phi._build_dict('a->ab,a->ba') # doctest: +ELLIPSIS
             Traceback (most recent call last):
             ...
             ValueError: The image of 'a' is defined twice.
+
             sage: phi._build_dict('a->ab,b>ba')
             Traceback (most recent call last):
-            ...
-            ValueError: The second and third characters must be '->' (not '>b')
+            ....
+            ValueError: the sentence must have '->'
         """
         tmp_dict = {}
         for fleche in s.split(','):
             if len(fleche) == 0:
                 continue
+            if not fleche.__contains__('->'):
+                raise ValueError("the sentence must have '->'")
+            term = fleche.split('->')
+            if len(term) == 0:
+                raise ValueError("the sentence must have '->'")
+            if len(term) >= 1:
+                lettre = term[0]
+                if len(term) >= 2:
+                    image = term[1]
+                else:
+                    image = ''
 
-            if len(fleche) < 3 or fleche[1:3] != '->':
-                raise ValueError("The second and third characters must be '->' (not '%s')" % fleche[1:3])
-
-            lettre = fleche[0]
-            image = fleche[3:]
-
+            # if len(fleche) < 3 or fleche[1:3] != '->':
+            #     raise ValueError("The second and third characters must be '->' (not '%s')" % fleche[1:3])
+            #
+            # lettre = fleche[0]
+            # image = fleche[3:]
+            #
             if lettre in tmp_dict:
                 raise ValueError("The image of %r is defined twice." % lettre)
 
@@ -181,9 +196,10 @@ class FreeGroupMorphism(object):
 
             sage: phi = FreeGroupMorphism('a->ab,b->bA')
             sage: phi._build_codomain({'a': 'ab', 'b': 'bA'})
-            FreeGroup on generators {a, b}
+            Free Group on generators {a, b}
             sage: phi._build_codomain({'a': 'dcb', 'b': 'a'})
-            FreeGroup on generators {a, b, c, d}
+            Free Group on generators {a, b, c, d}
+
 
         """
         codom_alphabet = set()
@@ -251,14 +267,20 @@ class FreeGroupMorphism(object):
             Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
             sage: psi2 = WordMorphism('a->aB,b->A')
             sage: phi * psi2
-            WordMorphism: a->aba, b->BA
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
+
             sage: psi3 =  FreeGroupMorphism('a->aB,b->A')
             sage: phi * psi3
-            Morphism of the Free group over ['a', 'b']: a->aba,b->BA
-        """
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
 
-        morph = dict((a, self(other(a))) for a in other.domain().gens())
-        return FreeGroupMorphism(morph, domain=other._domain, codomain=self._codomain)
+        """
+        if isinstance(other, WordMorphism):
+            morph = dict((a, self(other(a))) for a in other._domain.alphabet())
+            dom =  FreeGroup(other._domain.alphabet())
+        if isinstance(other, FreeGroupMorphism):
+            morph = dict((a, self(other(a))) for a in other.domain().gens())
+            dom = other._domain
+        return FreeGroupMorphism(morph, domain=dom, codomain=self._codomain)
 
     def __pow__(self, n):
         """
@@ -307,9 +329,10 @@ class FreeGroupMorphism(object):
 
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.__str__()
-            'a->ab,b->A'
+            'a->a*b,b->a^-1'
             sage: print phi
-            a->ab,b->A
+            a->a*b,b->a^-1
+
         """
         result = ""
         for letter in self.domain().gens():
@@ -346,7 +369,7 @@ class FreeGroupMorphism(object):
         if self.codomain() != other.codomain():
             return cmp(self.codomain(), other.codomain())
 
-        for a in self.domain().alphabet().positive_letters():
+        for a in self.domain().gens():
             test = cmp(self(a), other(a))
             if test:
                 return test
@@ -646,15 +669,14 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
     EXAMPLES::
 
         sage: FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+        Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
 
-        sage: F = FreeGroup('abc')
+        sage: F = FreeGroup('a,b,c')
         sage: FreeGroupAutomorphism("a->ab,b->ac,c->a", F)
-        Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
-
+        Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
         sage: map = {'a': 'ab', 'b':'ac', 'c':'a'}
         sage: FreeGroupAutomorphism(map)
-        Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+        Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
 
     AUTHORS:
 
@@ -673,7 +695,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         EXAMPLES::
 
             sage: FreeGroupAutomorphism("a->ab,b->ac,c->a")
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+            Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
 
             sage: F = FreeGroup('a,b,c')
             sage: FreeGroupAutomorphism("a->ab,b->ac,c->a",F)
@@ -715,7 +737,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             sage: phi.__repr__()
             'Automorphism of the Free Group on generators {a, b}: a->a*b,b->a^-1'
             sage: print phi
-            a->ab,b->A
+            a->a*b,b->a^-1
         """
         result = "Automorphism of the %s: " % str(self._domain)
         result = result + "%s" % str(self)
@@ -751,14 +773,19 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: phi3 =  FreeGroupMorphism('a->aB,b->A')
             sage: phi * phi3
-            Automorphism of the Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
+
         """
 
         if isinstance(other, FreeGroupAutomorphism):
             m = dict((a, self(other(a))) for a in other.domain().gens())
             return FreeGroupAutomorphism(m, domain = self.domain())
 
-        return FreeGroupMorphism.__mul__(self,other)
+        if isinstance(other, WordMorphism):
+            m = dict((a, self(other(a))) for a in other._domain.alphabet())
+            return FreeGroupAutomorphism(m, domain = self.domain())
+
+        return FreeGroupMorphism.__mul__(self, other)
 
 
     def simple_outer_representative(self):
@@ -774,7 +801,6 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: phi.simple_outer_representative()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
             Automorphism of the Free Group on generators {a, b, c}: a->c^-1*a*b*c,b->c^-1*a*c^2,c->c^-1*a*c
 
          """
@@ -1068,8 +1094,10 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         EXAMPLES::
 
             sage: F = FreeGroup('a,b,c')
+            sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.identity_automorphism(F)
-            Automorphism of the Free group over {'a', 'b', 'c'}: a->a,b->b,c->c
+            Automorphism of the Free Group on generators {a, b, c}: a->a,b->b,c->c
+
         """
         morph = dict((a, a) for a in F.gens())
 
@@ -1098,9 +1126,8 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: F = FreeGroup('a,b,c')
             sage: FreeGroupAutomorphism.Nielsen_automorphism(F, 'a', 'b', on_left=True)
-            Automorphism of the Free Group on generators {a, b, c}: a->a,b->b,c->c
+            Automorphism of the Free Group on generators {a, b, c}: a->b*a,b->b,c->c
 
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ac,b->b,c->c
             sage: FreeGroupAutomorphism.Nielsen_automorphism(F,'A','c')
             Automorphism of the Free Group on generators {a, b, c}: a->c^-1*a,b->b,c->c
         """
@@ -1311,7 +1338,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
             sage: F = FreeGroup(4)
             sage: FreeGroupAutomorphism.surface_dehn_twist(F, k=0)
-            Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->ba,b->b,c->c,d->d
+            Automorphism of the Free Group on generators {x0, x1, x2, x3}: x0->x1*x0,x1->x1,x2->x2,x3->x3
 
         WARNING:
 
@@ -1429,9 +1456,10 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
-            sage: F = FreeGroup(4)
+            sage: F = FreeGroup('a,b,c,d')
             sage: FreeGroupAutomorphism.braid_automorphism(F, 2)
-            Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->a,b->bcB,c->b,d->d
+            Automorphism of the Free Group on generators {a, b, c, d}: a->a,b->b*c*b^-1,c->b,d->d
+
         """
         result = dict((a, a) for a in F.gens())
         if not inverse:
@@ -1508,7 +1536,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.tribonacci()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+            Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
 
         """
         return FreeGroupAutomorphism("a->ab,b->ac,c->a")
@@ -1529,8 +1557,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Handel_Mosher_inverse_with_same_lambda()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->BacAcAbCaBacBacAcAb,b->BacAcAbCaBac,c->BacAcAbCa
-
+            Automorphism of the Free Group on generators {a, b, c}: a->b^-1*a*(c*a^-1)^2*b*c^-1*a*(b^-1*a*c)^2*a^-1*c*a^-1*b,b->b^-1*a*(c*a^-1)^2*b*c^-1*a*b^-1*a*c,c->b^-1*a*(c*a^-1)^2*b*c^-1*a
 
         REFERECENCES:
 
@@ -1560,7 +1587,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Bestvina_Handel_train_track_1_1()
-            Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->b,b->c,c->d,d->ADBC
+            Automorphism of the Free Group on generators {a, b, c, d}: a->b,b->c,c->d,d->a^-1*d^-1*b^-1*c^-1
 
         REFERENCES:
 
@@ -1586,7 +1613,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Bestvina_Handel_train_track_1_9()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ba,b->bba,c->cAbaB
+            Automorphism of the Free Group on generators {a, b, c}: a->b*a,b->b^2*a,c->c*a^-1*b*a*b^-1
 
         REFERENCES:
 
@@ -1612,7 +1639,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Bestvina_Handel_train_track_3_6()
-            Automorphism of the Free group over ['a', 'b']: a->ba,b->bba
+            Automorphism of the Free Group on generators {a, b}: a->b*a,b->b^2*a
 
         REFERENCES:
 
@@ -1639,7 +1666,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Bestvina_Handel_train_track_5_16()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->a,b->CAbac,c->CAbacacACABac
+            Automorphism of the Free Group on generators {a, b, c}: a->a,b->c^-1*a^-1*b*a*c,c->c^-1*a^-1*b*(a*c)^2*a^-1*c^-1*a^-1*b^-1*a*c
 
         REFERENCES:
 
@@ -1670,7 +1697,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Handel_Mosher_axes_3_4()
-            Automorphism of the Free group over ['a', 'g', 'f']: a->afgfgf,g->gfafg,f->fgf
+            Automorphism of the Free Group on generators {a, f, g}: a->a*(f*g)^2*f,f->f*g*f,g->g*f*a*f*g
 
         REFERENCES:
 
@@ -1700,7 +1727,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Handel_Mosher_axes_5_5()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->bacaaca,b->baca,c->caaca
+            Automorphism of the Free Group on generators {a, b, c}: a->b*(a*c*a)^2,b->b*a*c*a,c->c*a^2*c*a
 
         REFERENCES:
 
@@ -1729,9 +1756,9 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Hilion_parabolic()
-            Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->a,b->ba,c->caa,d->dc
+            Automorphism of the Free Group on generators {a, b, c, d}: a->a,b->b*a,c->c*a^2,d->d*c
             sage: free_group_automorphisms.Hilion_parabolic(k=3)
-            Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->a,b->ba,c->caaaa,d->dc
+            Automorphism of the Free Group on generators {a, b, c, d}: a->a,b->b*a,c->c*a^4,d->d*c
 
         REFERENCES:
 
@@ -1741,6 +1768,7 @@ class free_group_automorphisms:
         """
 
         phi = FreeGroupAutomorphism("a->a,b->ba,c->caa,d->dc")
+        F = phi.domain()
         if k > 1:
             phi = phi * pow(FreeGroupAutomorphism.Nielsen_automorphism(F, 'c', 'a'), k - 1)
         return phi
@@ -1767,7 +1795,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Handel_Mosher_parageometric_1()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ac,b->a,c->b
+            Automorphism of the Free Group on generators {a, b, c}: a->a*c,b->a,c->b
 
         REFERENCES:
 
@@ -1795,7 +1823,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Cohen_Lustig_1_6()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->cccaCCC,b->CaccAbC,c->accAbccaCCBaCCAccccACCC
+            Automorphism of the Free Group on generators {a, b, c}: a->c^3*a*c^-3,b->c^-1*a*c^2*a^-1*b*c^-1,c->a*c^2*a^-1*b*c^2*a*c^-2*b^-1*a*c^-2*a^-1*c^4*a^-1*c^-3
 
         REFERENCES:
 
@@ -1823,7 +1851,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Cohen_Lustig_7_2()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->aabc,b->abc,c->abcc
+            Automorphism of the Free Group on generators {a, b, c}: a->a^2*b*c,b->a*b*c,c->a*b*c^2
 
         REFERENCES:
 
@@ -1851,7 +1879,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Cohen_Lustig_7_3()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->cabaa,b->baa,c->caba
+            Automorphism of the Free Group on generators {a, b, c}: a->c*a*b*a^2,b->b*a^2,c->c*a*b*a
 
         REFERENCES:
 
@@ -1882,7 +1910,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Turner_Stallings()
-            Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->dac,b->CADac,c->CABac,d->CAbc
+            Automorphism of the Free Group on generators {a, b, c, d}: a->d*a*c,b->c^-1*a^-1*d^-1*a*c,c->c^-1*a^-1*b^-1*a*c,d->c^-1*a^-1*b*c
 
         REFERENCES:
 
@@ -1912,7 +1940,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Bestvina_Handel_surface_homeo()
-            Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->b,b->c,c->dA,d->DC
+            Automorphism of the Free Group on generators {a, b, c, d}: a->b,b->c,c->d*a^-1,d->d^-1*c^-1
 
         REFERENCES:
 
@@ -1943,7 +1971,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Levitt_Lustig_periodic()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->cb,b->a,c->ba
+            Automorphism of the Free Group on generators {a, b, c}: a->c*b,b->a,c->b*a
 
         REFERENCES:
 
@@ -1970,7 +1998,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Clay_Pettet_twisting_out()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->b,b->c,c->ab
+            Automorphism of the Free Group on generators {a, b, c}: a->b,b->c,c->a*b
 
         REFERENCES:
 
@@ -1998,7 +2026,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Hokkaido()
-            Automorphism of the Free group over ['a', 'b', 'c', 'd', 'e']: a->ab,b->c,c->d,d->e,e->a
+            Automorphism of the Free Group on generators {a, b, c, d, e}: a->a*b,b->c,c->d,d->e,e->a
 
         REFERENCES:
 
@@ -2027,7 +2055,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Akiyama()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->b,b->ac,c->a
+            Automorphism of the Free Group on generators {a, b, c}: a->b,b->a*c,c->a
 
         REFERENCES:
 
@@ -2056,7 +2084,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Bressaud()
-            Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->db,b->dc,c->d,d->a
+            Automorphism of the Free Group on generators {a, b, c, d}: a->d*b,b->d*c,c->d,d->a
 
         REFERENCES:
 
@@ -2087,7 +2115,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Jolivet()
-            Automorphism of the Free group over ['a', 'b', 'c', 'd']: a->db,b->dc,c->d,d->a
+            Automorphism of the Free Group on generators {a, b, c, d}: a->d*b,b->d*c,c->d,d->a
 
         REFERENCES:
 
@@ -2116,7 +2144,7 @@ class free_group_automorphisms:
         EXAMPLES::
 
             sage: free_group_automorphisms.Boshernitzan_Kornfeld()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->b,b->caaa,c->caa
+            Automorphism of the Free Group on generators {a, b, c}: a->b,b->c*a^3,c->c*a^2
 
         REFERENCES:
 
