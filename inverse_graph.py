@@ -10,10 +10,10 @@ AUTHORS:
 EXAMPLES::
 
     sage: print GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-    Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+    a: 0->0, c: 1->0, b: 0->1
 
     sage: print MetricGraph([[0,0,'a'],[0,1,'b'],[1,1,'c']])
-    Metric Graph: a: 0->0, b: 0->1, c: 1->1
+    a: 0->0, b: 0->1, c: 1->1
     Lengths: a: 1, b: 1, c: 1
 """
 # *****************************************************************************
@@ -46,12 +46,12 @@ class GraphWithInverses(DiGraph):
     EXAMPLES::
 
         sage: print GraphWithInverses()
-        Graph with inverses
+
         sage: print GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-        Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+        a: 0->0, c: 1->0, b: 0->1
 
         sage: print GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
-        Graph with inverses: a: 0->0, b: 0->1, c: 1->0
+        a: 0->0, b: 0->1, c: 1->0
 
     AUTHORS:
 
@@ -133,7 +133,7 @@ class GraphWithInverses(DiGraph):
 
             sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
             sage: print G.copy()
-            Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+            a: 0->0, c: 1->0, b: 0->1
         """
         return self.__class__(self, alphabet=self._alphabet)
 
@@ -144,7 +144,7 @@ class GraphWithInverses(DiGraph):
         TESTS::
 
             sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
-            sage: G.__str__()
+            sage: G.__repr__()
             'Graph with inverses: a: 0->0, c: 1->0, b: 0->1'
         """
         result = "Graph with inverses: "
@@ -182,7 +182,7 @@ class GraphWithInverses(DiGraph):
             Alphabet with inverses on ['a', 'b', 'c']
             sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
             sage: print G
-            Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+            a: 0->0, c: 1->0, b: 0->1
             sage: G.alphabet()
             Alphabet with inverses on ['a', 'c', 'b']
         """
@@ -226,7 +226,7 @@ class GraphWithInverses(DiGraph):
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
             sage: G.set_initial_vertex('a',1)
             sage: print G
-            Graph with inverses: a: 1->0, b: 0->1, c: 1->0
+            a: 1->0, b: 0->1, c: 1->0
         """
 
         w = self.initial_vertex(e)
@@ -278,7 +278,7 @@ class GraphWithInverses(DiGraph):
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
             sage: G.set_terminal_vertex('a',1)
             sage: print G
-            Graph with inverses: a: 0->1, b: 0->1, c: 1->0
+            a: 0->1, b: 0->1, c: 1->0
         """
         w = self.initial_vertex(e)
         ww = self.terminal_vertex(e)
@@ -345,7 +345,7 @@ class GraphWithInverses(DiGraph):
             sage: G.add_edge(1,1,a)
             'd'
             sage: print G
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->0, d: 1->1
+            a: 0->0, b: 0->1, c: 1->0, d: 1->1
         """
 
         if label is None:
@@ -434,7 +434,7 @@ class GraphWithInverses(DiGraph):
             2
 
             sage: print G
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->0
+            a: 0->0, b: 0->1, c: 1->0
 
             sage: print G.vertices()
             [0, 1, 2]
@@ -460,7 +460,7 @@ class GraphWithInverses(DiGraph):
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']])
             sage: G.remove_edge('b')
             sage: print G
-            Graph with inverses: a: 0->0, c: 1->0
+            a: 0->0, c: 1->0
         
             sage: G.alphabet()
             Alphabet with inverses on ['a', 'c']
@@ -493,7 +493,7 @@ class GraphWithInverses(DiGraph):
             sage: G.remove_edge('b')
             sage: G.remove_vertex(1)
             sage: print G
-            Graph with inverses: a: 0->0, c: 0->0
+            a: 0->0, c: 0->0
         """
         DiGraph.delete_vertex(self, v)
 
@@ -775,7 +775,7 @@ class GraphWithInverses(DiGraph):
              'b': word: b,
              'c': word: ce}
             sage: print G
-            Graph with inverses: a: 0->2, b: 0->1, c: 1->3, d: 2->0, e: 3->1
+            a: 0->2, b: 0->1, c: 1->3, d: 2->0, e: 3->1
         """
 
         A = self._alphabet
@@ -831,7 +831,7 @@ class GraphWithInverses(DiGraph):
              'b': word: b,
              'c': word: c}
             sage: print G
-            Graph with inverses: a: 1->0, b: 0->1, c: 1->1
+            a: 1->0, b: 0->1, c: 1->1
         """
 
         A = self._alphabet
@@ -903,7 +903,7 @@ class GraphWithInverses(DiGraph):
              'b': word: ,
              'c': word: c}
             sage: print G
-            Graph with inverses: a: 0->0, c: 0->0
+            a: 0->0, c: 0->0
 
         SEE ALSO:
 
@@ -942,11 +942,11 @@ class GraphWithInverses(DiGraph):
              'c': word: c}
 
             sage: print G
-            Graph with inverses: a: 0->0, c: 0->0
+            a: 0->0, c: 0->0
 
         SEE ALSO:
 
-        GraphWithInverses.contract_edges()
+            `GraphWithInverses.contract_edges()`
 
         """
         A = self._alphabet
@@ -1087,9 +1087,9 @@ class GraphWithInverses(DiGraph):
 
         WARNING:
 
-        If ``self`` is not connected, returns a maximal tree of the
-        connected component of the first edge labeled by the first
-        letter of the alphabet.
+            If ``self`` is not connected, returns a maximal tree of the
+            connected component of the first edge labeled by the first
+            letter of the alphabet.
 
         EXAMPLES::
 
@@ -1099,7 +1099,7 @@ class GraphWithInverses(DiGraph):
 
         SEE ALSO:
 
-        GraphWithInverses.spanning_tree()
+            `GraphWithInverses.spanning_tree()`
         """
 
         tree = []
@@ -1132,11 +1132,11 @@ class GraphWithInverses(DiGraph):
 
         SEE ALSO:
 
-        ``maximal_tree()`` that returns a list of edges of a spanning tree.
+            ``maximal_tree()`` that returns a list of edges of a spanning tree.
 
         WARNING:
 
-        ``self`` must be connected.
+            ``self`` must be connected.
 
         EXAMPLES::
 
@@ -1172,6 +1172,7 @@ class GraphWithInverses(DiGraph):
         - ``graph_border`` -- (default True) if graph border visible
 
         OUTPUT:
+
         Launched png viewer for Graphics object
 
         """
@@ -1199,7 +1200,7 @@ class GraphWithInverses(DiGraph):
             sage: G.blow_up_vertices([['a','A'],['b'],['B']])
             {'A': word: cAC, 'B': word: eBD, 'a': word: caC, 'b': word: dbE}
             sage: print G
-            Graph with inverses: a: 1->1, b: 2->3, c: 0->1, d: 0->2, e: 0->3
+            a: 1->1, b: 2->3, c: 0->1, d: 0->2, e: 0->3
         """
 
         A = self.alphabet()
@@ -1334,7 +1335,7 @@ class GraphWithInverses(DiGraph):
         EXAMPLES::
         
             sage: print GraphWithInverses.valence_3(2)
-            Graph with inverses: a: 0->1, b: 0->1, c: 0->1
+            a: 0->1, b: 0->1, c: 0->1
         """
         graph = dict()
         A = AlphabetWithInverses(3 * rank - 3)
@@ -1365,7 +1366,7 @@ class GraphWithInverses(DiGraph):
         EXAMPLES::
         
             sage: print GraphWithInverses.rose_graph(AlphabetWithInverses(3))
-            Graph with inverses: a: 0->0, b: 0->0, c: 0->0
+            a: 0->0, b: 0->0, c: 0->0
 
         """
         graph = GraphWithInverses()
@@ -1392,7 +1393,7 @@ class MetricGraph(GraphWithInverses):
     EXAMPLES::
     
         sage: print MetricGraph([[0,0,'a'],[0,1,'b'],[1,1,'c']])
-        Metric Graph: a: 0->0, b: 0->1, c: 1->1
+        a: 0->0, b: 0->1, c: 1->1
         Lengths: a: 1, b: 1, c: 1
 
     .. SEE ALSO::
@@ -1417,18 +1418,18 @@ class MetricGraph(GraphWithInverses):
 
             sage: G = MetricGraph([[0,0,'a'],[0,1,'b'],[1,2,'c']])
             sage: print G
-            Metric Graph: a: 0->0, b: 0->1, c: 1->2
+            a: 0->0, b: 0->1, c: 1->2
             Lengths: a: 1, b: 1, c: 1
 
             sage: l = dict((('a',1),('b', 2),('c', 3)))
             sage: G = MetricGraph(data=[[0,0,'a'],[0,1,'b'],[1,2,'c']], lengths=l)
             sage: print G
-            Metric Graph: a: 0->0, b: 0->1, c: 1->2
+            a: 0->0, b: 0->1, c: 1->2
             Lengths: a: 1, b: 2, c: 3
 
             sage: A =  AlphabetWithInverses(3)
             sage: print MetricGraph(data=[[0,0,'a'],[0,1,'b'],[1,2,'c']], alphabet=A)
-            Metric Graph: a: 0->0, b: 0->1, c: 1->2
+            a: 0->0, b: 0->1, c: 1->2
             Lengths: a: 1, b: 1, c: 1
         """
 
@@ -1451,7 +1452,7 @@ class MetricGraph(GraphWithInverses):
 
         EXAMPLES::
 
-            sage: MetricGraph([[0,0,'a'],[0,1,'b'],[1,2,'c']]).__str__()
+            sage: MetricGraph([[0,0,'a'],[0,1,'b'],[1,2,'c']]).__repr__()
             'Metric Graph: a: 0->0, b: 0->1, c: 1->2\nLengths: a: 1, b: 1, c: 1'
         """
         result = "Metric Graph: "
@@ -1503,7 +1504,7 @@ class MetricGraph(GraphWithInverses):
             sage: l = dict((('a',1),('b', 2),('c', 3)))
             sage: G = MetricGraph(data=[[0,0,'a'],[0,1,'b'],[1,2,'c']], lengths=l)
             sage: print G
-            Metric Graph: a: 0->0, b: 0->1, c: 1->2
+            a: 0->0, b: 0->1, c: 1->2
             Lengths: a: 1, b: 2, c: 3
             sage: G.length('a')
             1
