@@ -769,8 +769,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             Automorphism of the Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
             sage: phi2 = WordMorphism('a->aB,b->A')
             sage: phi * phi2
-            Automorphism of the Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
-
+            Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
             sage: phi3 =  FreeGroupMorphism('a->aB,b->A')
             sage: phi * phi3
             Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b*a,b->b^-1*a^-1
@@ -779,10 +778,6 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         if isinstance(other, FreeGroupAutomorphism):
             m = dict((a, self(other(a))) for a in other.domain().gens())
-            return FreeGroupAutomorphism(m, domain = self.domain())
-
-        if isinstance(other, WordMorphism):
-            m = dict((a, self(other(a))) for a in other._domain.alphabet())
             return FreeGroupAutomorphism(m, domain = self.domain())
 
         return FreeGroupMorphism.__mul__(self, other)
