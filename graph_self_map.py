@@ -30,7 +30,7 @@ from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.rings.qqbar import AA
 from inverse_alphabet import AlphabetWithInverses
-from free_group import FreeGroup
+from sage.groups.free_group import FreeGroup
 from free_group_automorphism import FreeGroupAutomorphism
 from sage.graphs.graph import DiGraph
 from sage.graphs.graph import Graph
@@ -59,7 +59,7 @@ class GraphSelfMap(GraphMap):
 
     EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a",FreeGroup(3))
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a",FreeGroup('a,b,c'))
         sage: print phi.rose_representative()
         Graph self map:
         Marked graph: a: 0->0, b: 0->0, c: 0->0
@@ -92,7 +92,7 @@ class GraphSelfMap(GraphMap):
             sage: R = GraphWithInverses.rose_graph(A)
             sage: print GraphSelfMap(R,"a->ab,b->ac,c->a")
             Graph self map:
-            Graph with inverses: a: 0->0, b: 0->0, c: 0->0
+            a: 0->0, b: 0->0, c: 0->0
             Edge map: a->ab, b->ac, c->a
         """
 
@@ -340,7 +340,7 @@ class GraphSelfMap(GraphMap):
             sage: R = GraphWithInverses.rose_graph(A)
             sage: f = GraphSelfMap(R,"a->ab,b->ac,c->a")
             sage: f.automorphism()
-            Automorphism of the Free group over ['a', 'b', 'c']: a->ab,b->ac,c->a
+            Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
         """
 
         from marked_graph import MarkedGraph
@@ -484,7 +484,7 @@ class GraphSelfMap(GraphMap):
             WordMorphism: A->DA, B->B, C->C, a->ad, b->b, c->c
             sage: print f
             Graph self map:
-            Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
+            a: 0->1, b: 0->0, c: 0->0, d: 1->0
             Edge map: a->ad, b->adc, c->ad, d->b
         """
 
@@ -544,7 +544,7 @@ class GraphSelfMap(GraphMap):
             WordMorphism: A->DA, B->B, C->C, a->ad, b->b, c->c
             sage: print f
             Graph self map:
-            Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
+            a: 0->1, b: 0->0, c: 0->0, d: 1->0
             Edge map: a->adb, b->adc, c->ad, d->ad
         """
 
@@ -620,7 +620,7 @@ class GraphSelfMap(GraphMap):
             WordMorphism: A->A, B->BE, C->CdE, a->a, b->eb, c->eDc
             sage: print f
             Graph self map:
-            Graph with inverses: a: 0->0, b: 2->0, c: 1->0, d: 1->2, e: 0->2
+            a: 0->0, b: 2->0, c: 1->0, d: 1->2, e: 0->2
             Edge map: a->eDc, b->dEaCdE, c->b, d->D, e->C
 
         .. SEEALSO::
@@ -871,7 +871,7 @@ class GraphSelfMap(GraphMap):
             WordMorphism: A->A, B->BD, C->CD, a->a, b->db, c->dc
             sage: print f
             Graph self map:
-            Graph with inverses: a: 0->0, b: 1->0, c: 1->0, d: 0->1
+            a: 0->0, b: 1->0, c: 1->0, d: 0->1
             Edge map: a->dc, b->aCD, c->db, d->CD
 
         .. SEEALSO::
@@ -966,7 +966,7 @@ class GraphSelfMap(GraphMap):
             WordMorphism: A->DA, B->B, C->C, a->ad, b->b, c->c
             sage: print f
             Graph self map:
-            Graph with inverses: a: 0->1, b: 0->0, c: 0->0, d: 1->0
+            a: 0->1, b: 0->0, c: 0->0, d: 1->0
             Edge map: a->ad, b->adc, c->ad, d->b
 
             sage: f.fusion_lines([['a','d']])
@@ -974,7 +974,7 @@ class GraphSelfMap(GraphMap):
         
             sage: print f
             Graph self map:
-            Graph with inverses: a: 1->1, b: 1->1, c: 1->1
+            a: 1->1, b: 1->1, c: 1->1
             Edge map: a->ab, b->ac, c->a
 
         .. SEEALSO::
@@ -1446,7 +1446,7 @@ class GraphSelfMap(GraphMap):
 
             sage: print f
             Graph self map:
-            Graph with inverses: a: 0->0, b: 1->0, c: 1->0, e: 0->1
+            a: 0->0, b: 1->0, c: 1->0, e: 0->1
             Edge map: a->ec, b->Ea, c->b, e->C
             Irreducible representative
         """
@@ -2948,7 +2948,7 @@ class GraphSelfMap(GraphMap):
             WordMorphism: A->A, B->B, C->C, D->D, a->a, b->b, c->c, d->d
             sage: print f
             Graph self map:
-            Graph with inverses: a: 0->0, b: 0->0, c: 0->0, d: 0->0
+            a: 0->0, b: 0->0, c: 0->0, d: 0->0
             Edge map: a->acbd, b->ad, c->cd, d->Dcad
             Irreducible representative
         """
