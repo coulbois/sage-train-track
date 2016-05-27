@@ -661,7 +661,6 @@ class FreeGroupMorphism(object):
                     self = self * na
 
 
-
 class FreeGroupAutomorphism(FreeGroupMorphism):
     """
     Free group automorphism.
@@ -778,7 +777,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         if isinstance(other, FreeGroupAutomorphism):
             m = dict((a, self(other(a))) for a in other.domain().gens())
-            return FreeGroupAutomorphism(m, domain = self.domain())
+            return FreeGroupAutomorphism(m, domain=self.domain())
 
         return FreeGroupMorphism.__mul__(self, other)
 
