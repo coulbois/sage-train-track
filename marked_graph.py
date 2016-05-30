@@ -173,8 +173,8 @@ class MarkedGraph(GraphWithInverses):
             sage: G=MarkedGraph(G)
             sage: print G.marking()
             Graph map:
-            Graph with inverses: a: 0->0, b: 0->0
-            Graph with inverses: a: 0->0, c: 1->0, b: 0->1
+            a: 0->0, b: 0->0
+            a: 0->0, c: 1->0, b: 0->1
             edge map: a->a, b->bc
         """
         return self._marking
@@ -198,7 +198,9 @@ class MarkedGraph(GraphWithInverses):
         """
         edge_map = dict()
         for a in self._marking.domain().alphabet().positive_letters():
-            edge_map[a] = self._marking(automorphism.image(a))
+            edge_map[a] = self._marking(
+                automorphism.to_word_morphism(
+                    use_str=True, upper_case_as_inverse=True).image(a))
         self._marking.set_edge_map(edge_map)
         return self
 
@@ -223,8 +225,8 @@ class MarkedGraph(GraphWithInverses):
             sage: H=MarkedGraph(H)
             sage: print G.difference_of_marking(H)
             Graph map:
-            Graph with inverses: a: 0->0, c: 1->0, b: 0->1
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->1
+            a: 0->0, c: 1->0, b: 0->1
+            a: 0->0, b: 0->1, c: 1->1
             edge map: a->a, c->, b->bcB
         """
 
