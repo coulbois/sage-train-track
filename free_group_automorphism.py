@@ -95,7 +95,8 @@ class FreeGroupMorphism(object):
             self._morph=data._morph
         elif isinstance(data, WordMorphism):
             if domain is None:
-                domain = FreeGroup(data._domain.alphabet())
+                alphabet = set(a.lower() for a in data._domain.alphabet())
+                domain = FreeGroup(alphabet)
             self._domain = domain
             if codomain is None:
                 co_alphabet = set(a.lower() for a in data._codomain.alphabet())
@@ -126,7 +127,7 @@ class FreeGroupMorphism(object):
             self._morph = {}
 
             for (key, val) in data.iteritems():
-                if isinstance(key,str):
+                if isinstance(key, str):
                     key = domain([key])
                 else:
                     key = domain(key)
