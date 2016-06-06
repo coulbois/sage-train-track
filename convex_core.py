@@ -1,13 +1,12 @@
 # coding=utf-8
-r"""
-convex_core.py define ConvexCore class
+r"""convex_core.py define ConvexCore class.
 
 AUTHORS:
 
 - Thierry COULBOIS (2013-01-01) : initial version
 - Dominique BENIELLI (2016-02_15) :
   AMU University <dominique.benielli@univ-amu.fr>,
-  Integration in SageMath
+  Integration in SageMath.
 
 EXAMPLES::
 
@@ -38,13 +37,12 @@ from graph_map import GraphMap
 from free_group_automorphism import FreeGroupAutomorphism
 from numpy import cos
 from numpy import sin
-
+from numpy import  pi
 import bisect
 
 
 class ConvexCore():
-    """
-    Guirardel's convex core of two simplicial
+    """Guirardel's convex core of two simplicial
     trees with an action of a free group.
 
     Let T1 and T2 be trees with actions of the free group FN. G1=T1/FN
@@ -55,13 +53,13 @@ class ConvexCore():
     is of the form
 
           e
-        ----->
-       |      |
-     f |      | f
-       |      |
-       v      v
-        ----->
-          e
+       ----->
+      |      |
+    f |      | f
+      |      |
+      v      v
+       ----->
+         e
 
     where e is an edge of G1 and f an edge of G2.
 
@@ -69,19 +67,19 @@ class ConvexCore():
     non-free action of FN. 
 
     - ``ConvexCore(phi)``: where ``phi`` is an automorphism of the free
-    group F. The convex core of the Cayley tree TA of the free group F
-    with respect to its alphabet A, and of the tree TA.Phi, where Phi
-    is the outer class of ``phi``.
+      group F. The convex core of the Cayley tree TA of the free group F
+      with respect to its alphabet A, and of the tree TA.Phi, where Phi
+      is the outer class of ``phi``.
     - ``ConvexCore(G1,G2)``: where ``G1`` and ``G2`` are two marked
-    graphs (or two marked metric graphs): The convex core of the
-    universal covers T1 and T2 of ``G1`` and ``G2``
-    respectively. Edges of length 0 are quotient out.
+      graphs (or two marked metric graphs): The convex core of the
+      universal covers T1 and T2 of ``G1`` and ``G2``
+      respectively. Edges of length 0 are quotient out.
     - ``ConvexCore(f)``: where ``f`` is a homotopy equivalence between
-    graphs G1 and G2: The convex core of the universal covers T1 and
-    T2 of G1 and G2, with the fundamental group F of G1 acting on G2
-    through ``f``. Edges of length 0 are quotient out.
+      graphs G1 and G2: The convex core of the universal covers T1 and
+      T2 of G1 and G2, with the fundamental group F of G1 acting on G2
+      through ``f``. Edges of length 0 are quotient out.
 
-    .. WARNING::
+    WARNING::
 
         It is assumed that boths graphs G1 and G2 do not have vertices
         of valence 1 or 2.
@@ -94,14 +92,17 @@ class ConvexCore():
         sage: print C.slice('c',0)
         Looped multi-digraph on 2 vertices
 
-        sage: C.vertices() # [0, 1, 2, 3]
-        [0, 1, 2, 3, 4, 5]
+        sage: C.vertices()
+        [0, 1, 2, 3]
 
         sage: C.squares()
-        [[0, 1, 3, 2, 'c', 'a']]
+        [[3, 0, 2, 1, 'c', 'a']]
 
-        sage: C.twice_light_squares()  # [[1, 4, 0, 5, 'a', 'c']]
-        [[-1, 6, -1, 7, 'A', 'c']]
+
+
+        sage: C.twice_light_squares()
+        [[1, 4, 0, 5, 'a', 'c']]
+
 
     AUTHORS:
 
@@ -117,7 +118,8 @@ class ConvexCore():
         if len(args) == 2:  # ConvexCore(G,H)
             G0 = args[0]
             G1 = args[1]
-            f = FreeGroupAutomorphism(G0.difference_of_marking(G1).tighten())
+            phi= FreeGroupAutomorphism(G0.difference_of_marking(G1).tighten())
+            f = phi.rose_representative()
             g = f.inverse()
         elif len(args) == 1:
             if isinstance(args[0], GraphMap):  # ConvexCore(f)
@@ -127,10 +129,10 @@ class ConvexCore():
                 f = args[0]
                 g = f.inverse()
             elif isinstance(args[0], FreeGroupAutomorphism):  # ConvexCore(phi)
-                f = args[0].simple_outer_representative()
-                A =  AlphabetWithInverses(f.domain().variable_names())
-                G0 = GraphWithInverses.rose_graph(A)
-                G1 = GraphWithInverses.rose_graph(A)
+                phi = args[0].simple_outer_representative()
+                f = phi.rose_representative()
+                G0 = f.domain()
+                G1 = f.codomain()
                 g = f.inverse()
         elif len(args) == 4:  # ConvexCore(G,H,f,g)
             (G0, G1, f, g) = args
@@ -332,7 +334,7 @@ class ConvexCore():
             vv = G1.terminal_vertex(b)
             u = G1.reduce_path(t1[vv] * G1.reverse_path(t1[v] * Word([b])))
             if len(u) > 0:  # if vv does not stand for v.b
-                w = G0.reduce_path(g(u).to_word() * w)
+                w = G0.reduce_path(g(u) * w)
             if (vv, 1) in adjacent_twice_light_squares:
                 adjacent_twice_light_squares[(vv, 1)].append(w)
             else:
@@ -433,7 +435,7 @@ class ConvexCore():
                 vi = G0.initial_vertex(a)
                 vt = G0.terminal_vertex(a)
                 u = G1.reduce_path(
-                    f(t0[vi] * Word([a]) * G0.reverse_path(t0[vt])).to_word())
+                    f(t0[vi] * Word([a]) * G0.reverse_path(t0[vt])))
                 first_start = True
                 first_end = True
                 for (w, v) in vertices:
@@ -482,7 +484,7 @@ class ConvexCore():
                 else:
                     v1 = G1.terminal_vertex(prefix[-1])
                     u = G0.reduce_path(
-                        g(t1[v1] * G1.reverse_path(prefix)).to_word() * t0[
+                        g(t1[v1] * G1.reverse_path(prefix)) * t0[
                             G0.initial_vertex(a)])
                     edges.add((u, v1, (a, 0)))
                     isolated_edges.append((u, v1, (a, 0)))
@@ -718,24 +720,21 @@ class ConvexCore():
 
         for a in A0.positive_letters():
             aa = A0.inverse_letter(a)
-            agens = f.domain().gens()[f.domain()._names.index(a)]
-            image_a = f._morph[agens]
+            image_a = f.image(a)
             w = t0[G0.initial_vertex(a)]
-            w = G0.reduce_path(g(f(G0.reverse_path(w))).to_word() * w)
+            w = G0.reduce_path(g(f(G0.reverse_path(w))) * w)
             for b in image_a:  # the image f(a) crosses the edge prefix.b
-                bb = b.to_word(use_str=True, upper_case_as_inverse=True)
-                pb = A1.to_positive_letter(str(bb))
+                pb = A1.to_positive_letter(b)
                 u0 = g(t1[G1.initial_vertex(pb)])
                 if b == pb:
-                    w0 = G0.reduce_path(u0.to_word() * w)
+                    w0 = G0.reduce_path(u0 * w)
                     if len(w0) == 0 or w0[-1] != A0.inverse_letter(a):
                         signed_ends[pb].append((w0 * Word([a]), '+'))
                     else:
                         signed_ends[pb].append((w0, '-'))
-                image_b = g._morph[b.inverse()]
-                w = G0.reduce_path(image_b.to_word() * w)
+                w = G0.reduce_path(g.image(A1.inverse_letter(b)) * w)
                 if b != pb:
-                    w0 = G0.reduce_path(u0.to_word() * w)
+                    w0 = G0.reduce_path(u0 * w)
                     if len(w0) == 0 or w0[-1] != A0.inverse_letter(a):
                         signed_ends[pb].append((w0 * Word([a]), '-'))
                     else:
@@ -774,16 +773,15 @@ class ConvexCore():
 
         - squares: ``[v0,v1,v2,v3,a,b]`` where v0,v1,v2 and v3 are
           integers standing for vertices and a,b are positive letters
-          labeling edges of G0 and G1:
-
-             a
-        v3 ------> v2
-          ^        ^
-          |        |
-          |b       |b
-          |        |
-          |    a   |
-        v0 ------>v1
+          labeling edges of G0 and G1 :
+               a
+          v3 ------> v2
+           ^        ^
+           |        |
+           |b       |b
+           |        |
+           |    a   |
+          v0 ------>v1
 
         - edges : ``[v0,v1,(a,side)]`` where ``v0`` and ``v1`` are
           integers standing for vertices a is a label of the tree on
@@ -816,8 +814,8 @@ class ConvexCore():
 
             sage: C.boundary([2,1,'C']) # boundary of an edge
             [2, 1]
-        """
 
+        """
         if isinstance(cell, tuple):
             if len(cell) == 4:  # cell is a square
                 w, v, a, b = cell
@@ -841,7 +839,7 @@ class ConvexCore():
                     vv = G1.terminal_vertex(a)
                     aa = G1.alphabet().inverse_letter(a)
                     ww = G0.reduce_path(
-                        f10(t1[vv] * Word([aa]) * G1.reverse_path(t1[v])).to_word() * w)
+                        f10(t1[vv] * Word([aa]) * G1.reverse_path(t1[v])) * w)
                 return [(w, v), (ww, vv)]
         else:  # the cell is a list of the form [v0,v1,v2,v3,v4,a,b]:
             # square or [v0,v1,(a,side)]: edge
@@ -866,7 +864,7 @@ class ConvexCore():
         or
 
         - (w0,v1) with w0 a path of the form t0[v] and v1 the origin
-        of G1.
+          of G1.
 
 
         INPUT:
@@ -887,18 +885,18 @@ class ConvexCore():
 
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
             sage: C=ConvexCore(phi)
-            sage: C.path_from_origin(2,0) # word: Bc
-            word: BcB
-            sage: C.path_from_origin(2,1) # word: a
-            word: abaa
+            sage: C.path_from_origin(2,0)
+            word: Bc
+            sage: C.path_from_origin(2,1)
+            word: a
 
             sage: C.path_from_origin(('Bc',0),0)
             'Bc'
 
             sage: C.path_from_origin(('Bc',0),1)
             word: a
-        """
 
+        """
         if not isinstance(vertex, tuple):  # The vertex is an integer
             vertex = self._vertex_labels[vertex]
 
@@ -916,7 +914,7 @@ class ConvexCore():
                 f01 = self._f01
                 return G1.reduce_path(
                     f01(t0[G0.terminal_vertex(w[-1])] *
-                        G0.reverse_path(w)).to_word() *
+                        G0.reverse_path(w)) *
                         t1[vertex[1]])
 
     def tree(self, side):
@@ -938,7 +936,9 @@ class ConvexCore():
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
             sage: C=ConvexCore(phi)
             sage: print C.tree(0)
-            a: 0->0, b: 0->0, c: 0->0
+            Marked graph: a: 0->0, b: 0->0, c: 0->0
+            Marking: a->a, b->b, c->c
+
         """
 
         if side == 0:
@@ -958,8 +958,8 @@ class ConvexCore():
 
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
             sage: C=ConvexCore(phi)
-            sage: C.squares() # [[3, 0, 2, 1, 'c', 'a']]
-            [[0, 1, 3, 2, 'c', 'a']]
+            sage: C.squares()
+            [[3, 0, 2, 1, 'c', 'a']]
 
         """
 
@@ -977,9 +977,8 @@ class ConvexCore():
 
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
             sage: C=ConvexCore(phi)
-            sage: C.twice_light_squares() # [[1, 4, 0, 5, 'a', 'c']]
-            [[-1, 6, -1, 7, 'A', 'c']]
-
+            sage: C.twice_light_squares()
+            [[1, 4, 0, 5, 'a', 'c']]
         """
 
         return self._twice_light_squares
@@ -999,19 +998,14 @@ class ConvexCore():
 
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
             sage: C=ConvexCore(phi)
-            sage: # [[3, 1, ('a', 1)],
-            sage: # [1, 0, ('b', 0)],
-            sage: # [2, 3, ('b', 1)],
-            sage: # [1, 2, ('c', 0)],
-            sage: # [0, 2, ('a', 1)],
-            sage: # [3, 0, ('c', 0)]]
             sage: C.edges()
-            [[4, 5, ('b', 1)],
-             [0, 2, ('a', 1)],
-             [0, 1, ('c', 0)],
-             [1, 3, ('a', 1)],
-             [2, 3, ('c', 0)],
-             [2, 1, ('b', 0)]]
+             [[3, 1, ('a', 1)],
+              [1, 0, ('b', 0)],
+              [2, 3, ('b', 1)],
+              [1, 2, ('c', 0)],
+              [0, 2, ('a', 1)],
+              [3, 0, ('c', 0)]]
+
         """
 
         return self._edges
@@ -1033,8 +1027,9 @@ class ConvexCore():
 
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
             sage: C=ConvexCore(phi)
-            sage: C.vertices() # [0, 1, 2, 3]
-            [0, 1, 2, 3, 4, 5]
+            sage: C.vertices()
+            [0, 1, 2, 3]
+
         """
 
         return self._vertices
@@ -1051,8 +1046,8 @@ class ConvexCore():
 
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
             sage: C=ConvexCore(phi)
-            sage: C.isolated_edges() # [[2, 3, ('b', 1)], [1, 0, ('b', 0)]]
-            [[4, 5, ('b', 1)], [2, 1, ('b', 0)]]
+            sage: C.isolated_edges()
+            [[2, 3, ('b', 1)], [1, 0, ('b', 0)]]
 
         """
 
@@ -1124,7 +1119,7 @@ class ConvexCore():
             Looped multi-digraph on 4 vertices
 
             sage: C.one_squeleton(0,augmented=True) # Looped multi-digraph on 5 vertices
-            Looped multi-digraph on 6 vertices
+            Looped multi-digraph on 5 vertices
         """
 
         G = self.tree(side)
@@ -1213,27 +1208,8 @@ class ConvexCore():
 
             sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
             sage: C = ConvexCore(phi)
-            sage: C.squares_of_the_boundary() # [(2, 0), (4, 2), (8, 1), (1, 1), (5, 3), (6, 3), (0, 0), (3, 2)]
-            [(6, 1),
-             (4, 2),
-             (4, 0),
-             (6, 2),
-             (3, 2),
-             (8, 3),
-             (1, 0),
-             (7, 0),
-             (5, 2),
-             (1, 2),
-             (0, 3),
-             (6, 0),
-             (0, 0),
-             (3, 0),
-             (2, 2),
-             (7, 2),
-             (8, 0),
-             (5, 1),
-             (8, 2),
-             (2, 0)]
+            sage: C.squares_of_the_boundary()
+            [(2, 0), (4, 2), (8, 1), (1, 1), (5, 3), (6, 3), (0, 0), (3, 2)]
 
         """
 
@@ -1295,8 +1271,8 @@ class ConvexCore():
 
             sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
             sage: C = ConvexCore(phi)
-            sage: C.squares_orientation() # [1, -1, -1, -1, 1, -1, -1, 1, -1]
-            [1, -1, 1, 1, -1, 1, 2, -2, 2]
+            sage: C.squares_orientation()
+            [1, -1, -1, -1, 1, -1, -1, 1, -1]
 
         """
 
@@ -1384,65 +1360,23 @@ class ConvexCore():
 
             sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
             sage: C = ConvexCore(phi)
-
-            sage: # [(8, 0, ('b', 0, -1)),
-            sage: #  (0, 8, ('B', 0, 1)),
-            sage: #  (3, 2, ('a', 0, -1)),
-            sage: #  (2, 3, ('A', 0, 1)),
-            sage: #  (7, 8, ('b', 1, -1)),
-            sage: #  (8, 7, ('B', 1, 1)),
-            sage: #  (2, 7, ('a', 1, -1)),
-            sage: #  (7, 2, ('A', 1, 1)),
-            sage: #  (11, 1, ('a', 1, 1)),
-            sage: #  (1, 11, ('A', 1, -1)),
-            sage: #  (4, 11, ('b', 1, 1)),
-            sage: #  (11, 4, ('B', 1, -1)),
-            sage: #  (1, 0, ('a', 0, 1)),
-            sage: #  (0, 1, ('A', 0, -1)),
-            sage: #  (3, 4, ('b', 0, 1)),
-            sage: #  (4, 3, ('B', 0, -1))]
             sage: C.surface_boundary()
-            [(12, 16, ('b', 1, 2)),
-             (16, 12, ('B', 1, -2)),
-             (10, 9, ('a', 0, 1)),
-             (9, 10, ('A', 0, -1)),
-             (5, 4, ('a', 0, -1)),
-             (4, 5, ('A', 0, 1)),
-             (17, 16, ('b', 0, -2)),
-             (16, 17, ('B', 0, 2)),
-             (8, 9, ('b', 0, -1)),
-             (9, 8, ('B', 0, 1)),
-             (15, 19, ('b', 1, -2)),
-             (19, 15, ('B', 1, 2)),
-             (2, 1, ('a', 0, -1)),
-             (1, 2, ('A', 0, 1)),
-             (13, 14, ('a', 0, -2)),
-             (14, 13, ('A', 0, 2)),
-             (10, 11, ('b', 0, -1)),
-             (11, 10, ('B', 0, 1)),
-             (7, 6, ('a', 0, 1)),
-             (6, 7, ('A', 0, -1)),
-             (0, 5, ('a', 1, -1)),
-             (5, 0, ('A', 1, 1)),
-             (13, 12, ('b', 0, 2)),
-             (12, 13, ('B', 0, -2)),
-             (0, 1, ('b', 0, 1)),
-             (1, 0, ('B', 0, -1)),
+            [(8, 0, ('b', 0, -1)),
+             (0, 8, ('B', 0, 1)),
+             (3, 2, ('a', 0, -1)),
+             (2, 3, ('A', 0, 1)),
+             (7, 8, ('b', 1, -1)),
+             (8, 7, ('B', 1, 1)),
+             (2, 7, ('a', 1, -1)),
+             (7, 2, ('A', 1, 1)),
+             (11, 1, ('a', 1, 1)),
+             (1, 11, ('A', 1, -1)),
+             (4, 11, ('b', 1, 1)),
+             (11, 4, ('B', 1, -1)),
+             (1, 0, ('a', 0, 1)),
+             (0, 1, ('A', 0, -1)),
              (3, 4, ('b', 0, 1)),
-             (4, 3, ('B', 0, -1)),
-             (7, 8, ('b', 0, -1)),
-             (8, 7, ('B', 0, 1)),
-             (17, 18, ('a', 0, 2)),
-             (18, 17, ('A', 0, -2)),
-             (15, 14, ('b', 0, 2)),
-             (14, 15, ('B', 0, -2)),
-             (6, 11, ('a', 1, 1)),
-             (11, 6, ('A', 1, -1)),
-             (19, 18, ('b', 0, -2)),
-             (18, 19, ('B', 0, 2)),
-             (2, 3, ('b', 0, 1)),
-             (3, 2, ('B', 0, -1))]
-
+             (4, 3, ('B', 0, -1))]
         """
 
         if orientation is None:
@@ -1537,17 +1471,14 @@ class ConvexCore():
             sage: phi=mul([FreeGroupAutomorphism.surface_dehn_twist(F,i) for i in [2,1,1,4]])
             sage: C=ConvexCore(phi)
             sage: C.plot_ideal_curve_diagram(cyclic_order_0=['A','B','a','C','D','c','d','b'])
-            There are no eulerian circuit in the boundary compatible with the given cyclic orders.
-            Probably changing the orientation will solve this problem
-            False
-
-            sage: # Graphics object consisting of 28 graphics primitives
+            Graphics object consisting of 28 graphics primitives
         """
         from sage.plot.graphics import Graphics
         from sage.plot.line import Line, line
         from sage.plot.text import text
         from sage.plot.arrow import Arrow
         from sage.rings.real_mpfr import RR
+
 
         T0 = self.tree(0)
         T1 = self.tree(1)
@@ -1798,7 +1729,7 @@ class ConvexCore():
                 if e[2][1] == 0 and (cyclic_order_0 is not None) and (
                         j0 is not None):
                     jj0 = j0 + 1
-                    if jj0 >= len(cyclic_order_0):
+                    if jj0 == len(cyclic_order_0):
                         jj0 = 0
 
                     if e[2][0] != cyclic_order_0[jj0]:
@@ -1959,7 +1890,7 @@ class ConvexCore():
 
         for i, a in enumerate(polygon_side_0):
             boundary_initial_vertex[a] = (
-            RR(radius * cos(i * pi / N)), RR(radius * sin(i * pi / N)))
+                RR(radius * cos(i * pi / N)), RR(radius * sin(i * pi / N)))
             boundary_terminal_vertex[a] = (RR(radius * cos((i + 1) * pi / N)),
                                            RR(radius * sin((i + 1) * pi / N)))
 
@@ -2158,7 +2089,6 @@ class ConvexCore():
 
         Note that in this context there are no twice light squares.
         """
-
         from sage.plot.graphics import Graphics
         from sage.plot.line import Line
         from sage.plot.arrow import Arrow
