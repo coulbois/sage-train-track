@@ -1083,13 +1083,16 @@ class TrainTrackMap(GraphSelfMap):
                 if prefix_length != critic:
                     done = False
                     if verbose:
-                        print "Non essential INP: ", inp
+                        print "Folding non essential INP: ", inp
                     self._strata = False
-                    folding_morph = self.fold_inp(inp, verbose)
+                    folding_morph = self.fold_inp(inp, verbose = \
+                        verbose and verbose >1 and verbose - 1)
                     if result_morph:
                         result_morph = folding_morph * result_morph
                     else:
                         result_morph = folding_morph
+                    if verbose:
+                        print self
                     break
             else:
                 for turn in self._domain.turns():
@@ -1102,7 +1105,7 @@ class TrainTrackMap(GraphSelfMap):
                                               for inp in inps):
                         done = False
                         if verbose:
-                            print "Fold illegal turn: ", turn
+                            print "Folding illegal turn: ", turn
                         prefix = self.image(
                             turn[0])[0:self._domain.common_prefix_length(
                             self.image(turn[0]), self.image(turn[1]))]
@@ -1113,6 +1116,8 @@ class TrainTrackMap(GraphSelfMap):
                             result_morph = folding_morph * result_morph
                         else:
                             result_morph = folding_morph
+                        if verbose:
+                            print self
                         break
                 else:
                     for turn in self._domain.turns():
@@ -1121,16 +1126,19 @@ class TrainTrackMap(GraphSelfMap):
                                         tt[1] == inp[1][0]) for inp in inps):
                             done = False
                             if verbose:
-                                print "Fold illegal turn :", tt
+                                print "Folding illegal turn :", tt
                             prefix = self.image(
                                 tt[0])[0:self._domain.common_prefix_length(
                                 self.image(tt[0]), self.image(tt[1]))]
                             self._strata = False
-                            folding_morph = self.fold(tt, prefix, verbose)
+                            folding_morph = self.fold(tt, prefix, verbose =
+                                                verbose and verbose >1 and verbose - 1)
                             if result_morph:
                                 result_morph = folding_morph * result_morph
                             else:
                                 result_morph = folding_morph
+                            if verbose:
+                                print self
                             break
 
             if not done:

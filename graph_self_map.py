@@ -1459,7 +1459,7 @@ class GraphSelfMap(GraphMap):
         if len(self._strata) > 1:
             if verbose:
                 print "Not irreducible"
-                print self
+                print self, "\n"
 
             return result_morph
 
@@ -1474,15 +1474,18 @@ class GraphSelfMap(GraphMap):
             else:
                 self._strata = None
                 if verbose:
-                    print "Not yet train-track. Possible foldings:", turns
+                    print "Not yet train-track. Folding:", turns
                 tmp_morph = self.multifold(
                     turns, verbose=verbose and verbose > 1 and verbose - 1)
                 result_morph = tmp_morph*result_morph
 
+                if verbose:
+                    print "Reduction"
                 tmp_morph = self.reduce(
                     verbose=verbose and verbose > 1 and verbose - 1)
-                if tmp_morph:
-                    result_morph = tmp_morph * result_morph
+                result_morph = tmp_morph * result_morph
+                if verbose:
+                    print self, "\n"
 
                 done = len(self._strata) > 1
 
@@ -2850,7 +2853,7 @@ class GraphSelfMap(GraphMap):
                 s, verbose=verbose and verbose > 1 and verbose - 1)
 
             if verbose:
-                print "\n", self
+                print self, "\n"
 
         else:
             if verbose:
@@ -3611,6 +3614,9 @@ class GraphSelfMap(GraphMap):
         """
         A = self._domain.alphabet()
 
+        if verbose:
+            print "Reduction"
+
         result_morph = self.relative_reduce(
             safe_strata=range(len(self._strata)),
             verbose=verbose and verbose > 1 and verbose - 1)
@@ -3631,10 +3637,9 @@ class GraphSelfMap(GraphMap):
 
                         # Core subdivision
                         l = len(self._strata)
-                        result_morph = self.core_subdivide(
-                            s,
-                            verbose=verbose and verbose > 1 and verbose - 1) *\
-                            result_morph
+
+                        result_morph = self.core_subdivide(s, verbose = \
+                            verbose) * result_morph
                         number_of_new_strata = \
                             len(self._strata) - l  # number of strata below
                         # s may have changed
@@ -3648,7 +3653,7 @@ class GraphSelfMap(GraphMap):
                             s, verbose=verbose and verbose > 1 and verbose - 1)
                         if len(paths) > 0:
                             if verbose:
-                                print "Inessential connecting paths" \
+                                print "Folding inessential connecting paths" \
                                       " below stratum ", s, ": ", paths
                             strata = self._strata
                             self._strata = False
@@ -3667,6 +3672,8 @@ class GraphSelfMap(GraphMap):
 
                             result_morph = tmp_morph * result_morph
                             done = False
+                            if verbose:
+                                print self, "\n"
                         elif verbose:
                             print "Stratum", s, "satisfies RTT-ii " \
                                                 "(no inessential connecting " \
@@ -3679,6 +3686,8 @@ class GraphSelfMap(GraphMap):
                         s, verbose=verbose and verbose > 1 and verbose - 1)
 
                     if len(turn) > 0:
+                        if verbose:
+                            print "Folding", turn
                         strata = self._strata
                         self._strata = False
                         tmp_morph = self.multifold(
@@ -3699,6 +3708,8 @@ class GraphSelfMap(GraphMap):
                             verbose=verbose and verbose > 1 and
                             verbose - 1) * result_morph
                         done = False
+                        if verbose:
+                            print self
                         break
 
                     elif verbose:
@@ -3787,8 +3798,7 @@ class GraphSelfMap(GraphMap):
                         l = len(self._strata)
                         result_morph = self.core_subdivide(
                             s,
-                            verbose=verbose and verbose > 1 and
-                            verbose - 1) * result_morph
+                            verbose = verbose ) * result_morph
                         number_of_new_strata = len(
                             self._strata) - l  # number of strata
                         # below s may have changed
@@ -3800,7 +3810,7 @@ class GraphSelfMap(GraphMap):
                             s, verbose=verbose and verbose > 1 and verbose - 1)
                         if len(paths) > 0:
                             if verbose:
-                                print "Inessential connecting paths" \
+                                print "Folding inessential connecting paths" \
                                       " below stratum ", s, ": ", paths
                             strata = self._strata
                             self._strata = False
@@ -3818,6 +3828,9 @@ class GraphSelfMap(GraphMap):
                             # irreducible and exponential
 
                             result_morph = tmp_morph * result_morph
+
+                            if verbose:
+                                print self, "\n"
                         elif verbose:
                             print "Stratum", s, "satisfies RTT-ii " \
                                                 "(no inessential connecting " \
@@ -3832,6 +3845,9 @@ class GraphSelfMap(GraphMap):
 
                         strata = self._strata
                         self._strata = False
+
+                        if verbose:
+                            print "Folding", turn
                         tmp_morph = self.multifold(
                             turn,
                             verbose=verbose and verbose > 1 and verbose - 1)
@@ -3846,6 +3862,8 @@ class GraphSelfMap(GraphMap):
                         result_morph = tmp_morph * result_morph
 
                         stratum = set(a for a in self._strata[s])
+                        if verbose:
+                            print "Reducing"
                         tmp_morph = self.relative_reduce(
                             folded_strata,
                             verbose=verbose and verbose > 1 and verbose - 1)
@@ -3859,6 +3877,9 @@ class GraphSelfMap(GraphMap):
                                 if sb > new_s:
                                     new_s = sb
                         s = new_s
+
+                        if verbose:
+                            print self, "\n"
 
                     else:  # now stratum s satisfies RTT
                         if verbose:
@@ -3885,7 +3906,7 @@ class GraphSelfMap(GraphMap):
                                 if inp:
                                     done = False
                                     if verbose:
-                                        print "Inessential INP:", inp
+                                        print "Folding inessential INP:", inp
                                     folding_morph = \
                                         self.fold_inp_in_relative_train_track(
                                             inp, s,
@@ -3898,6 +3919,7 @@ class GraphSelfMap(GraphMap):
                                         verbose=verbose and verbose > 1 and
                                         verbose - 1)
                                     s = heritage[s][-1]
+                                    print self
                                 else:
                                     edges = [a for a in self._strata[s]]
                                     edges = edges + [A.inverse_letter(a) for a
