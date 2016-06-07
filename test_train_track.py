@@ -19,7 +19,7 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/ 
 #***************************************************************************** 
 from sage.groups.free_group import FreeGroup
-from free_group_automorphism import FreeGroupAutomorphism
+from sage.combinat.words.free_group_automorphism import FreeGroupAutomorphism
 from sage.misc.misc import cputime
 
 

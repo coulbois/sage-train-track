@@ -18,6 +18,11 @@ EXAMPLES::
     Marked graph: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
     Marking: a->a, b->dbD, c->ecE
     Edge map: a->a, b->b, c->c, d->eCEAd, e->eCEAdbDaecEae
+
+REFERENCES:
+
+.. [BH-train-track] M. Bestvina, M. Handel, Train tracks and
+    automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
 """
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
@@ -29,13 +34,13 @@ from graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.rings.qqbar import AA
-from inverse_alphabet import AlphabetWithInverses
+from sage.combinat.words.inverse_alphabet import AlphabetWithInverses
 from sage.groups.free_group import FreeGroup
-from free_group_automorphism import FreeGroupAutomorphism
+from sage.combinat.words.free_group_automorphism import FreeGroupAutomorphism
 from sage.graphs.graph import DiGraph
 from sage.graphs.graph import Graph
-from inverse_graph import GraphWithInverses
-from marked_graph import MarkedGraph
+from sage.combinat.words.inverse_graph import GraphWithInverses
+from sage.combinat.words.marked_graph import MarkedGraph
 
 
 class GraphSelfMap(GraphMap):
@@ -76,6 +81,7 @@ class GraphSelfMap(GraphMap):
     AUTHORS:
 
     - Thierry Coulbois (2013-05-16)
+
     """
 
     def __init__(self, *args):
@@ -147,7 +153,7 @@ class GraphSelfMap(GraphMap):
           ``WordMorphism(edge_map)``, the letters must be from an
           ``AlphabetWithInverses``. Its is only required that images of
           positive letters are defined.
-        - ``path`` (default None) an admissible edge-path in the base
+        - ``path`` (default: None) an admissible edge-path in the base
           graph of the ``GraphSelfMap``.
 
         OUTPUT:
@@ -167,7 +173,6 @@ class GraphSelfMap(GraphMap):
             Marking: a->a, b->b, c->ecE, d->d
             Edge map: a->a, b->b, c->c, d->eCEAd, e->dbDae
         """
-
         edge_morph = WordMorphism(edge_map)
         if alphabet is None:
             alphabet = AlphabetWithInverses(edge_morph.domain().alphabet())
@@ -276,7 +281,6 @@ class GraphSelfMap(GraphMap):
             [0 0 0 1 2]
             [0 0 0 2 5]
         """
-
         from sage.matrix.constructor import matrix
 
         A = self.domain().alphabet()
@@ -293,7 +297,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``stratum`` -- (default:None) if not None an integer
+        - ``stratum`` -- (default: None) if not None an integer
           that is the index of a stratum of self.
 
         OUTPUT:
@@ -328,7 +332,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -460,8 +464,8 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``edge_list`` list of edge for subdivide
-        - ``verbose`` -- (default False) for verbose option
+        - ``edge_list`` -- list of edge for subdivide.
+        - ``verbose`` -- (default: False) for verbose option.
 
         OUTPUT:
 
@@ -602,7 +606,7 @@ class GraphSelfMap(GraphMap):
 
           This is the induction step in the proof of Theorem 1.7 in
           [BH-train-track].
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -627,11 +631,6 @@ class GraphSelfMap(GraphMap):
         
             :meth:`sage.combinat.words.graph_self_map.GraphSelfMap.fold()`
             :meth:`sage.combinat.words.graph_self_map.GraphWithInverses.fold()`
-
-        REFERENCES:
-
-        .. [BH-train-track] M. Bestvina, M. Handel, Train tracks and
-           automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
 
         """
 
@@ -851,7 +850,7 @@ class GraphSelfMap(GraphMap):
           (path,'path') where path is a path in the graph of self which
           is mapped onto the ``common_prefix``.
         - ``common_prefix`` common prfix to share
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -877,15 +876,9 @@ class GraphSelfMap(GraphMap):
         .. SEEALSO::
 
             :meth:`sage.combinat.words.graph_self_map.GraphSelfMap.multifold()`
-            :meth:`sage.combinat.words.graph_self_map.GraphWithInverses.fold()`
-
-        REFERENCES:
-
-        .. [BH-train-track] M. Bestvina, M. Handel, Train tracks and
-           automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
+            :meth:`sage.combinat.words.inverse_graph.GraphWithInverses.fold()`
 
         """
-
         A = self._domain.alphabet()
 
         if verbose:
@@ -1103,7 +1096,7 @@ class GraphSelfMap(GraphMap):
         INPUT:
 
         - ``forest`` list of list of edges, one for each connected component
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1128,9 +1121,7 @@ class GraphSelfMap(GraphMap):
 
             :meth:`sage.combinat.words.inverse_graph.GraphWithInverses.contract_forest()`
 
-
         """
-
         if verbose:
             print "Contract invariant forest: ", forest
 
@@ -1157,7 +1148,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1174,7 +1165,6 @@ class GraphSelfMap(GraphMap):
             sage: f.maximal_filtration()
             [{'d'}, {'a', 'b', 'c', 'd'}]
         """
-
         A = self._domain._alphabet
         filtration = [set(A.positive_letters())]
         span = dict((a, set(A.to_positive_letter(b)
@@ -1251,7 +1241,6 @@ class GraphSelfMap(GraphMap):
             :meth:`sage.combinat.words.inverse_graphGraphWithInverses.contract_forest()`
 
         """
-
         if verbose:
             print "Contract tails: ", tails
 
@@ -1296,7 +1285,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1431,7 +1420,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1450,7 +1439,6 @@ class GraphSelfMap(GraphMap):
             Edge map: a->ec, b->Ea, c->b, e->C
             Irreducible representative
         """
-
         done = False
 
         result_morph = self.reduce(
@@ -1507,7 +1495,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1520,7 +1508,6 @@ class GraphSelfMap(GraphMap):
             sage: f.is_train_track()
             True
         """
-
         G = self.domain()
 
         if len(G.connected_components(G.alphabet().positive_letters())) == 1:
@@ -1596,7 +1583,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``stratum`` --(default None)
+        - ``stratum`` --(default: None)
 
         OUTPUT:
 
@@ -1610,7 +1597,6 @@ class GraphSelfMap(GraphMap):
             sage: f.edge_turns()
             {('a', 'A'), ('a', 'B'), ('a', 'C'), ('b', 'A'), ('c', 'A')}
         """
-
         A = self._domain._alphabet
         result = set()
         new = []
@@ -1734,10 +1720,11 @@ class GraphSelfMap(GraphMap):
         degenerate turn.
 
         INPUT:
-        -``stratum`` --(default None)
 
-        -``iteration`` --(default None) the number of iterations of ``self``
-        required to fold ``t``.
+        - ``stratum`` --(default: None)
+
+        - ``iteration`` --(default: None) the number of iterations of ``self``
+          required to fold ``t``.
 
         OUTPUT:
 
@@ -2075,14 +2062,14 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``inps`` (default None): a list of INPs each of the form
+        - ``inps`` (default: None) -- a list of INPs each of the form
           ``(word1,word2)`` with the fixed points lying inside the last
           letters of ``word1`` and ``word2``. If ``inps`` is ``None``
-          then it is set to
-          ``self.relative_indivisible_nielsen_paths(stratum = stratum)
-        - ``stratum`` : the index of the exponential stratum of ``self``
+          then it is set to ``self.relative_indivisible_nielsen_paths(
+          stratum = stratum)``.
+        - ``stratum`` -- the index of the exponential stratum of ``self``
           that meets these INPs.
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option.
 
         OUTPUT:
 
@@ -2106,10 +2093,9 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.indivisible_nielsen_paths()`
-            :meth:`sage.combinat.words.train_track_map.GraphSelfMap.relative_indivisible_nielsen_paths()`
+            - :meth:`sage.combinat.words.train_track_map.TrainTrackMap.indivisible_nielsen_paths()`
+            - :meth:`sage.combinat.words.train_track_map.GraphSelfMap.relative_indivisible_nielsen_paths()`
         """
-
         A = self.domain().alphabet()
 
         M = self.relative_matrix(stratum)
@@ -2191,7 +2177,6 @@ class GraphSelfMap(GraphMap):
             This has no effects on the strata of ``self`` (use
             ``GraphSelfMap.stratify()`` afterward)
         """
-
         G = self._domain
         A = G.alphabet()
         stratum = set(e for e in self._strata[stratum])
@@ -2368,7 +2353,6 @@ class GraphSelfMap(GraphMap):
             sage: f.is_exponential_stratum(1)
             True
         """
-
         M = self.relative_matrix(stratum)
         for l in M:
             m = 0
@@ -2420,7 +2404,7 @@ class GraphSelfMap(GraphMap):
         INPUT:
 
         - ``s`` index of a stratum
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -2434,7 +2418,6 @@ class GraphSelfMap(GraphMap):
             sage: f.filtre_stratum(0)
             2
         """
-
         stratum = self._strata[s]
         if len(stratum) == 0:
             self._strata.pop(s)
@@ -2487,7 +2470,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -2531,9 +2514,9 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``morph``-- (default None): a WordMorphism to be applied
+        - ``morph``-- (default: None): a WordMorphism to be applied
           to the strata of ``self``.
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -2550,7 +2533,6 @@ class GraphSelfMap(GraphMap):
             sage: f.update_strata(m)
             {0: [0], 1: [1]}
         """
-
         A = self._domain.alphabet()
 
         # Apply morph to the strata
@@ -2590,7 +2572,7 @@ class GraphSelfMap(GraphMap):
         INPUT:
 
         - ``s``: the index of a stratum of ``self`` (0 is the bottom stratum)
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -2611,7 +2593,6 @@ class GraphSelfMap(GraphMap):
             sage: f.find_relative_folding(1)
             [['a', 3], ('a', 'B')]
         """
-
         A = self._domain.alphabet()
         turns = []
         source = {}
@@ -2665,7 +2646,7 @@ class GraphSelfMap(GraphMap):
         """
 
         Core subdivision of the ``s`` stratum of ``self`` as defined
-         in [BH-train-track].
+        in [BH-train-track].
 
         After a core subdivision, the graph self map satisfies RTT-i:
         the image of each edge of the ``s`` stratum starts and ends
@@ -2674,7 +2655,7 @@ class GraphSelfMap(GraphMap):
         INPUT:
 
         - ``s``: index of a stratum of ``self``.
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -2695,15 +2676,7 @@ class GraphSelfMap(GraphMap):
             Marking: a->a, b->bd, c->c
             Edge map: a->abd, b->c, c->c, d->a
             Strata: [set(['c']), set(['b']), set(['a', 'd'])]
-
-
-        REFERENCES:
-
-        ..  [BH-train-track] M. Bestvina, M. Handel, Train tracks and
-            automorphisms of free groups, Annals of Math, 135, 1-51, 1992.
-
         """
-
         A = self._domain.alphabet()
         Dfinverse = dict((e, []) for e in self._strata[s])
         subdivide = []
@@ -2898,9 +2871,9 @@ class GraphSelfMap(GraphMap):
         """
         Reduces self by:
 
-        1/ contract tails
+        1/ contract tails.
 
-        2/ contract pretrivial forests
+        2/ contract pretrivial forests.
 
         3/ contract lowest strata that are forest.
 
@@ -2909,28 +2882,24 @@ class GraphSelfMap(GraphMap):
         and so that property RTT-i (no need of core subdivision) is
         not broken. A fusion is safe if either:
 
-        - the upper most stratum contains only one edge of the fusion
-          line
+            - the upper most stratum contains only one edge of the fusion
+              line.
+            or
+            - the upper most stratum is not exponential.
+            or
+            - the upper most stratum is exponential and one of the
+              safe_strata and the fusion is towards one of the edges
+              corresponding to the minimum coefficient of the right
+              Perron-Frobenius eigen-vector.
 
-        or
-
-        - the upper most stratum is not exponential
-
-        or
-
-        - the upper most stratum is exponential and one of the
-          safe_strata and the fusion is towards one of the edges
-          corresponding to the minimum coefficient of the right
-          Perron-Frobenius eigen-vector.
-
-        5/ contract pretrivial forests
+        5/ contract pretrivial forests.
 
         6/ Update the maximal filtration encoded in self._strata.
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
-        - ``safe_strata`` -- (default None) set of indices of
+        - ``verbose`` -- (default: False) for verbose option
+        - ``safe_strata`` -- (default: None) set of indices of
            stratum. For these ``safe_strata`` we do not require that the
            fusion strictly decreases the relative expansion
            factor. Indeed such a strata should be declare safe when an
@@ -3262,7 +3231,7 @@ class GraphSelfMap(GraphMap):
 
         INPUT:
 
-        - ``s``: the index of a stratum of ``self``
+        - ``s`` the index of a stratum of ``self``
 
         OUPUT:
 
@@ -3449,7 +3418,6 @@ class GraphSelfMap(GraphMap):
             Edge map: a->acefb, b->a, c->cef, e->cef, f->FEC
             Strata: [set(['c', 'e', 'f']), set(['a', 'b'])]
         """
-
         G = self._domain
         A = G.alphabet()
         result_morph = None
@@ -3552,7 +3520,6 @@ class GraphSelfMap(GraphMap):
             sage: f.relative_expansion_factors()
             {0: 2.414213562373095?, 2: 1.618033988749895?}
         """
-
         result = {}
         for s in xrange(len(self._strata)):
             if self.is_exponential_stratum(s):
@@ -3616,7 +3583,6 @@ class GraphSelfMap(GraphMap):
 
         if verbose:
             print "Reduction"
-
         result_morph = self.relative_reduce(
             safe_strata=range(len(self._strata)),
             verbose=verbose and verbose > 1 and verbose - 1)
@@ -3755,7 +3721,7 @@ class GraphSelfMap(GraphMap):
         .. SEEALSO::
 
             :meth:`sage.combinat.words.graph_self_map.GraphSelfMap.stable_train_track()`
-            :meth:`sage.combinat.words.free_grou_automorphism.FreeGroupAutomorphism.train_track()`
+            :meth:`sage.combinat.words.free_group_automorphism.FreeGroupAutomorphism.train_track()`
 
         EXAMPLES::
         
@@ -3828,7 +3794,6 @@ class GraphSelfMap(GraphMap):
                             # irreducible and exponential
 
                             result_morph = tmp_morph * result_morph
-
                             if verbose:
                                 print self, "\n"
                         elif verbose:
@@ -3845,7 +3810,6 @@ class GraphSelfMap(GraphMap):
 
                         strata = self._strata
                         self._strata = False
-
                         if verbose:
                             print "Folding", turn
                         tmp_morph = self.multifold(
@@ -3880,7 +3844,6 @@ class GraphSelfMap(GraphMap):
 
                         if verbose:
                             print self, "\n"
-
                     else:  # now stratum s satisfies RTT
                         if verbose:
                             print "Stratum", s, "satisfies RTT-iii" \

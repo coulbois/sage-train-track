@@ -851,7 +851,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             a: 0->0, b: 0->0, c: 0->0
             Edge map: a->Cabc, b->Cacc, c->Cac
 
-        SEE ALSO:
+        .. SEEALSO::
 
             This is the same as ``self.rose_representative()`` but the
             base graph of the ``GraphSelfMap`` is a
@@ -984,9 +984,9 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         7/ If there is one iwip check whether it is contained in a
         non-trivial free factor.
 
-        SEEALSO::
+        .. SEEALSO::
 
-            TrainTrackMap.is_iwip()
+            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.is_iwip()`
 
         REFERENCES
 
@@ -1376,13 +1376,13 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             sage: FreeGroupAutomorphism.random_mapping_class(F).__class__
             <class 'sage.combinat.words.free_group_automorphism.FreeGroupAutomorphism'>
 
-        WARNING:
+        .. WARNING:
 
-        The rank of ``F` is assumed to be even.
+            The rank of ``F` is assumed to be even.
 
-        ...SEE ALSO::
+        .. SEEALSO::
 
-           :meth:`sage.combinat.words.fre_grop_automorphism.FreeGroupAutomorphism.surface_dehn_twist()`
+           :meth:`sage.combinat.words.free_group_automorphism.FreeGroupAutomorphism.surface_dehn_twist()`
 
         """
         from sage.misc.prandom import randint

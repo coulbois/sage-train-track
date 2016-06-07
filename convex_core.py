@@ -35,9 +35,6 @@ from inverse_alphabet import AlphabetWithInverses
 from inverse_graph import MetricGraph
 from graph_map import GraphMap
 from free_group_automorphism import FreeGroupAutomorphism
-from numpy import cos
-from numpy import sin
-from numpy import  pi
 import bisect
 
 
@@ -52,14 +49,14 @@ class ConvexCore():
     squares. 1-cells are edges labeled by edges of G1 or G2. A square
     is of the form
 
-          e
-       ----->
-      |      |
-    f |      | f
-      |      |
-      v      v
-       ----->
-         e
+    ......e
+    ...------>
+    ..|.......|
+    f.|.......|.f
+    ..|.......|
+    ..v.......v
+    ...------>
+    ......e
 
     where e is an edge of G1 and f an edge of G2.
 
@@ -79,7 +76,7 @@ class ConvexCore():
       T2 of G1 and G2, with the fundamental group F of G1 acting on G2
       through ``f``. Edges of length 0 are quotient out.
 
-    WARNING::
+    .. WARNING::
 
         It is assumed that boths graphs G1 and G2 do not have vertices
         of valence 1 or 2.
@@ -108,6 +105,7 @@ class ConvexCore():
 
     - Matt Clay
     - Thierry Coulbois Modified by
+
     """
 
     def __init__(self, *args, **keywords):
@@ -774,14 +772,16 @@ class ConvexCore():
         - squares: ``[v0,v1,v2,v3,a,b]`` where v0,v1,v2 and v3 are
           integers standing for vertices and a,b are positive letters
           labeling edges of G0 and G1 :
-               a
-          v3 ------> v2
-           ^        ^
-           |        |
-           |b       |b
-           |        |
-           |    a   |
-          v0 ------>v1
+
+          .....a
+          v3 -------> v2
+          .^.........^
+          .|.........|
+          .|b........|b
+          .|.........|
+          .|.........|
+          .|....a....|
+          v0 ------->v1
 
         - edges : ``[v0,v1,(a,side)]`` where ``v0`` and ``v1`` are
           integers standing for vertices a is a label of the tree on
@@ -875,7 +875,7 @@ class ConvexCore():
           of t1(v) in T1. Or either an integer standing for a vertex
           of ``self``.
         - ``side``: 0 or 1 standing for ``T0`` or ``T1``
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1014,7 +1014,7 @@ class ConvexCore():
         """
         List of vertices of ``self``.
 
-        WARNING:
+        .. WARNING:
 
         The two vertices of a twice-light square that do not belong to
         the core are not vertices of ``self``.
@@ -1031,7 +1031,6 @@ class ConvexCore():
             [0, 1, 2, 3]
 
         """
-
         return self._vertices
 
     def isolated_edges(self):
@@ -1103,7 +1102,7 @@ class ConvexCore():
         INPUT:
 
         - ``side`` is 0 or 1, standing for ``T0`` or ``T1``
-        - ``augmented`` -- (default False) if ``True`` twice light
+        - ``augmented`` -- (default: False) if ``True`` twice light
           edges bounded a twice light squares are considered as edges.
 
         OUTPUT:
@@ -1196,7 +1195,7 @@ class ConvexCore():
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1258,9 +1257,9 @@ class ConvexCore():
 
         INPUT: 
         
-        - ``orientation`` (default 1): the orientation of the first
+        - ``orientation`` (default: 1): the orientation of the first
           square of ``self``. It can be either 1 or -1.
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
         
@@ -1345,8 +1344,8 @@ class ConvexCore():
 
         INPUT:
 
-        - ``orientation`` (default None): list of square  orientation
-        - ``verbose`` -- (default False) for verbose option
+        - ``orientation`` (default: None): list of square  orientation
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1449,14 +1448,14 @@ class ConvexCore():
 
         INPUT:
 
-        - ``radius``: (default 1) the radius of the regular 2N-gone
+        - ``radius``: (default: 1) the radius of the regular 2N-gone
           which is the fondamental domain of the surface.
         - ``cyclic_order_0``: (default None) List of edges outgoing
           from the sole vertex of T0 ordered according to the embedding
           in the surface. A typical value in rank 4, compatible with
           the definition of ``FreeGroup.surface_dehn_twist()`` is :
           ['A','B','a','C','D','c','d','b']
-        - ``cyclic_order_1``: (default None) List of edges outgoing
+        - ``cyclic_order_1``: (default: None) List of edges outgoing
           from the sole vertex of T1 ordered according to the embedding
           in the surface.
 
@@ -1478,7 +1477,9 @@ class ConvexCore():
         from sage.plot.text import text
         from sage.plot.arrow import Arrow
         from sage.rings.real_mpfr import RR
-
+        from numpy import cos
+        from numpy import sin
+        from numpy import pi
 
         T0 = self.tree(0)
         T1 = self.tree(1)

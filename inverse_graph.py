@@ -24,7 +24,7 @@ EXAMPLES::
 # *****************************************************************************
 from sage.graphs.graph import DiGraph
 from sage.combinat.words.word import Word
-from inverse_alphabet import AlphabetWithInverses
+from sage.combinat.words.inverse_alphabet import AlphabetWithInverses
 
 
 class GraphWithInverses(DiGraph):

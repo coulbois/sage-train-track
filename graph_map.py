@@ -28,8 +28,8 @@ EXAMPLES::
 # *****************************************************************************
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
-from inverse_alphabet import AlphabetWithInverses
-from inverse_graph import GraphWithInverses
+from sage.combinat.words.inverse_alphabet import AlphabetWithInverses
+from sage.combinat.words.inverse_graph import GraphWithInverses
 
 
 class GraphMap:
@@ -92,10 +92,10 @@ class GraphMap:
         A vertex of ``self`` or an edge path
         Applies ``self`` to ``argument`` which is either .
 
-        SEE ALSO:
+        .. SEEALSO:
 
-        To compute the image of a letter of the alphabet use
-        ``self.image(a)``.
+            To compute the image of a letter of the alphabet use
+            ``self.image(a)``.
 
         EXAMPLES::
 
@@ -120,7 +120,7 @@ class GraphMap:
 
         INPUT:
 
-        - ``other`` other GraphMap to compute multiplication
+        - ``other`` -- other GraphMap to compute multiplication
 
         OUTPUT:
 
@@ -226,7 +226,7 @@ class GraphMap:
 
         INPUT:
 
-        - ``edge_map``: anything which is accepted by ``WordMorphism(edge_map)``
+        - ``edge_map`` -- anything which is accepted by ``WordMorphism(edge_map)``
 
         EXAMPLES::
 
@@ -257,7 +257,7 @@ class GraphMap:
         
         INPUT:
 
-        - ``edge_morph``: A ``WordMorphism`` from the alphabet labeling
+        - ``edge_morph`` -- A ``WordMorphism`` from the alphabet labeling
           the codomain of ``self`` to itself.
 
         EXAMPLES::
@@ -310,6 +310,7 @@ class GraphMap:
         The edge map of ``self``: this is a word morphism.
 
         OUTPUT:
+
         The edge map of ``self``
 
         EXAMPLES::
@@ -330,19 +331,19 @@ class GraphMap:
 
         INPUT:
             
-        - ``iter``: -- (default 1) a positive integer
-        - ``letter``: a letter of the alphabet of the domain of ``self``.
+        - ``iter`` (default: 1) -- a positive integer
+        - ``letter`` -- a letter of the alphabet of the domain of ``self``.
 
         OUTPUT:
 
         if ``iter`` > 1 then returns ``self``^iter(letter)``
         if ``iter`` = 1then returns the image of letter
 
-        WARNING:
+        .. WARNING::
 
-        ``iter`` may be greater than 1 only if the domain and codomain
-        of ``self`` are equal (that is to say, ``self`` is a
-        GraphSelfMap)
+            ``iter`` may be greater than 1 only if the domain and codomain
+            of ``self`` are equal (that is to say, ``self`` is a
+            GraphSelfMap)
 
         EXAMPLES::
 
@@ -353,7 +354,6 @@ class GraphMap:
             sage: f.image('a')
             word: ab
         """
-
         if iter == 1:
             return self._edge_map.image(letter)
         else:
@@ -375,11 +375,12 @@ class GraphMap:
         In particular the inverse maps all vertices to the root of ``t1``.
 
         OUTPUT:
+
         A homotopy inverse of ``self``.
 
-        WARNING:
+        .. WARNING::
 
-        ``self`` is assumed to be a homotopy equivalence.
+            ``self`` is assumed to be a homotopy equivalence.
 
         EXAMPLES::
 
@@ -473,9 +474,9 @@ class GraphMap:
         Tighten ``self`` such that there are at least two gates at
         each vertex of the domain.
 
-        WARNING:
+        .. WARNING::
 
-        It is assumed that ``self`` is a homotopy equivalence
+            It is assumed that ``self`` is a homotopy equivalence
 
         The result may send edges to trivial edge-paths.
 
@@ -577,11 +578,11 @@ class GraphMap:
 
         ...SEE ALSO::
 
-            :meth:`sage.combinat.words.GraphWithInverses.subdivide_edge()`
+            :meth:`sage.combinat.words.inverse_graph.GraphWithInverses.subdivide_edge()`
 
         INPUT:
 
-        - ``e``: and edge of the domain of ``self``.
+        - ``e`` -- and edge of the domain of ``self``.
 
         OUTPUT:
 
@@ -652,7 +653,7 @@ class GraphMap:
 
         INPUT:
 
-        - ``turns`` a list of turns of the domain graph. Default is None
+        - ``turns`` -- a list of turns of the domain graph. Default is None
           meaning all the turns of the graph. I not ``None`` return the
           sublist of ``turns`` consisting of illegal turns.
 
@@ -711,11 +712,11 @@ class GraphMap:
 
         REFERENCES:
 
-        [Stallings] J. Stallings, Topology of Finite Graphs,
+            [Stallings] J. Stallings, Topology of Finite Graphs,
 
         AUTHOR:
 
-        - Radhika GUPTA
+            - Radhika GUPTA
 
         """
         A = self.domain().alphabet()
@@ -779,7 +780,7 @@ class GraphMap:
 
         INPUT: 
 
-        - ``other``: a graph map G2->G with ``self``: a graph map G1->G,
+        - ``other`` -- a graph map G2->G with ``self``: a graph map G1->G,
 
         OUTPUT: 
         
@@ -864,4 +865,7 @@ class GraphMap:
 
         A = AlphabetWithInverses(automorphism.domain().variable_names())
         graph = GraphWithInverses.rose_graph(A)
-        return GraphMap(graph, graph, automorphism.to_word_morphism(use_str=True, upper_case_as_inverse=True))
+        return GraphMap(
+            graph, graph,
+            automorphism.to_word_morphism(
+                use_str=True, upper_case_as_inverse=True))

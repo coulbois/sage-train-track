@@ -20,10 +20,10 @@ EXAMPLES::
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
-from inverse_graph import GraphWithInverses, MetricGraph
-from graph_map import GraphMap
+from sage.combinat.words.inverse_graph import GraphWithInverses, MetricGraph
+from sage.combinat.words.graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
-from inverse_alphabet import AlphabetWithInverses
+from sage.combinat.words.inverse_alphabet import AlphabetWithInverses
 from sage.combinat.words.word import Word
 
 
@@ -238,14 +238,15 @@ class MarkedGraph(GraphWithInverses):
 
         INPUT:
 
-        - ``edge_list`` edge list
+        - ``edge_list`` -- edge list.
 
         OUTPUT:
-        subdivide  map from subdivide GraphWithInverses
 
-        WARNING:
+        subdivide  map from subdivide GraphWithInverses.
 
-        each edge in ``edge_list`` must appear only once.
+        .. WARNING:
+
+            each edge in ``edge_list`` must appear only once.
 
         EXAMPLES::
 
@@ -262,9 +263,9 @@ class MarkedGraph(GraphWithInverses):
             Marked graph: a: 0->2, b: 0->1, c: 1->3, d: 2->0, e: 3->1
             Marking: a->ad, b->bceB
 
-        SEE ALSO::
+        .. SEEALSO::
 
-        GraphWithInverses.subdivide()
+            :meth:`sage.combinat.words.inverse_graph.GraphWithInverses.subdivide()`
         """
 
         subdivide_map = GraphWithInverses.subdivide(self, edge_list)
@@ -314,9 +315,9 @@ class MarkedGraph(GraphWithInverses):
             Marked graph: a: 1->0, b: 0->1, c: 1->1
             Marking: a->ba, b->bcB
 
-        SEE ALSO:
+        .. SEE ALSO:
 
-        ``GraphWithInverses.fold()``
+            :meth:`sage.combinat.words.inverse_graph.GraphWithInverses.fold()``
         """
 
         fold_map = GraphWithInverses.fold(self, edges_full, edges_partial)
@@ -340,9 +341,9 @@ class MarkedGraph(GraphWithInverses):
 
         A dictionary that maps old edges to new edges.
 
-        SEE ALSO:
+        .. SEE ALSO:
 
-        ``GraphWithInverses.contract_forest()``
+            :meth:`sage.combinat.words.inverse_graph.GraphWithInverses.contract_forest()``
         """
 
         contract_map = GraphWithInverses.contract_forest(self, forest)
@@ -351,8 +352,7 @@ class MarkedGraph(GraphWithInverses):
         return contract_map
 
     def blow_up_vertices(self, germ_components):
-        """
-        Blow-up ``self`` according to classes of germs given in
+        """Blow-up ``self`` according to classes of germs given in
         ``germ_components``.
 
         INPUT:
@@ -374,7 +374,6 @@ class MarkedGraph(GraphWithInverses):
             Marked graph: a: 1->1, b: 2->3, c: 0->1, d: 0->2, e: 0->3
             Marking: a->caC, b->dbE
         """
-
         blow_up_map = GraphWithInverses.blow_up_vertices(self, germ_components)
         blow_up_morph = WordMorphism(blow_up_map)
         self._marking.set_edge_map(blow_up_morph * self.marking().edge_map())

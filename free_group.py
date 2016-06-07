@@ -323,8 +323,9 @@ class FreeGroupElement(ElementLibGAP):
         """
         Reduced word length of self.
 
-        Returns:
-            A non-negative integer.
+        OUTPUT:
+
+        A non-negative integer.
 
         EXAMPLES::
 
@@ -347,11 +348,13 @@ class FreeGroupElement(ElementLibGAP):
 
         As such it is a container.
 
-        Args:
-            item: an integer or a slice object
+        INPUT:
 
-        Returns:
-            A free group element.
+        - ``item`` -- an integer or a slice object
+
+        OUTPUT:
+
+        A free group element.
 
         EXAMPLES::
 
@@ -372,11 +375,13 @@ class FreeGroupElement(ElementLibGAP):
         Lexicographic comparison of the reduced words ``self`` and
         ``other``.
 
-        Args:
-            other: a free group element
+        INPUT:
 
-        Returns:
-            ``True`` if ``self``<=``other``
+        - ``other`` -- a free group element
+
+        OUTPUT:
+
+        ``True`` if ``self`` <= ``other``
 
         EXAMPLES::
 
@@ -397,11 +402,13 @@ class FreeGroupElement(ElementLibGAP):
         Lexicographic comparison of the reduced words ``self`` and
         ``other``.
 
-        Args:
-            other: a free group element
+        INPUT:
 
-        Returns:
-            ``True`` if ``self``<``other``
+        - ``other`` -- a free group element
+
+        OUTPUT:
+
+        ``True`` if ``self`` < ``other``
 
         EXAMPLES::
 
@@ -423,11 +430,13 @@ class FreeGroupElement(ElementLibGAP):
         """
         Lexicographic comparison of the reduced words ``self`` and ``other``.
 
-        Args:
-            other: a free group element
+        INPUT:
 
-        Returns:
-            ``True`` if ``self``>=``other``
+        - ``other`` -- a free group element
+
+        OUTPUT:
+
+        ``True`` if ``self`` >= ``other``
 
         EXAMPLES::
 
@@ -450,11 +459,13 @@ class FreeGroupElement(ElementLibGAP):
         Lexicographic comparison of the reduced words ``self`` and
         ``other``.
 
-        Args:
-            other: a free group element
+        INPUT:
 
-        Returns:
-            ``True`` if ``self``>``other``
+        - ``other`` -- a free group element
+
+        OUTPUT:
+
+        ``True`` if ``self`` > ``other``
 
         EXAMPLES::
 
@@ -477,11 +488,13 @@ class FreeGroupElement(ElementLibGAP):
         Lexicographic comparison of the reduced words ``self`` and
         ``other``.
 
-        Args:
-            other: a free group element
+        INPUT:
 
-        Returns:
-            ``True`` if ``self``==``other``
+        - ``other`` -- a free group element
+
+        OUTPUT:
+
+        ``True`` if ``self`` == ``other``
 
         EXAMPLES::
 
@@ -502,11 +515,13 @@ class FreeGroupElement(ElementLibGAP):
         Lexicographic comparison of the reduced words ``self`` and
         ``other``.
 
-        Args:
-            other: a free group element
+        INPUT:
 
-        Returns:
-            ``True`` if ``self``!=``other``
+        - ``other`` -- a free group element
+
+        OUTPUT:
+
+        ``True`` if ``self`` != ``other``
 
         EXAMPLES::
 
@@ -817,18 +832,17 @@ class FreeGroupElement(ElementLibGAP):
          written as the same string in upper case. This is used only with the
          ``use_string==True`` option.
 
-        Returns:
-
-            A finite Word.
 
         INPUT:
 
             - ``use_str`` -- (default: True) use strings rather than
             FreeGroupElement as letters.
-
             - ``upper_case_as_inverse`` -- (default: True) use upper case letters
             as inverses.
 
+        OUTPUT:
+
+        A finite Word.
 
         EXAMPLES::
 
@@ -868,13 +882,10 @@ def FreeGroup(n=None, names='x', index_set=None, abelian=False, **kwds):
 
     - ``n`` -- integer or ``None`` (default). The nnumber of
       generators. If not specified the ``names`` are counted.
-
     - ``names`` -- string or list/tuple/iterable of strings (default:
       ``'x'``). The generator names or name prefix.
-
     - ``index_set`` -- (optional) an index set for the generators; if
       specified then the optional keyword ``abelian`` can be used
-
     - ``abelian`` -- (default: ``False``) whether to construct a free
       abelian group or a free group
 

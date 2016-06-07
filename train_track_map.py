@@ -1,7 +1,4 @@
-r"""
-train_track_map.py module
-
-Define a TrainTrackMap Class
+r"""train_track_map.py module define a TrainTrackMap Class.
 
 AUTHORS:
 
@@ -27,7 +24,7 @@ EXAMPLES::
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
-from graph_self_map import GraphSelfMap
+from sage.combinat.words.graph_self_map import GraphSelfMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.combinat.words.words import FiniteWords
@@ -73,6 +70,7 @@ class TrainTrackMap(GraphSelfMap):
     AUTHORS:
 
     - Thierry Coulbois (2014-07-22): beta.1 version
+
     """
 
     def __init__(self, *args):
@@ -80,8 +78,8 @@ class TrainTrackMap(GraphSelfMap):
         The following forms are accepted:
         
         - ``TrainTrackMap(f)`` where ``f`` is a
-        GraphSelfMap which is train-track (no check is
-        done)
+          GraphSelfMap which is train-track (no check is
+          done)
         - ``TrainTrackMap(graph,edge_map,vertex_map=None)`` where
           ``graph`` is a ``GraphWithInverses`` and ``edge_map`` is
           anything accepted by ``WordMorphism(edge_map)`` with domain
@@ -90,7 +88,6 @@ class TrainTrackMap(GraphSelfMap):
           ``edge_map``).
 
         """
-
         GraphSelfMap.__init__(self, *args)
 
     def __str__(self):
@@ -108,7 +105,6 @@ class TrainTrackMap(GraphSelfMap):
             sage: tt.__str__()
             'Train-track map:\nMarked graph: a: 0->0, b: 0->0, c: 0->0\nMarking: a->a, b->b, c->c\nEdge map: a->ab, b->ac, c->a'
         """
-
         result = "Train-track map:\n"
         result += self._domain.__str__() + "\n"
         result += "Edge map: "
@@ -132,7 +128,7 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        -``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUPTUT:
 
@@ -235,8 +231,7 @@ class TrainTrackMap(GraphSelfMap):
         return len(edges) == 0  # edges contains all the never expanded edges
 
     def is_perron_frobenius(self):
-        """
-        ``True`` if (the matrix of) ``self`` satisfies the hypothesis of
+        """``True`` if (the matrix of) ``self`` satisfies the hypothesis of
         Perron-Frobenius theorem.
 
         (The matrix of) ``self`` is Perron-Frobenius if it has a power
@@ -245,14 +240,15 @@ class TrainTrackMap(GraphSelfMap):
         Note that if ``self`` is not Perron-Frobenius then it has a
         disconnected local Whitehead graph (the converse is false).
 
-        SEE ALSO::
-
-        TrainTrackMap.has_connected_local_whitehead_graphs()
 
         OUTPUT:
 
-        ``True`` if (the matrix of) ``self`` satisfies the hypothesis of
+        is ``True`` if (the matrix of) ``self`` satisfies the hypothesis of
         Perron-Frobenius theorem.
+
+        .. SEEALSO::
+
+            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.has_connected_local_whitehead_graphs()`
 
         EXAMPLES::
 
@@ -260,7 +256,6 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.is_perron_frobenius()
             False
         """
-
         if len(self.stratify()) > 1:
             return False
         # Now, we know that self is irreducible
@@ -329,9 +324,11 @@ class TrainTrackMap(GraphSelfMap):
         - ``v`` vertex
 
         OUTPUT:
+
         list of list of edges out of the vertex ``v``.
 
         EXAMPLES::
+
             sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a').inverse()
             sage: f = phi.rose_conjugacy_representative()
             sage: ff = TrainTrackMap(f)
@@ -365,6 +362,7 @@ class TrainTrackMap(GraphSelfMap):
         Number of gates at v.
 
         INPUT:
+
         - ``v`` vertex
 
         OUTPUT:
@@ -381,23 +379,21 @@ class TrainTrackMap(GraphSelfMap):
             sage: ff.number_of_gates(0)
             3
 
-        ...SEE ALSO::
+        .. SEEALSO::
 
-        `TrainTrackMap.gates(self)`
+            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.gates(self)`
         """
 
         return len(self.gates(v))
 
     def local_whitehead_graph(self, v):
-        """
-        The local whitehead graph at a vertex ``v``. 
-
+        """The local whitehead graph at a vertex ``v``.
         Vertices are directions at v, and two directions are joined by
         an edge if some iterate of an edge by ``self` crosses that turn.
 
         INPUT:
 
-        - ``v`` vertex
+        - ``v`` -- vertex
 
         OUTPUT:
 
@@ -414,8 +410,8 @@ class TrainTrackMap(GraphSelfMap):
         AUTHORS:
 
         - Brian Mann
-        """
 
+        """
         edges = \
             [(e, f) for (e, f) in self.edge_turns()
              if self.domain().initial_vertex(e) == v]
@@ -423,8 +419,7 @@ class TrainTrackMap(GraphSelfMap):
         return Graph(edges)
 
     def stable_local_whitehead_graph(self, v):
-        """
-        The stable local Whitehead graph at a vertex ``v``.
+        """The stable local Whitehead graph at a vertex ``v``.
         
         Vertices are stable directions at ``v`` (stable directions are
         in one-to-one correspondence with gates). Two directions are
@@ -487,16 +482,15 @@ class TrainTrackMap(GraphSelfMap):
         return lwg.subgraph(vertices=directions)
 
     def indivisible_nielsen_paths(self, verbose=False):
-        """
-        The list of indivisible Nielsen paths of ``self``.
+        """The list of indivisible Nielsen paths of ``self``.
 
-        WARNING:
+        .. WARNING::
 
-        ``self`` is assumed to be an expanding train-track map.
+            ``self`` is assumed to be an expanding train-track map.
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -509,13 +503,14 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.indivisible_nielsen_paths()
             [(word: a, word: bca)]
 
-        SEE ALSO::
 
-        GraphSelfMap.relative_indivisible_nielsen_paths()
-        TrainTrackMap.periodic_nielsen_paths()
+
+        .. SEEALSO::
+
+            :meth:`sage.combinat.words.train_track_map.GraphSelfMap.relative_indivisible_nielsen_paths()`
+            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.periodic_nielsen_paths()`
 
         """
-
         G = self._domain
         A = G._alphabet
 
@@ -594,26 +589,23 @@ class TrainTrackMap(GraphSelfMap):
         return result
 
     def periodic_nielsen_paths(self, end_points=False, verbose=False):
-        """
-        List of periodic Nielsen paths.
+        """List of periodic Nielsen paths.
 
+        .. WARNING:
 
-        WARNING:
-
-        ``self`` is assumed to be an expanding train-track map.
+            ``self`` is assumed to be an expanding train-track map.
 
         INPUT:
 
-        -``end_points`` -- (default False) set to ``True`` to compute
-         a description of the end points of each periodic Nielsen
-         path.
-
-        -``verbose`` -- (default False) for verbose option
+        - ``end_points`` -- (default: False) set to ``True`` to compute
+          a description of the end points of each periodic Nielsen
+          path.
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
-        If ``end_points=False``: a list of couples ``((word1,word2),period))``.  The fixed points
-        lie in the last edge of the two words. 
+        If ``end_points=False``: a list of couples ``((word1,word2),period))``.
+        The fixed points lie in the last edge of the two words.
 
         If ```end_points==True``: a list of triples
         ``((word1,word2),period,(first_end_point,second_end_point))``
@@ -630,11 +622,11 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.periodic_nielsen_paths(end_points=True)[0]
             ((word: a, word: bca), 1, (('A',), ('A', 1, 2, 1)))
 
-        SEE ALSO::
-        
-        TrainTrackMap.indivisible_nielsen_paths()
-        """
 
+        .. SEEALSO::
+        
+            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.indivisible_nielsen_paths()`
+        """
         G = self.domain()
         A = G.alphabet()
         N = len(A)
@@ -914,16 +906,14 @@ class TrainTrackMap(GraphSelfMap):
         return pnps
 
     def fold_inp(self, inp, verbose=False):
-        """
-        Recursively folds a  non-essential inp until a partial fold
+        """Recursively folds a  non-essential inp until a partial fold
         occurs and the inp is removed.
 
         INPUT:
 
         - ``inp``a couple ``(word1,word2)``, the invariant points being
-        inside the last letters of the two words.
-
-        -``verbose`` -- (default False) for verbose option
+          inside the last letters of the two words.
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -936,11 +926,11 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.fold_inp(('aab','cba'))
             WordMorphism: A->AC, B->B, C->C, a->ca, b->b, c->c
 
-        WARNING:
+        .. WARNING:
 
-        - Calling this method with an essential inp will cause an
-        infinite loop.
-        - Beware this has no effect on the possible strata of self.
+            - Calling this method with an essential inp will cause an
+              infinite loop.
+            - Beware this has no effect on the possible strata of self.
         """
 
         result_morph = False
@@ -1033,7 +1023,7 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1159,11 +1149,11 @@ class TrainTrackMap(GraphSelfMap):
 
     def has_connected_local_whitehead_graphs(self, verbose=False):
         """
-        ``True`` if all local Whitehead graphs are connected.
+        is ``True`` if all local Whitehead graphs are connected.
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1176,10 +1166,10 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.has_connected_local_whitehead_graphs()
             False
 
-        SEE ALSO::
+        .. SEEALSO::
         
-        TrainTrackMap.local_whitehead_graph()
-        TrainTrackMap.whitehead_connected_components()
+            - :meth:`sage.combinat.words.train_track_map.TrainTrackMap.local_whitehead_graph()`
+            - :meth:`sage.combinat.words.train_track_map.TrainTrackMap.whitehead_connected_components()`
         """
 
         return len(
@@ -1187,16 +1177,15 @@ class TrainTrackMap(GraphSelfMap):
             self.domain().vertices())
 
     def periodic_nielsen_loops(self, pnps=None, verbose=False):
-        """
-        List of loops made of periodic Nielsen paths.
+        """List of loops made of periodic Nielsen paths.
 
         Such a loop is a periodic element of ``self``.
 
         INPUT:
 
         - ``pnps``: the list of periodic Nielsen paths. Each given as
-        ``((u1,u2),period,(vv1,vv2))``.
-        - ``verbose`` -- (default False) for verbose option
+          ``((u1,u2),period,(vv1,vv2))``.
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1211,11 +1200,11 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.periodic_nielsen_loops()
             [(word: aBCAbc, (0,), 1)]
 
-        WARNING:
+        .. WARNING::
         
-        If ``pnps`` are not given, computes the periodic Nielsen paths
-        using ``TrainTrackMap.periodic_nielsen_paths(self)``.  Thus
-        assumes that ``self`` is an expanding train-track.
+            If ``pnps`` are not given, computes the periodic Nielsen paths
+            using ``TrainTrackMap.periodic_nielsen_paths(self)``.  Thus
+            assumes that ``self`` is an expanding train-track.
         """
 
         try:
@@ -1429,7 +1418,7 @@ class TrainTrackMap(GraphSelfMap):
 
         - ``pnps``: the list of periodic Nielsen paths. Each given as
           ``((u1,u2),period,(vv1,vv2))``.
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1442,19 +1431,19 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.ideal_whitehead_graph()
             Graph on 6 vertices
 
-        WARNING:
+        .. WARNING:
 
-        If pnps is not given computes them by calling
-        ``self.periodic_nielsen_paths()``. Thus it is assumed that
-        ``self`` is an expanding train-track.
+            If pnps is not given computes them by calling
+            ``self.periodic_nielsen_paths()``. Thus it is assumed that
+            ``self`` is an expanding train-track.
 
-        Moreover the computation is not correct if there are periodic
-        (infinite index) subgroups (eg: ``self`` is not irreducible or
-        has closed Nielsen paths).
+            Moreover the computation is not correct if there are periodic
+            (infinite index) subgroups (eg: ``self`` is not irreducible or
+            has closed Nielsen paths).
 
-        SEE ALSO::
+        .. SEEALSO::
 
-        TrainTrackMap.periodic_nielsen_loops()        
+            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.periodic_nielsen_loops()`
         """
 
         G = self.domain()
@@ -1589,19 +1578,19 @@ class TrainTrackMap(GraphSelfMap):
         This is the sum of the index list of ``self``. It can be
         computed using stable Whitehead graphs and Nielsen paths.
 
-        WARNING: 
+        .. WARNING:
 
-        calls ``self.ideal_whitehead_graph()`` and thus
-        ``self.periodic_nielsen_paths()`` and thus assumes that
-        ``self`` is an expanding train-track map.
+            calls ``self.ideal_whitehead_graph()`` and thus
+            ``self.periodic_nielsen_paths()`` and thus assumes that
+            ``self`` is an expanding train-track map.
 
-        Moreover the computation is not correct if there are fixed
-        subgroups (eg: ``self`` is not irreducible or has closed
-        Nielsen loops).
+            Moreover the computation is not correct if there are fixed
+            subgroups (eg: ``self`` is not irreducible or has closed
+            Nielsen loops).
 
-        Some authors (Mosher, Pfaff), use -1/2 our index definition.
+            Some authors (Mosher, Pfaff), use -1/2 our index definition.
 
-        Some authors (Gaboriau, Levitt), use 1/2 out index definition
+            Some authors (Gaboriau, Levitt), use 1/2 out index definition
 
         OUTPUT:
 
@@ -1615,7 +1604,6 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.index()
             2
         """
-
         return sum(self.index_list())
 
     def index_list(self, verbose=False):
@@ -1631,7 +1619,7 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1648,36 +1636,34 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.index_list()
             [2]
 
-        WARNING: 
+        .. WARNING:
 
-        calls ``self.ideal_whitehead_graph()`` and thus
-        ``self.periodic_nielsen_paths()`` and thus assumes that
-        ``self`` is an expanding train-track map.
+            calls ``self.ideal_whitehead_graph()`` and thus
+            ``self.periodic_nielsen_paths()`` and thus assumes that
+            ``self`` is an expanding train-track map.
 
-        Some authors (Mosher, Pfaff), use -1/2 our index definition.
+            Some authors (Mosher, Pfaff), use -1/2 our index definition.
 
-        Some authors (Gaboriau, Jaeger, Levitt,Lustig), use 1/2
-         our index definition
+            Some authors (Gaboriau, Jaeger, Levitt,Lustig), use 1/2
+            our index definition
 
         REFERENCES:
 
-        [GJLL] D. Gaboriau, A. Jaeger, G. Levitt, M. Lustig, An index
-        for counting fixed points of automorphisms of free
-        groups. Duke Math. J., 93(3):425-452, 1998.
+            [GJLL] D. Gaboriau, A. Jaeger, G. Levitt, M. Lustig, An index
+            for counting fixed points of automorphisms of free
+            groups. Duke Math. J., 93(3):425-452, 1998.
 
-        [HM-axes] M. Handel, L. Mosher, Axes in Outer Space, Memoirs
-        AMS 1004, Amer Mathematical Society, 2011.
+            [HM-axes] M. Handel, L. Mosher, Axes in Outer Space, Memoirs
+            AMS 1004, Amer Mathematical Society, 2011.
 
-        [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
+            [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
         """
-
         l = [len(c) - 2
              for c in self.ideal_whitehead_graph().connected_components()]
         return [i for i in l if i > 0]
 
     def blow_up_vertices(self, germ_components):
-        """
-        Blow-up ``self`` according to classes of germs given in
+        """Blow-up ``self`` according to classes of germs given in
         ``germ_components``.
 
         It is assumed that in the iterated images of an edge, two
@@ -1686,7 +1672,7 @@ class TrainTrackMap(GraphSelfMap):
         INPUT:
 
         - ``germ_components`` a list of classes of germs outgoing from a
-        vertex.
+          vertex.
 
         OUTPUT:
 
@@ -1724,8 +1710,7 @@ class TrainTrackMap(GraphSelfMap):
         return WordMorphism(blow_up_map)
 
     def whitehead_connected_components(self, verbose=False):
-        """
-        List of connected components of local Whitehead graphs.
+        """List of connected components of local Whitehead graphs.
 
         The local Whitehead graph at a vertex ``v`` is the graph with
         vertices the germs of edges outgoing from ``v``. To such germs
@@ -1744,9 +1729,9 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.whitehead_connected_components()
             [['a', 'b', 'C'], ['A', 'c', 'B']]
 
-        SEE ALSO::
+        .. SEE ALSO::
 
-        TrainTrackMap.local_whitehead_graph()
+            :meth:`sage.combinat.words.train_track_map.TrainTrackMap.local_whitehead_graph()`
         """
 
         G = self.domain()
@@ -1777,8 +1762,7 @@ class TrainTrackMap(GraphSelfMap):
 
     def periodic_point_normal_form(
             self, point, keep_orientation=False, verbose=False):
-        """
-        Normal form to denote periodic points of ``self`` inside
+        """Normal form to denote periodic points of ``self`` inside
         edges.
 
         Intended to be used to compute the end points of periodic
@@ -1800,7 +1784,7 @@ class TrainTrackMap(GraphSelfMap):
         INPUT:
 
         - ``point`` of the form ``(e,period,left,right)`` standing for
-         the periodic point x in the edge ``e`` with the given period.
+          the periodic point x in the edge ``e`` with the given period.
         - ``keep_orientation`` -- (default False)
         - ``verbose`` -- (default False) for verbose option
 
@@ -1816,13 +1800,13 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.periodic_point_normal_form(('a',2,1,1))
             ('a', 2, 1, 1)
 
-        WARNING:
+        .. WARNING::
 
-        If ``keep_orientation==True``, this is not exactly a normal
-        form as each such periodic point has two normal forms:
+            If ``keep_orientation==True``, this is not exactly a normal
+            form as each such periodic point has two normal forms:
 
-        ``(e,period,left,right)`` and ``(ee,period,right,left)`` where
-        ``ee`` is the inverse letter of ``e``.
+            ``(e,period,left,right)`` and ``(ee,period,right,left)`` where
+            ``ee`` is the inverse letter of ``e``.
         """
 
         A = self.domain().alphabet()
@@ -1890,7 +1874,7 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1924,8 +1908,8 @@ class TrainTrackMap(GraphSelfMap):
 
         REFERENCES
 
-        [Kapo-algo] I. Kapovich, Algorithmic detectability of iwip
-        automorphisms, 2012, arXiv:1209.3732
+            [Kapo-algo] I. Kapovich, Algorithmic detectability of iwip
+            automorphisms, 2012, arXiv:1209.3732
         """
 
         self.reduce(verbose and verbose > 1 and verbose - 1)
