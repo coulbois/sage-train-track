@@ -14,12 +14,12 @@ def readfile(filename):
 # For the tests
 class SageTest(TestCommand):
     def run_tests(self):
-        errno = os.system("sage -t --force-lib sage-train-track")
+        errno = os.system("sage -t --force-lib train_track")
         if errno != 0:
             sys.exit(1)
 
 setup(
-    name = "sage-train-track",
+    name = "train_track",
     version = readfile("VERSION"), # the VERSION file is shared with the documentation
     description='Train-tracks for freegroup automorphisms',
     long_description = readfile("README.rst"), # get the long description from the README
@@ -40,6 +40,6 @@ setup(
       'Programming Language :: Python :: 2.7',
     ], # classifiers list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
     keywords = "SageMath Freegroup Automorphism Train-track",
-    packages = ['sage-train-track'],
+    packages = ['train_track'],
     cmdclass = {'test': SageTest} # adding a special setup command for tests
 )
