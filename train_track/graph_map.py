@@ -11,8 +11,9 @@ AUTHORS:
 
 EXAMPLES::
 
-    sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-    sage: from sage.groups.free_groups.graph_map import GraphMap
+    sage: from train_track import *
+    sage: from train_track.inverse_graph import GraphWithInverses
+    sage: from train_track.graph_map import GraphMap
     sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
     sage: A = AlphabetWithInverses(2)
     sage: H = GraphWithInverses.rose_graph(A)
@@ -61,8 +62,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -101,12 +103,13 @@ class GraphMap():
         .. SEEALSO::
 
             To compute the image of a letter of the alphabet use
-            :meth:`sage.groups.free_groups.graph_map.GraphMap.image(a)``.
+            :meth:`train_track.graph_map.GraphMap.image(a)``.
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -138,8 +141,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -167,8 +171,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -197,8 +202,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -218,8 +224,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -246,8 +253,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -280,8 +288,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -303,8 +312,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -337,8 +347,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -371,8 +382,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -410,8 +422,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -510,8 +523,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: A = AlphabetWithInverses(2)
             sage: G = GraphWithInverses.rose_graph(A)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -608,7 +622,7 @@ class GraphMap():
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.inverse_graph.GraphWithInverses.subdivide_edge()`
+            :meth:`train_track.inverse_graph.GraphWithInverses.subdivide_edge()`
 
         INPUT:
 
@@ -620,8 +634,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: A = AlphabetWithInverses(2)
             sage: G = GraphWithInverses.rose_graph(A)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -692,8 +707,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: A = AlphabetWithInverses(2)
             sage: G = GraphWithInverses.rose_graph(A)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -733,8 +749,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: A = AlphabetWithInverses(2)
             sage: G = GraphWithInverses.rose_graph(A)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -825,8 +842,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: G1 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='x0'))
             sage: G2 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='a0'))
             sage: G =  GraphWithInverses.rose_graph(AlphabetWithInverses(2))
@@ -893,8 +911,9 @@ class GraphMap():
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_map import GraphMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
             sage: phi=FreeGroupAutomorphism('a->ab,b->ac,c->a')
             sage: print(GraphMap.rose_map(phi))
             Graph map:

@@ -11,7 +11,8 @@ AUTHORS:
 
 EXAMPLES::
 
-    sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+    sage: from train_track import *
+    sage: from train_track.graph_self_map import GraphSelfMap
     sage: A = AlphabetWithInverses(5)
     sage: f = GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae", A)
     sage: print(f)
@@ -64,7 +65,8 @@ class GraphSelfMap(GraphMap):
 
     EXAMPLES::
 
-        sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+        sage: from train_track import *
+        sage: from train_track.graph_self_map import GraphSelfMap
         sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a",FreeGroup('a,b,c'))
         sage: print(phi.rose_representative())
         Graph self map:
@@ -95,8 +97,9 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: A = AlphabetWithInverses(3)
             sage: R = GraphWithInverses.rose_graph(A)
             sage: print(GraphSelfMap(R,"a->ab,b->ac,c->a"))
@@ -120,8 +123,9 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: A = AlphabetWithInverses(2)
             sage: R = GraphWithInverses.rose_graph(A)
             sage: print(GraphSelfMap(R,"a->ab,b->aa"))
@@ -179,7 +183,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: print(GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae"))
             Graph self map:
             Marked graph: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
@@ -290,7 +294,8 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track import *
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: A=AlphabetWithInverses(5)
             sage: f=GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae",A)
             sage: f.matrix()
@@ -325,8 +330,9 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: A = AlphabetWithInverses(3)
             sage: R = GraphWithInverses.rose_graph(A)
             sage: f = GraphSelfMap(R,"a->ab,b->ac,c->a")
@@ -361,8 +367,9 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: A = AlphabetWithInverses(3)
             sage: R = GraphWithInverses.rose_graph(A)
             sage: f = GraphSelfMap(R,"a->ab,b->ac,c->a")
@@ -423,6 +430,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: f = phi.inverse().rose_representative()
             sage: f.find_folding()
@@ -505,6 +513,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: f = phi.rose_conjugacy_representative()
             sage: f.subdivide(['a'])
@@ -565,6 +574,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->aba,b->ac,c->a")
             sage: f = phi.rose_conjugacy_representative()
             sage: f.subdivide_edge('a',2)
@@ -641,6 +651,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->aba,b->ac,c->a")
             sage: f = phi.inverse().rose_conjugacy_representative()
             sage: f.multifold([['c', 1], ('b', 'c')])
@@ -652,8 +663,8 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.graph_self_map.GraphSelfMap.fold()`
-            :meth:`sage.groups.free_groups.graph_self_map.GraphWithInverses.fold()`
+            :meth:`train_track.graph_self_map.GraphSelfMap.fold()`
+            :meth:`train_track.graph_self_map.GraphWithInverses.fold()`
 
         """
 
@@ -887,6 +898,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->aba,b->ac,c->a")
             sage: f = phi.inverse().rose_conjugacy_representative()
             sage: f.fold(('b', 'c'),Word('C'))
@@ -898,8 +910,8 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.graph_self_map.GraphSelfMap.multifold()`
-            :meth:`sage.groups.free_groups.inverse_graph.GraphWithInverses.fold()`
+            :meth:`train_track.graph_self_map.GraphSelfMap.multifold()`
+            :meth:`train_track.inverse_graph.GraphWithInverses.fold()`
 
         """
         A = self._domain.alphabet()
@@ -976,6 +988,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: f = phi.rose_conjugacy_representative()
             sage: f.subdivide(['a'])
@@ -995,7 +1008,7 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.inverse_graph.GraphWithInverses.contract_edges()`
+            :meth:`train_track.inverse_graph.GraphWithInverses.contract_edges()`
 
         """
 
@@ -1069,7 +1082,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: f = GraphSelfMap.from_edge_map("a->adbD,b->adcD,c->a,d->")
             sage: f.pretrivial_forest()
             [{'d'}]
@@ -1132,7 +1145,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: f = GraphSelfMap.from_edge_map("a->adbD,b->adcD,c->a,d->")
             sage: f.contract_invariant_forest([['d']])
             WordMorphism: A->A, B->B, C->C, D->, a->a, b->b, c->c, d->
@@ -1144,7 +1157,7 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.inverse_graph.GraphWithInverses.contract_forest()`
+            :meth:`train_track.inverse_graph.GraphWithInverses.contract_forest()`
 
         """
         if verbose:
@@ -1186,7 +1199,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: f = GraphSelfMap.from_edge_map("a->adbD,b->adcD,c->a,d->")
             sage: f.maximal_filtration()
             [{'d'}, {'a', 'b', 'c', 'd'}]
@@ -1252,7 +1265,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: f = GraphSelfMap.from_edge_map("a->abaa,b->aca,c->a,d->da")
             sage: f.contract_tails([['D']])
             WordMorphism: A->A, B->B, C->C, D->, a->a, b->b, c->c, d->
@@ -1264,8 +1277,8 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.inverse_graph.GraphWithInverses.tails()`
-            :meth:`sage.groups.free_groups.inverse_graphGraphWithInverses.contract_forest()`
+            :meth:`train_track.inverse_graph.GraphWithInverses.tails()`
+            :meth:`train_track.inverse_graphGraphWithInverses.contract_forest()`
 
         """
         if verbose:
@@ -1320,7 +1333,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: f = GraphSelfMap.from_edge_map("a->abaa,b->aca,c->a,d->da")
             sage: f.reduce()
             WordMorphism: A->A, B->B, C->C, D->, a->a, b->b, c->c, d->
@@ -1456,6 +1469,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a').inverse()
             sage: f = phi.rose_conjugacy_representative()
             sage: f.train_track()
@@ -1531,6 +1545,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: f=phi.rose_representative()
             sage: f.is_train_track()
@@ -1587,6 +1602,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: f = phi.rose_representative()
             sage: f.image_turn(('A','B'))
@@ -1620,6 +1636,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: f=phi.rose_representative()
             sage: f.edge_turns()
@@ -1674,6 +1691,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->a")
             sage: f = phi.rose_representative()
             sage: f.legal_turns()
@@ -1712,6 +1730,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->a")
             sage: f = phi.rose_representative()
             sage: f.fold_turns()
@@ -1720,7 +1739,7 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.graph_self_map.GraphSelfMap.illegal_turns()`
+            :meth:`train_track.graph_self_map.GraphSelfMap.illegal_turns()`
 
         """
 
@@ -1764,6 +1783,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->a")
             sage: f = phi.rose_representative()
             sage: f.illegal_turns()
@@ -1771,7 +1791,7 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.graph_self_map.GraphSelfMap.fold_turns()`
+            :meth:`train_track.graph_self_map.GraphSelfMap.fold_turns()`
 
         """
 
@@ -1842,6 +1862,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->acba,b->acb,c->c")
             sage: f = phi.train_track(relative=True)
             sage: f.relative_indivisible_nielsen_paths(stratum=1)
@@ -2105,6 +2126,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->adb,b->adc,c->a,d->d")**3
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -2121,8 +2143,8 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            - :meth:`sage.groups.free_groups.train_track_map.TrainTrackMap.indivisible_nielsen_paths()`
-            - :meth:`sage.groups.free_groups.train_track_map.GraphSelfMap.relative_indivisible_nielsen_paths()`
+            - :meth:`train_track.train_track_map.TrainTrackMap.indivisible_nielsen_paths()`
+            - :meth:`train_track.train_track_map.GraphSelfMap.relative_indivisible_nielsen_paths()`
         """
         A = self.domain().alphabet()
 
@@ -2183,6 +2205,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->adb,b->adc,c->a,d->d")**3
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -2372,6 +2395,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->adb,b->adc,c->a,d->d")
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -2403,6 +2427,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->adB,b->adc,c->a,d->d")
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -2440,6 +2465,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->b")
             sage: f = phi.rose_representative()
             sage: f._strata=([set(['a','b'])])
@@ -2506,6 +2532,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->b")
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -2520,7 +2547,7 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.graph_self_map.GraphSelfMap.maximal_filtration()`
+            :meth:`train_track.graph_self_map.GraphSelfMap.maximal_filtration()`
         """
 
         filtration = self.maximal_filtration(
@@ -2553,6 +2580,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->aadc,c->a,d->d")
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -2614,6 +2642,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->acba,b->A,c->c")
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -2691,6 +2720,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->ca,c->c")
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -2880,6 +2910,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->b,")
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -2939,8 +2970,9 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: A = AlphabetWithInverses(4)
             sage: G = GraphWithInverses.rose_graph(A)
             sage: f = GraphSelfMap(G,"a->acbd,b->ad,c->cd,d->Dcad")
@@ -3269,7 +3301,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: f = GraphSelfMap.from_edge_map("a->acb,b->a,c->cdC,d->cdC")
             sage: f.stratify()
             [{'c', 'd'}, {'a', 'b', 'c', 'd'}]
@@ -3436,7 +3468,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
-            sage: from sage.groups.free_groups.graph_self_map import GraphSelfMap
+            sage: from train_track.graph_self_map import GraphSelfMap
             sage: f = GraphSelfMap.from_edge_map("a->acb,b->a,c->cdC,d->cdC")
             sage: f.stratify()
             [{'c', 'd'}, {'a', 'b', 'c', 'd'}]
@@ -3545,6 +3577,7 @@ class GraphSelfMap(GraphMap):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->acb,b->a,c->cd,d->ded,e->d")
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -3593,11 +3626,12 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.graph_self_map.GraphSelfMap.stable_relative_train_track()`
-            :meth:`sage.groups.free_groups.free_group_automorphism.FreeGroupAutomorphism.train_track()`
+            :meth:`train_track.graph_self_map.GraphSelfMap.stable_relative_train_track()`
+            :meth:`train_track.free_group_automorphism.FreeGroupAutomorphism.train_track()`
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->acb,b->a,c->cd,d->deD,e->d")
             sage: f = phi.rose_representative()
             sage: f.stratify()
@@ -3752,11 +3786,12 @@ class GraphSelfMap(GraphMap):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.graph_self_map.GraphSelfMap.stable_train_track()`
-            :meth:`sage.groups.free_groups..free_group_automorphism.FreeGroupAutomorphism.train_track()`
+            :meth:`train_track.graph_self_map.GraphSelfMap.stable_train_track()`
+            :meth:`train_track..free_group_automorphism.FreeGroupAutomorphism.train_track()`
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->acb,b->a,c->cd,d->deD,e->d")
             sage: f = phi.rose_representative()
             sage: f.stratify()

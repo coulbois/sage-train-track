@@ -13,6 +13,7 @@ AUTHORS:
 
 EXAMPLES::
 
+    sage: from train_track import *
     sage: phi = FreeGroupAutomorphism('a->ab,b->A')
     sage: print(phi)
     a->a*b,b->a^-1
@@ -39,6 +40,7 @@ class FreeGroupMorphism(object):
 
         1. If data is a str::
 
+            sage: from train_track import *
             sage: FreeGroupMorphism('a->ab,b->ba')
             Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->b*a
 
@@ -145,6 +147,7 @@ class FreeGroupMorphism(object):
 
         TESTS::
 
+            sage: from train_track import *
             sage: phi = FreeGroupMorphism('a->ab,b->ba')
             sage: phi._build_dict('a->ab,b->ba') == {'a': 'ab', 'b': 'ba'}
             True
@@ -198,6 +201,7 @@ class FreeGroupMorphism(object):
 
         If the image of all the letters are iterable::
 
+            sage: from train_track import *
             sage: phi = FreeGroupMorphism('a->ab,b->bA')
             sage: phi._build_codomain({'a': 'ab', 'b': 'bA'})
             Free Group on generators {a, b}
@@ -230,6 +234,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupMorphism('a->ab,b->aC,c->a')
             sage: phi('abC')
             a*b*a*c^-1*a^-1
@@ -265,6 +270,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupMorphism('a->ab,b->A')
             sage: psi = FreeGroupMorphism('a->aB,b->A')
             sage: phi * psi
@@ -298,6 +304,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupMorphism('a->ab,b->A')
             sage: phi**2
             Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b*a^-1,b->b^-1*a^-1
@@ -331,6 +338,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.__str__()
             'a->a*b,b->a^-1'
@@ -353,6 +361,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupMorphism('a->ab,b->A')
             sage: phi.__repr__()
             'Morphism from Free Group on generators {a, b} to Free Group on generators {a, b}: a->a*b,b->a^-1'
@@ -367,6 +376,7 @@ class FreeGroupMorphism(object):
         """
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi1 = FreeGroupMorphism('a->ab,b->A')
             sage: phi2 = FreeGroupMorphism('a->aba,b->Ab')
             sage: phi1==phi2
@@ -398,6 +408,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.domain()
             Free Group on generators {a, b}
@@ -415,6 +426,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.codomain()
             Free Group on generators {a, b}
@@ -432,6 +444,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupMorphism('a->ab,b->A')
             sage: phi.to_automorphism()
             Automorphism of the Free Group on generators {a, b}: a->a*b,b->a^-1
@@ -466,6 +479,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: f = FreeGroupAutomorphism('a->AD,b->Adac,c->bd,d->c')
             sage: f.to_word_morphism()
             WordMorphism: a->a^-1,d^-1, a^-1->da, b->a^-1,d,a,c, b^-1->c^-1,a^-1,d^-1,a, c->bd, c^-1->d^-1,b^-1, d->c, d^-1->c^-1
@@ -504,6 +518,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: FreeGroupMorphism('a->abc,b->,c->ccc').size()
             3
         """
@@ -529,6 +544,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: FreeGroupMorphism('a->a,b->b').is_permutation()
             True
             sage: FreeGroupMorphism('a->a,b->c,c->b').is_permutation()
@@ -561,6 +577,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupMorphism('a->b,b->A')
             sage: phi._inverse_permutation()
             Automorphism of the Free Group on generators {a, b}: a->b^-1,b->a
@@ -587,6 +604,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: FreeGroupMorphism('a->b,b->a').is_invertible()
             True
             sage: FreeGroupMorphism('a->ab,b->a').is_invertible()
@@ -619,6 +637,7 @@ class FreeGroupMorphism(object):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: phi.inverse()
             Automorphism of the Free Group on generators {a, b, c}: a->c,b->c^-1*a,c->c^-1*b
@@ -692,6 +711,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
     EXAMPLES::
 
+        sage: from train_track import *
         sage: FreeGroupAutomorphism("a->ab,b->ac,c->a")
         Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
 
@@ -718,6 +738,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: FreeGroupAutomorphism("a->ab,b->ac,c->a")
             Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
 
@@ -741,6 +762,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.is_invertible()
             True
@@ -757,6 +779,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.__repr__()
             'Automorphism of the Free Group on generators {a, b}: a->a*b,b->a^-1'
@@ -785,6 +808,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: print(phi)
             a->a*b,b->a^-1
@@ -818,6 +842,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: phi.simple_outer_representative()
             Automorphism of the Free Group on generators {a, b, c}: a->c^-1*a*b*c,b->c^-1*a*c^2,c->c^-1*a*c
@@ -869,6 +894,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: phi.rose_conjugacy_representative()
             Graph self map:
@@ -902,6 +928,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: g = phi.rose_representative()
             sage: g.train_track()
@@ -945,6 +972,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: g = phi.train_track()
             sage: print(g)
@@ -983,6 +1011,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: phi.is_iwip()
             True
@@ -1010,7 +1039,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         .. SEEALSO::
 
-            :meth:`sage.groups.free_groups.train_track_map.TrainTrackMap.is_iwip()`
+            :meth:`train_track.train_track_map.TrainTrackMap.is_iwip()`
 
         REFERENCES
 
@@ -1061,6 +1090,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: phi = FreeGroupAutomorphism("a->Cabc,b->Cacc,c->Cac")
             sage: phi.index_list()
             [2, 2]
@@ -1107,6 +1137,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup('a,b,c')
             sage: phi = FreeGroupAutomorphism('a->ab,b->A')
             sage: phi.identity_automorphism(F)
@@ -1138,6 +1169,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup('a,b,c')
             sage: FreeGroupAutomorphism.Nielsen_automorphism(F, 'a', 'b', on_left=True)
             Automorphism of the Free Group on generators {a, b, c}: a->b*a,b->b,c->c
@@ -1183,6 +1215,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup('a,b,c')
             sage: FreeGroupAutomorphism.random_permutation(F).is_invertible()
             True
@@ -1221,6 +1254,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup('a,b,c')
             sage: FreeGroupAutomorphism.random_automorphism(F, length=2).is_invertible()
             True
@@ -1272,6 +1306,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         TESTS::
 
+            sage: from train_track import *
             sage: F = FreeGroup(4)
             sage: FreeGroupAutomorphism._surface_dehn_twist_e(F, i=0)
             Automorphism of the Free Group on generators {x0, x1, x2, x3}: x0->x1*x0,x1->x1,x2->x2,x3->x3
@@ -1283,6 +1318,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         TESTS::
 
+            sage: from train_track import *
             sage: F = FreeGroup(4)
             sage: FreeGroupAutomorphism._surface_dehn_twist_c(F, i=0)
             Automorphism of the Free Group on generators {x0, x1, x2, x3}: x0->x0,x1->x2*x0^-1*x1,x2->x2,x3->x3*x0*x2^-1
@@ -1298,6 +1334,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         TESTS::
 
+            sage: from train_track import *
             sage: F = FreeGroup(4)
             sage: FreeGroupAutomorphism._surface_dehn_twist_m(F, i=0)
             Automorphism of the Free Group on generators {x0, x1, x2, x3}: x0->x0,x1->x0*x1,x2->x0*x2*x0^-1,x3->x0*x3*x0^-1
@@ -1368,6 +1405,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup(4)
             sage: FreeGroupAutomorphism.surface_dehn_twist(F, k=0)
             Automorphism of the Free Group on generators {x0, x1, x2, x3}: x0->x1*x0,x1->x1,x2->x2,x3->x3
@@ -1408,9 +1446,10 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup(4)
             sage: FreeGroupAutomorphism.random_mapping_class(F).__class__
-            <class 'sage.groups.free_groups.free_group_automorphism.FreeGroupAutomorphism'>
+            <class 'train_track.free_group_automorphism.FreeGroupAutomorphism'>
 
         .. WARNING:
 
@@ -1491,6 +1530,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup('a,b,c,d')
             sage: FreeGroupAutomorphism.braid_automorphism(F, 2)
             Automorphism of the Free Group on generators {a, b, c, d}: a->a,b->b*c*b^-1,c->b,d->d
@@ -1527,9 +1567,10 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup(4)
             sage: FreeGroupAutomorphism.random_braid(F).__class__
-            <class 'sage.groups.free_groups.free_group_automorphism.FreeGroupAutomorphism'>
+            <class 'train_track.free_group_automorphism.FreeGroupAutomorphism'>
         """
         from sage.misc.prandom import randint
 
@@ -1581,6 +1622,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.tribonacci()
             Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
 
@@ -1602,6 +1644,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Handel_Mosher_inverse_with_same_lambda()
             Automorphism of the Free Group on generators {a, b, c}: a->b^-1*a*(c*a^-1)^2*b*c^-1*a*(b^-1*a*c)^2*a^-1*c*a^-1*b,b->b^-1*a*(c*a^-1)^2*b*c^-1*a*b^-1*a*c,c->b^-1*a*(c*a^-1)^2*b*c^-1*a
         """
@@ -1626,6 +1669,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Bestvina_Handel_train_track_1_1()
             Automorphism of the Free Group on generators {a, b, c, d}: a->b,b->c,c->d,d->a^-1*d^-1*b^-1*c^-1
         """
@@ -1647,6 +1691,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Bestvina_Handel_train_track_1_9()
             Automorphism of the Free Group on generators {a, b, c}: a->b*a,b->b^2*a,c->c*a^-1*b*a*b^-1
         """
@@ -1668,6 +1713,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Bestvina_Handel_train_track_3_6()
             Automorphism of the Free Group on generators {a, b}: a->b*a,b->b^2*a
         """
@@ -1689,6 +1735,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Bestvina_Handel_train_track_5_16()
             Automorphism of the Free Group on generators {a, b, c}: a->a,b->c^-1*a^-1*b*a*c,c->c^-1*a^-1*b*(a*c)^2*a^-1*c^-1*a^-1*b^-1*a*c
         """
@@ -1714,6 +1761,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Handel_Mosher_axes_3_4()
             Automorphism of the Free Group on generators {a, f, g}: a->a*(f*g)^2*f,f->f*g*f,g->g*f*a*f*g
         """
@@ -1738,6 +1786,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Handel_Mosher_axes_5_5()
             Automorphism of the Free Group on generators {a, b, c}: a->b*(a*c*a)^2,b->b*a*c*a,c->c*a^2*c*a
         """
@@ -1761,6 +1810,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Hilion_parabolic()
             Automorphism of the Free Group on generators {a, b, c, d}: a->a,b->b*a,c->c*a^2,d->d*c
             sage: free_group_automorphisms.Hilion_parabolic(k=3)
@@ -1798,6 +1848,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Handel_Mosher_parageometric_1()
             Automorphism of the Free Group on generators {a, b, c}: a->a*c,b->a,c->b
 
@@ -1818,6 +1869,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Cohen_Lustig_1_6()
             Automorphism of the Free Group on generators {a, b, c}: a->c^3*a*c^-3,b->c^-1*a*c^2*a^-1*b*c^-1,c->a*c^2*a^-1*b*c^2*a*c^-2*b^-1*a*c^-2*a^-1*c^4*a^-1*c^-3
         """
@@ -1839,6 +1891,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Cohen_Lustig_7_2()
             Automorphism of the Free Group on generators {a, b, c}: a->a^2*b*c,b->a*b*c,c->a*b*c^2
         """
@@ -1858,6 +1911,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Cohen_Lustig_7_3()
             Automorphism of the Free Group on generators {a, b, c}: a->c*a*b*a^2,b->b*a^2,c->c*a*b*a
         """
@@ -1882,6 +1936,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Turner_Stallings()
             Automorphism of the Free Group on generators {a, b, c, d}: a->d*a*c,b->c^-1*a^-1*d^-1*a*c,c->c^-1*a^-1*b^-1*a*c,d->c^-1*a^-1*b*c
 
@@ -1912,6 +1967,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Bestvina_Handel_surface_homeo()
             Automorphism of the Free Group on generators {a, b, c, d}: a->b,b->c,c->d*a^-1,d->d^-1*c^-1
 
@@ -1938,6 +1994,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Levitt_Lustig_periodic()
             Automorphism of the Free Group on generators {a, b, c}: a->c*b,b->a,c->b*a
 
@@ -1965,6 +2022,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Clay_Pettet_twisting_out()
             Automorphism of the Free Group on generators {a, b, c}: a->b,b->c,c->a*b
 
@@ -1993,6 +2051,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Hokkaido()
             Automorphism of the Free Group on generators {a, b, c, d, e}: a->a*b,b->c,c->d,d->e,e->a
 
@@ -2022,6 +2081,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Akiyama()
             Automorphism of the Free Group on generators {a, b, c}: a->b,b->a*c,c->a
 
@@ -2049,6 +2109,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Bressaud()
             Automorphism of the Free Group on generators {a, b, c, d}: a->d*b,b->d*c,c->d,d->a
 
@@ -2079,6 +2140,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Jolivet()
             Automorphism of the Free Group on generators {a, b, c, d}: a->d*b,b->d*c,c->d,d->a
 
@@ -2106,6 +2168,7 @@ class free_group_automorphisms:
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: free_group_automorphisms.Boshernitzan_Kornfeld()
             Automorphism of the Free Group on generators {a, b, c}: a->b,b->c*a^3,c->c*a^2
 

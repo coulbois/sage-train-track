@@ -1,7 +1,7 @@
 r"""
 Test Train Tracks
 
-Testing for :mod:`~sage.groups.free_groups.train_track_map`
+Testing for :mod:`~train_track.train_track_map`
 to run with long option::
 
     ./sage -t --long src/sage/combinat/words/test_train_track.py
@@ -29,7 +29,7 @@ def test(rang, longueur, nombre):
     """
     TESTS::
 
-        sage: from sage.groups.free_groups.test_train_track import *
+        sage: from train_track.test_train_track import *
         sage: test(3, 1, 1) # long time (80s on sage.math, 2016) # random
         0 : a->a,b->b,c->ac
         Graph self map:
@@ -66,7 +66,7 @@ def test_stat(rangs, longueurs, puissance):
     """
     TESTS::
 
-        sage: from sage.groups.free_groups.test_train_track import *
+        sage: from train_track.test_train_track import *
         sage: test_stat([2,3], [3,2], 1) # long time (80s ) # random
         rang:  2 longueur:  3  time:  0.084  train-tracks: 100.0
         rang:  2 longueur:  2  time:  0.076  train-tracks: 100.0
@@ -105,7 +105,7 @@ def bugs():
 
     TESTS::
 
-        sage: from sage.groups.free_groups.test_train_track import *
+        sage: from train_track.test_train_track import *
         sage: bugs() # long time (80s ) # random
         0 : a->BafD,b->bcdFAbfbFBafDCB,c->dFAbbcdFAbfb,d->dFAbfeFdBBFBafDCB,e->eF,f->bcdFAbfbdFAbfb
 
@@ -214,7 +214,7 @@ def bug_test():
     """
     TESTS::
 
-        sage: from sage.groups.free_groups.test_train_track import *
+        sage: from train_track.test_train_track import *
         sage: bug_test()  # long time (50 second) # random
 
     AUTHORS:

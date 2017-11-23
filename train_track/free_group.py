@@ -7,6 +7,7 @@ over the corresponding GAP objects.
 A free group can be created by giving the number of generators, or their names.
 It is also possible to create indexed generators::
 
+    sage: from train_track import *
     sage: G.<x,y,z> = FreeGroup();  G
     Free Group on generators {x, y, z}
     sage: FreeGroup(3)
@@ -21,6 +22,7 @@ with the indices of the letters to the group:
 
 EXAMPLES::
 
+    sage: from train_track import *
     sage: G.<a,b,c> = FreeGroup()
     sage: a*b*c*a
     a*b*c*a
@@ -71,6 +73,8 @@ from sage.rings.integer_ring import IntegerRing
 from sage.misc.cachefunc import cached_method
 from sage.structure.sequence import Sequence
 
+from sage.groups.free_group import FreeGroup_class as FreeGroup_class_sage
+
 
 def is_FreeGroup(x):
     """
@@ -86,7 +90,8 @@ def is_FreeGroup(x):
 
     EXAMPLES::
 
-        sage: from sage.groups.free_groups.free_group import is_FreeGroup
+        sage: from train_track import *
+        sage: from train_track.free_group import is_FreeGroup
         sage: is_FreeGroup('a string')
         False
         sage: is_FreeGroup(FreeGroup(0))
@@ -119,7 +124,8 @@ def _lexi_gen(zeroes=False):
 
     EXAMPLES::
 
-        sage: from sage.groups.free_groups.free_group import _lexi_gen
+        sage: from train_track import *
+        sage: from train_track.free_group import _lexi_gen
         sage: itr = _lexi_gen()
         sage: F = FreeGroup([next(itr) for i in [1..10]]); F
         Free Group on generators {a, b, c, d, e, f, g, h, i, j}
@@ -137,7 +143,8 @@ def _lexi_gen(zeroes=False):
 
     TESTS::
 
-        sage: from sage.groups.free_groups.free_group import _lexi_gen
+        sage: from train_track import *
+        sage: from train_track.free_group import _lexi_gen
         sage: test = _lexi_gen()
         sage: ls = [next(test) for i in range(500)]
         sage: ls[234], ls[260]
@@ -171,6 +178,7 @@ class FreeGroupElement(ElementLibGAP):
 
     EXAMPLES::
 
+        sage: from train_track import *
         sage: G = FreeGroup('a, b')
         sage: x = G([1, 2, -1, -2])
         sage: x
@@ -201,6 +209,7 @@ class FreeGroupElement(ElementLibGAP):
 
         TESTS::
 
+            sage: from train_track import *
             sage: G.<a,b> = FreeGroup()
             sage: x = G([1, 2, -1, -1])
             sage: x # indirect doctest
@@ -258,6 +267,7 @@ class FreeGroupElement(ElementLibGAP):
         r"""
         TESTS::
 
+            sage: from train_track import *
             sage: G.<a,b> = FreeGroup()
             sage: hash(a*b*b*~a)
             -485698212495963022 # 64-bit
@@ -275,6 +285,7 @@ class FreeGroupElement(ElementLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F.<a,b,c> = FreeGroup()
             sage: f = F([1, 2, 2, -3, -1]) * c^15 * a^(-23)
             sage: f._latex_()
@@ -311,6 +322,7 @@ class FreeGroupElement(ElementLibGAP):
 
         TESTS::
 
+            sage: from train_track import *
             sage: F.<a,b> = FreeGroup()
             sage: a.__reduce__()
             (Free Group on generators {a, b}, ((1,),))
@@ -329,6 +341,7 @@ class FreeGroupElement(ElementLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup(3)
             sage: w = F([1,2,1,-1,3,-2])
             sage: len(w)
@@ -357,6 +370,7 @@ class FreeGroupElement(ElementLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup(3)
             sage: w = F([1,2,1,-1,3,-2])
             sage: w[2]
@@ -385,6 +399,7 @@ class FreeGroupElement(ElementLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: G.<a,b> = FreeGroup()
             sage: a.Tietze()
             (1,)
@@ -464,15 +479,16 @@ class FreeGroupElement(ElementLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: G = FreeGroup(5)
             sage: G.inject_variables()
             Defining x0, x1, x2, x3, x4
             sage: (~x0*x1*x0*x2*~x0).fox_derivative(x0)
-            -B[x0^-1] + B[x0^-1*x1] - B[x0^-1*x1*x0*x2*x0^-1]
+            -x0^-1 + x0^-1*x1 - x0^-1*x1*x0*x2*x0^-1
             sage: (~x0*x1*x0*x2*~x0).fox_derivative(x1)
-            B[x0^-1]
+            x0^-1
             sage: (~x0*x1*x0*x2*~x0).fox_derivative(x2)
-            B[x0^-1*x1*x0]
+            x0^-1*x1*x0
             sage: (~x0*x1*x0*x2*~x0).fox_derivative(x3)
             0
 
@@ -482,7 +498,7 @@ class FreeGroupElement(ElementLibGAP):
             sage: F=FreeGroup(3)
             sage: a=F([2,1,3,-1,2])
             sage: a.fox_derivative(F([1]))
-            B[x1] - B[x1*x0*x2*x0^-1]
+            x1 - x1*x0*x2*x0^-1
             sage: R.<t>=LaurentPolynomialRing(ZZ)
             sage: a.fox_derivative(F([1]),[t,t,t])
             t - t^2
@@ -573,6 +589,7 @@ class FreeGroupElement(ElementLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: G.<a,b> = FreeGroup()
             sage: w = a^2 * b^-1 * a^3
             sage: w.syllables()
@@ -610,6 +627,7 @@ class FreeGroupElement(ElementLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: G.<a,b> = FreeGroup()
             sage: w = a^2 * b^-1 * a^3
             sage: w(1, 2)
@@ -674,6 +692,7 @@ class FreeGroupElement(ElementLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F = FreeGroup(3)
             sage: w = F([1,-2,1,3,-1])
             sage: w.to_word()
@@ -723,6 +742,7 @@ def FreeGroup(n=None, names='x', index_set=None, abelian=False, **kwds):
 
     EXAMPLES::
 
+        sage: from train_track import *
         sage: G.<a,b> = FreeGroup();  G
         Free Group on generators {a, b}
         sage: H = FreeGroup('a, b')
@@ -780,6 +800,7 @@ def FreeGroup(n=None, names='x', index_set=None, abelian=False, **kwds):
 
         from sage.groups.indexed_free_group import IndexedFreeGroup
         return IndexedFreeGroup(index_set, names=names, **kwds)
+    from train_track.free_group import FreeGroup_class
     return FreeGroup_class(names)
 
 
@@ -813,7 +834,7 @@ def wrap_FreeGroup(libgap_free_group):
 
     Now wrap it::
 
-        sage: from sage.groups.free_groups.free_group import wrap_FreeGroup
+        sage: from train_track.free_group import wrap_FreeGroup
         sage: wrap_FreeGroup(F)
         Free Group on generators {a, b}
 
@@ -825,13 +846,14 @@ def wrap_FreeGroup(libgap_free_group):
         sage: wrap_FreeGroup(G)
         Free Group on generators {a, b}
     """
+    from train_track.free_group import FreeGroup_class
     assert libgap_free_group.IsFreeGroup()
     libgap_free_group._set_compare_by_id()
     names = tuple( str(g) for g in libgap_free_group.GeneratorsOfGroup() )
     return FreeGroup_class(names, libgap_free_group)
 
 
-class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
+class FreeGroup_class(FreeGroup_class_sage):
     """
     A class that wraps GAP's FreeGroup
 
@@ -839,9 +861,12 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
 
     TESTS::
 
+        sage: from train_track import *
         sage: G = FreeGroup('a, b')
         sage: TestSuite(G).run()
     """
+    from train_track.free_group import FreeGroupElement
+    
     Element = FreeGroupElement
 
     def __init__(self, generator_names, libgap_free_group=None):
@@ -859,6 +884,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
 
         TESTS::
 
+            sage: from train_track import *
             sage: G.<a,b> = FreeGroup() # indirect doctest
             sage: G
             Free Group on generators {a, b}
@@ -876,6 +902,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
         """
         TESTS::
 
+            sage: from train_track import *
             sage: G = FreeGroup('a, b')
             sage: G # indirect doctest
             Free Group on generators {a, b}
@@ -896,6 +923,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: G = FreeGroup('a, b');  G
             Free Group on generators {a, b}
             sage: G.rank()
@@ -914,6 +942,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: G = FreeGroup(3)
             sage: G._gap_init_()
             'FreeGroup(["x0", "x1", "x2"])'
@@ -928,6 +957,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
         """
         TESTS::
 
+            sage: from train_track import *
             sage: G.<a,b> = FreeGroup()
             sage: G([1, 2, 1]) # indirect doctest
             a*b*a
@@ -937,7 +967,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
             sage: G( G._gap_gens()[0] )
             a
             sage: type(_)
-            <class 'sage.groups.free_groups.free_group.FreeGroup_class_with_category.element_class'>
+            <class 'train_track.free_group.FreeGroup_class_with_category.element_class'>
 
         Check that conversion between free groups follow the convention that
         names are preserved::
@@ -966,6 +996,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
             ...
             TypeError: 'sage.rings.integer.Integer' object is not iterable
         """
+        from train_track.free_group import FreeGroup_class
         if len(args)!=1:
             return self.element_class(self, *args, **kwds)
         x = args[0]
@@ -998,6 +1029,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F.<a,b> = FreeGroup()
             sage: F.abelian_invariants()
             (0, 0)
@@ -1026,6 +1058,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F.<a,b> = FreeGroup()
             sage: F.quotient([a*b^2*a, b^3])
             Finitely presented group < a, b | a*b^2*a, b^3 >
@@ -1072,6 +1105,7 @@ class FreeGroup_class(UniqueRepresentation, Group, ParentLibGAP):
 
         EXAMPLES::
 
+            sage: from train_track import *
             sage: F.<a,b> = FreeGroup()
             sage: F.__truediv__([a*b^2*a, b^3])
             Finitely presented group < a, b | a*b^2*a, b^3 >
