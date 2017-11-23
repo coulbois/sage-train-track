@@ -1,5 +1,8 @@
 r"""
-inverse_alphabet module, define Class for alphabet with inverse letters
+AlphabetWithInversesClass
+
+inverse_alphabet module, defines AlphabetWithInversesClass
+for alphabet with inverse letters.
 
 AUTHORS:
 
@@ -18,6 +21,7 @@ EXAMPLES::
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
+from __future__ import print_function, absolute_import
 from sage.structure.parent import Parent
 from sage.rings.integer import Integer
 
@@ -98,26 +102,26 @@ class AlphabetWithInverses(Parent):
             if type == 'abc':
                 if alphabet < 27:
                     self._positive = \
-                        ["%c" % (i + 97) for i in xrange(alphabet)]
+                        ["%c" % (i + 97) for i in range(alphabet)]
                     self._negative = \
-                        ["%c" % (i + 65) for i in xrange(alphabet)]
+                        ["%c" % (i + 65) for i in range(alphabet)]
                 else:
                     self._positive =\
-                        ["%c" % (i + 97) for i in xrange(26)] + \
-                        ["x%s" % i for i in xrange(alphabet - 26)]
+                        ["%c" % (i + 97) for i in range(26)] + \
+                        ["x%s" % i for i in range(alphabet - 26)]
                     self._negative = \
-                        ["%c" % (i + 65) for i in xrange(26)] + \
-                        ["X%s" % i for i in xrange(alphabet - 26)]
+                        ["%c" % (i + 65) for i in range(26)] + \
+                        ["X%s" % i for i in range(alphabet - 26)]
 
             elif type == 'a0':
-                self._positive = ["a%s" % i for i in xrange(alphabet)]
-                self._negative = ["A%s" % i for i in xrange(alphabet)]
+                self._positive = ["a%s" % i for i in range(alphabet)]
+                self._negative = ["A%s" % i for i in range(alphabet)]
             elif type == 'num' and alphabet < 10:
-                self._positive = ["%s" % i for i in xrange(alphabet)]
-                self._negative = ["%s" % i for i in xrange(alphabet)]
+                self._positive = ["%s" % i for i in range(alphabet)]
+                self._negative = ["%s" % i for i in range(alphabet)]
             else:  # type is assumed to be 'x0'
-                self._positive = ["x%s" % i for i in xrange(alphabet)]
-                self._negative = ["X%s" % i for i in xrange(alphabet)]
+                self._positive = ["x%s" % i for i in range(alphabet)]
+                self._negative = ["X%s" % i for i in range(alphabet)]
 
         else:
             self._positive = list(alphabet)
@@ -129,10 +133,10 @@ class AlphabetWithInverses(Parent):
         self._inverse = {}
         self._inverse.update(
             (self._negative[i], self._positive[i])
-            for i in xrange(len(self._positive)))
+            for i in range(len(self._positive)))
         self._inverse.update(
             (self._positive[i], self._negative[i])
-            for i in xrange(len(self._negative)))
+            for i in range(len(self._negative)))
         self._type = type
 
     def __repr__(self):
@@ -166,13 +170,13 @@ class AlphabetWithInverses(Parent):
         TEST::
 
             sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-            sage: A.__iter__().next()
+            sage: next(A.__iter__())
             'a'
 
-        WARNING:
+        .. WARNING::
 
-        The iterator is on all the letters of the alphabet (both
-        positive and negative). This is NOT consistent with ```len()``.
+            The iterator is on all the letters of the alphabet (both
+            positive and negative). This is NOT consistent with ```len()``.
         """
         A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
 
@@ -210,9 +214,9 @@ class AlphabetWithInverses(Parent):
             sage: A.cardinality()
             3
 
-        WARNING:
+        .. WARNING::
 
-        This is equal to ``len()``.
+            This is equal to ``len()``.
         """
         return len(self._positive)
 
@@ -310,7 +314,7 @@ class AlphabetWithInverses(Parent):
         TESTS::
 
             sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'], type='abc')
-            sage: A.unrank(2)
+            sage: A.__getitem__(2)
             'c'
             sage: A.unrank(4)
             'B'
@@ -327,9 +331,15 @@ class AlphabetWithInverses(Parent):
     def unrank(self, n):
         """
         .. automethod:: __getitem__
+
+        EXAMPLES::
+
+            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'], type='abc')
+            sage: A.unrank(2)
+            'c'
         """
         return  self.__getitem__(n)
-        
+
     def inverse_letter(self, letter):
         """
         Inverse of ``letter``.
@@ -477,34 +487,6 @@ class AlphabetWithInverses(Parent):
             ['A', 'B', 'C']
         """
         return self._negative
-
-    def compare_letters(self, a, b):
-        """
-        Compares the letters ``a`` and ``b`` according to their
-        rank in ``self``.
-
-        INPUT:
-
-        - ``a`` -- letter to compare with ''b''
-        - ``b`` -- letter to compare with ''a''
-
-        OUTPUT:
-
-        - return        -1 if a < b
-                         0 if a == b
-                         1 if a > b
-
-        EXAMPLES::
-
-            sage: A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-            sage: A.compare_letters('a','A')
-            -1
-            sage: A.compare_letters('c','a')
-            1
-            sage: A.compare_letters('B','B')
-            0
-        """
-        return cmp(self.rank(a), self.rank(b))
 
     def less_letter(self, a, b):
         """
@@ -755,7 +737,7 @@ class AlphabetWithInverses(Parent):
 
             sage: A = AlphabetWithInverses(4)
             sage: A.remove_letter('b')
-            sage: print A
+            sage: print(A)
             Alphabet with inverses on ['a', 'c', 'd']
         """
         aa = self.to_positive_letter(a)

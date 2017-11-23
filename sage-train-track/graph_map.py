@@ -1,5 +1,6 @@
-r"""
-inverse_graph module, define Class for GraphWithInverses and MetricGraph
+"""
+GraphMap
+graph_map module, defines Class for GraphMap
 
 AUTHORS:
 
@@ -10,13 +11,15 @@ AUTHORS:
 
 EXAMPLES::
 
+    sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+    sage: from sage.groups.free_groups.graph_map import GraphMap
     sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
     sage: A = AlphabetWithInverses(2)
     sage: H = GraphWithInverses.rose_graph(A)
-    sage: print GraphMap(G,H,"a->ab,b->b,c->B")
+    sage: print(GraphMap(G,H,"a->ab,b->b,c->B"))
     Graph map:
-    Graph with inverses: a: 0->0, c: 1->0, b: 0->1
-    Graph with inverses: a: 0->0, b: 0->0
+    a: 0->0, c: 1->0, b: 0->1
+    a: 0->0, b: 0->0
     edge map: a->ab, c->B, b->b
 """
 #
@@ -26,13 +29,14 @@ EXAMPLES::
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
+from __future__ import print_function, absolute_import
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
-from inverse_alphabet import AlphabetWithInverses
-from inverse_graph import GraphWithInverses
+from .inverse_alphabet import AlphabetWithInverses
+from .inverse_graph import GraphWithInverses
 
 
-class GraphMap:
+class GraphMap():
     """
     A GraphMap is a map from a Graph to another.  It maps a vertex to
     a vertex and an edge to an edge-path. It respects incidence
@@ -57,13 +61,15 @@ class GraphMap:
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
-            sage: print GraphMap(G,H,"a->ab,b->b,c->B")
+            sage: print(GraphMap(G,H,"a->ab,b->b,c->B"))
             Graph map:
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->1
-            Graph with inverses: a: 0->0, b: 0->0
+            a: 0->0, b: 0->1, c: 1->1
+            a: 0->0, b: 0->0
             edge map: a->ab, b->b, c->B
         """
         if isinstance(args[0], GraphMap):
@@ -92,13 +98,15 @@ class GraphMap:
         A vertex of ``self`` or an edge path
         Applies ``self`` to ``argument`` which is either .
 
-        SEE ALSO:
+        .. SEEALSO::
 
-        To compute the image of a letter of the alphabet use
-        ``self.image(a)``.
+            To compute the image of a letter of the alphabet use
+            :meth:`sage.groups.free_groups.graph_map.GraphMap.image(a)``.
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -120,7 +128,7 @@ class GraphMap:
 
         INPUT:
 
-        - ``other`` other GraphMap to compute multiplication
+        - ``other`` -- other GraphMap to compute multiplication
 
         OUTPUT:
 
@@ -130,15 +138,17 @@ class GraphMap:
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
             sage: g = GraphMap(H,H,"a->aba,b->ba")
-            sage: print g * f
+            sage: print(g * f)
             Graph map:
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->1
-            Graph with inverses: a: 0->0, b: 0->0
+            a: 0->0, b: 0->1, c: 1->1
+            a: 0->0, b: 0->0
             edge map: a->ababa, b->ba, c->AB
         """
         A = other._domain.alphabet()
@@ -147,7 +157,7 @@ class GraphMap:
             result_map[a] = self(other._edge_map.image(a))
         return GraphMap(other._domain, self._codomain, result_map)
 
-    def __str__(self):
+    def __repr__(self):
         """
         String represetation of ``self``.
 
@@ -157,11 +167,13 @@ class GraphMap:
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
-            sage: GraphMap(G,H,"a->ab,b->b,c->B").__str__()
-            'Graph map:\nGraph with inverses: a: 0->0, b: 0->1, c: 1->1\nGraph with inverses: a: 0->0, b: 0->0\nedge map: a->ab, b->b, c->B'
+            sage: GraphMap(G,H,"a->ab,b->b,c->B").__repr__()
+            'Graph map:\na: 0->0, b: 0->1, c: 1->1\na: 0->0, b: 0->0\nedge map: a->ab, b->b, c->B'
         """
         result = "Graph map:\n" + self._domain.__str__() + "\n"
         result += self._codomain.__str__() + "\n"
@@ -185,12 +197,14 @@ class GraphMap:
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
-            sage: print f.domain()
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->1
+            sage: print(f.domain())
+            a: 0->0, b: 0->1, c: 1->1
         """
         return self._domain
 
@@ -204,12 +218,14 @@ class GraphMap:
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
-            sage: print f.codomain()
-            Graph with inverses: a: 0->0, b: 0->0
+            sage: print(f.codomain())
+            a: 0->0, b: 0->0
         """
         return self._codomain
 
@@ -226,19 +242,21 @@ class GraphMap:
 
         INPUT:
 
-        - ``edge_map``: anything which is accepted by ``WordMorphism(edge_map)``
+        - ``edge_map`` -- anything which is accepted by ``WordMorphism(edge_map)``
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
             sage: f.set_edge_map('a->b,b->,c->b')
-            sage: print f
+            sage: print(f)
             Graph map:
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->1
-            Graph with inverses: a: 0->0, b: 0->0
+            a: 0->0, b: 0->1, c: 1->1
+            a: 0->0, b: 0->0
             edge map: a->b, b->, c->b
         """
         A = self.domain().alphabet()
@@ -254,26 +272,28 @@ class GraphMap:
         """Compose ``self`` with the morphism ``edge_morph``.
 
         Update the edge_map of ``self`` with (``edge_morph`` o ``self``).
-        
+
         INPUT:
 
-        - ``edge_morph``: A ``WordMorphism`` from the alphabet labeling
+        - ``edge_morph`` -- A ``WordMorphism`` from the alphabet labeling
           the codomain of ``self`` to itself.
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
             sage: f.compose_edge_map(FreeGroupAutomorphism('a->aba,b->ba'))
-            sage: print f
+            sage: print(f)
             Graph map:
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->1
-            Graph with inverses: a: 0->0, b: 0->0
+            a: 0->0, b: 0->1, c: 1->1
+            a: 0->0, b: 0->0
             edge map: a->ababa, b->ba, c->AB
         """
-        edge_map = dict((a, edge_morph(self._edge_map.image(a))) for a in
+        edge_map = dict((a, edge_morph.to_word_morphism(use_str=True, upper_case_as_inverse=True)(self._edge_map.image(a))) for a in
                         self._domain._alphabet.positive_letters())
         self.set_edge_map(edge_map)
 
@@ -283,15 +303,17 @@ class GraphMap:
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
             sage: f.update_vertex_map()
-            sage: print f
+            sage: print(f)
             Graph map:
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->1
-            Graph with inverses: a: 0->0, b: 0->0
+            a: 0->0, b: 0->1, c: 1->1
+            a: 0->0, b: 0->0
             edge map: a->ab, b->b, c->B
             vertex map: {0: 0, 1: 0}
         """
@@ -310,10 +332,13 @@ class GraphMap:
         The edge map of ``self``: this is a word morphism.
 
         OUTPUT:
+
         The edge map of ``self``
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -329,23 +354,25 @@ class GraphMap:
         if ``iter>1`` then returns ``self^iter(letter)``
 
         INPUT:
-            
-        - ``iter``: -- (default 1) a positive integer
-        - ``letter``: a letter of the alphabet of the domain of ``self``.
+
+        - ``iter`` (default: 1) -- a positive integer
+        - ``letter`` -- a letter of the alphabet of the domain of ``self``.
 
         OUTPUT:
 
         if ``iter`` > 1 then returns ``self``^iter(letter)``
         if ``iter`` = 1then returns the image of letter
 
-        WARNING:
+        .. WARNING::
 
-        ``iter`` may be greater than 1 only if the domain and codomain
-        of ``self`` are equal (that is to say, ``self`` is a
-        GraphSelfMap)
+            ``iter`` may be greater than 1 only if the domain and codomain
+            of ``self`` are equal (that is to say, ``self`` is a
+            GraphSelfMap)
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -353,7 +380,6 @@ class GraphMap:
             sage: f.image('a')
             word: ab
         """
-
         if iter == 1:
             return self._edge_map.image(letter)
         else:
@@ -375,88 +401,89 @@ class GraphMap:
         In particular the inverse maps all vertices to the root of ``t1``.
 
         OUTPUT:
+
         A homotopy inverse of ``self``.
 
-        WARNING:
+        .. WARNING::
 
-        ``self`` is assumed to be a homotopy equivalence.
+            ``self`` is assumed to be a homotopy equivalence.
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
             sage: A = AlphabetWithInverses(2)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
-            sage: print f.inverse()
+            sage: print(f.inverse())
             Graph map:
-            Graph with inverses: a: 0->0, b: 0->0
-            Graph with inverses: a: 0->0, b: 0->1, c: 1->1
+            a: 0->0, b: 0->0
+            a: 0->0, b: 0->1, c: 1->1
             edge map: a->abcB, b->bCB
         """
 
-        from free_group import FreeGroup
-        from free_group_automorphism import FreeGroupAutomorphism
+        from .free_group import FreeGroup
+        from .free_group_automorphism import FreeGroupAutomorphism
 
-        g1 = self.domain()
-        a1 = g1.alphabet()
-        t1 = g1.spanning_tree()
+        G1 = self.domain()
+        A1 = G1.alphabet()
+        T1 = G1.spanning_tree()
 
-        g2 = self.codomain()
-        a2 = g2.alphabet()
-        t2 = g2.spanning_tree()
+        G2 = self.codomain()
+        A2 = G2.alphabet()
+        T2 = G2.spanning_tree()
 
-        A = AlphabetWithInverses(len(a1) - len(g1.vertices()) + 1)
-        f = FreeGroup(A)
+        A = AlphabetWithInverses(len(A1) - len(G1.vertices()) + 1)
+        F = FreeGroup(A.positive_letters())
 
         map = dict()
         translate = dict()
 
         i = 0
-        for a in a1.positive_letters():
-            l = len(t1[g1.initial_vertex(a)]) - len(t1[g1.terminal_vertex(a)])
-            if (l != 1 or t1[g1.initial_vertex(a)][-1] != a1.inverse_letter(
-                    a)) and (l != -1 or t1[g1.terminal_vertex(a)][-1] != a):
+        for a in A1.positive_letters():
+            l = len(T1[G1.initial_vertex(a)]) - len(T1[G1.terminal_vertex(a)])
+            if (l != 1 or T1[G1.initial_vertex(a)][-1] != A1.inverse_letter(
+                    a)) and (l != -1 or T1[G1.terminal_vertex(a)][-1] != a):
                 # a is not in the spanning tree
                 map[A[i]] = self(
-                    t1[g1.initial_vertex(a)] * Word([a]) * g1.reverse_path(
-                        t1[g1.terminal_vertex(a)]))
+                    T1[G1.initial_vertex(a)] * Word([a]) * G1.reverse_path(
+                        T1[G1.terminal_vertex(a)]))
                 translate[A[i]] = a
-                translate[A.inverse_letter(A[i])] = a1.inverse_letter(a)
+                translate[A.inverse_letter(A[i])] = A1.inverse_letter(a)
                 i += 1
-
         rename = dict()
         edge_map = dict()
 
         i = 0
-        for a in a2.positive_letters():
-            l = len(t2[g2.initial_vertex(a)]) - len(t2[g2.terminal_vertex(a)])
-            if (l != 1 or t2[g2.initial_vertex(a)][-1] != a2.inverse_letter(
-                    a)) and (l != -1 or t2[g2.terminal_vertex(a)][-1] != a):
+        for a in A2.positive_letters():
+            l = len(T2[G2.initial_vertex(a)]) - len(T2[G2.terminal_vertex(a)])
+            if (l != 1 or T2[G2.initial_vertex(a)][-1] != A2.inverse_letter(
+                    a)) and (l != -1 or T2[G2.terminal_vertex(a)][-1] != a):
                 # a is not in the spanning tree
                 rename[a] = A[i]
-                rename[a2.inverse_letter(a)] = A.inverse_letter(A[i])
+                rename[A2.inverse_letter(a)] = A.inverse_letter(A[i])
                 i += 1
             else:
                 edge_map[a] = Word()
 
         for a in map:
-            map[a] = f([rename[b] for b in map[a] if b in rename])
+            map[a] = F([rename[b] for b in map[a] if b in rename])
 
-        phi = FreeGroupAutomorphism(map, f)
+        phi = FreeGroupAutomorphism(map, F)
         psi = phi.inverse()
-
         i = 0
-        for a in a2.positive_letters():
+        for a in A2.positive_letters():
             if a not in edge_map:
                 result = Word()
-                for b in psi.image(A[i]):
+                for b in psi(A[i]).to_word():
                     c = translate[b]
-                    result = result * t1[g1.initial_vertex(c)] * Word(
-                        [c]) * g1.reverse_path(t1[g1.terminal_vertex(c)])
-                edge_map[a] = g1.reduce_path(result)
+                    result = result * T1[G1.initial_vertex(c)] * Word(
+                        [c]) * G1.reverse_path(T1[G1.terminal_vertex(c)])
+                edge_map[a] = G1.reduce_path(result)
                 i += 1
 
-        return GraphMap(g2, g1, edge_map)
+        return GraphMap(G2, G1, edge_map)
 
     def tighten(self):
         """
@@ -475,24 +502,26 @@ class GraphMap:
         Tighten ``self`` such that there are at least two gates at
         each vertex of the domain.
 
-        WARNING:
+        .. WARNING::
 
-        It is assumed that ``self`` is a homotopy equivalence
+            It is assumed that ``self`` is a homotopy equivalence
 
         The result may send edges to trivial edge-paths.
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: A = AlphabetWithInverses(2)
             sage: G = GraphWithInverses.rose_graph(A)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->baabAB,b->babAB")
             sage: f.tighten()
             WordMorphism: A->BA, B->B, a->ab, b->b
-            sage: print f
+            sage: print(f)
             Graph map:
-            Graph with inverses: a: 0->0, b: 0->0
-            Graph with inverses: a: 0->0, b: 0->0
+            a: 0->0, b: 0->0
+            a: 0->0, b: 0->0
             edge map: a->ab, b->b
         """
         G1 = self.domain()
@@ -551,7 +580,7 @@ class GraphMap:
                     if prefixv:
                         for w in adjacent_vertex[v]:
                             prefix[w] = prefixv
-            
+
             for a in A1:
                 v = G1.initial_vertex(a)
                 if v in prefix and len(prefix[v]) > 0:
@@ -577,13 +606,13 @@ class GraphMap:
         Intended to be used by Stalling's folding algorithm to get an
         immersion.
 
-        ...SEE ALSO::
+        .. SEEALSO::
 
-            :meth:`sage.combinat.words.GraphWithInverses.subdivide_edge()`
+            :meth:`sage.groups.free_groups.inverse_graph.GraphWithInverses.subdivide_edge()`
 
         INPUT:
 
-        - ``e``: and edge of the domain of ``self``.
+        - ``e`` -- and edge of the domain of ``self``.
 
         OUTPUT:
 
@@ -591,16 +620,18 @@ class GraphMap:
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: A = AlphabetWithInverses(2)
             sage: G = GraphWithInverses.rose_graph(A)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->aba,b->ab")
             sage: f.subdivide_domain('a')
             {'A': word: DCA, 'B': word: B, 'a': word: acd, 'b': word: b}
-            sage: print f
+            sage: print(f)
             Graph map:
-            Graph with inverses: a: 0->1, b: 0->0, c: 1->2, d: 2->0
-            Graph with inverses: a: 0->0, b: 0->0
+            a: 0->1, b: 0->0, c: 1->2, d: 2->0
+            a: 0->0, b: 0->0
             edge map: a->a, b->ab, c->b, d->a
         """
         G = self.domain()
@@ -654,13 +685,15 @@ class GraphMap:
 
         INPUT:
 
-        - ``turns`` a list of turns of the domain graph. Default is None
+        - ``turns`` -- a list of turns of the domain graph. Default is None
           meaning all the turns of the graph. I not ``None`` return the
           sublist of ``turns`` consisting of illegal turns.
 
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: A = AlphabetWithInverses(2)
             sage: G = GraphWithInverses.rose_graph(A)
             sage: H = GraphWithInverses.rose_graph(A)
@@ -700,24 +733,26 @@ class GraphMap:
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: A = AlphabetWithInverses(2)
             sage: G = GraphWithInverses.rose_graph(A)
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->aba,b->ab")
             sage: f.stallings_folding()
-            sage: print f
+            sage: print(f)
             Graph map:
-            Graph with inverses: a: 1->1, c: 1->1
-            Graph with inverses: a: 0->0, b: 0->0
+            a: 1->1, c: 1->1
+            a: 0->0, b: 0->0
             edge map: a->a, c->b
 
         REFERENCES:
 
-        [Stallings] J. Stallings, Topology of Finite Graphs,
+        .. [Stallings] J. Stallings, Topology of Finite Graphs,
 
         AUTHOR:
 
-        - Radhika GUPTA
+            - Radhika GUPTA
 
         """
         A = self.domain().alphabet()
@@ -765,7 +800,7 @@ class GraphMap:
         Pullback of the graph maps ``self`` and ``other``.
         The codomain of ``self`` and ``other`` must be the same graph.
 
-        The pullback is a graph map f:G3 -> G that makes the diagram commute:
+        The pullback is a graph map `f : G_3 \to G` that makes the diagram commute::
 
             G3 -----> G1
             |  \      |
@@ -779,16 +814,19 @@ class GraphMap:
         The pullback method can be used to find intersection of two subgroups
         of a Free Group.
 
-        INPUT: 
+        INPUT:
 
-        - ``other``: a graph map G2->G with ``self``: a graph map G1->G,
+        - ``other`` -- a graph map `G_2 \to G` with ``self`` (a
+          graph map `G_1 \to G`)
 
-        OUTPUT: 
-        
-        A ``GraphMap`` f
+        OUTPUT:
+
+        A ``GraphMap``.
 
         EXAMPLES::
-  
+
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: G1 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='x0'))
             sage: G2 = GraphWithInverses.rose_graph(AlphabetWithInverses(2,type='a0'))
             sage: G =  GraphWithInverses.rose_graph(AlphabetWithInverses(2))
@@ -796,10 +834,10 @@ class GraphMap:
             sage: n2 = WordMorphism({'a0':['b','a'],'a1':['b','b','b','a','B','a']})
             sage: f1 = GraphMap(G1,G,n1)
             sage: f2 = GraphMap(G2,G,n2)
-            sage: print f1.pullback(f2)
+            sage: print(f1.pullback(f2))
             Graph map:
-            Graph with inverses: a0: (0, 0)->(1, 2), a1: (0, 2)->(1, 0), a2: (0, 2)->(1, 3), a3: (0, 3)->(1, 4), a4: (0, 4)->(1, 3), a5: (1, 2)->(0, 0), a6: (1, 4)->(0, 3)
-            Graph with inverses: a: 0->0, b: 0->0
+            a0: (0, 0)->(1, 2), a1: (0, 2)->(1, 0), a2: (0, 2)->(1, 3), a3: (0, 3)->(1, 4), a4: (0, 4)->(1, 3), a5: (1, 2)->(0, 0), a6: (1, 4)->(0, 3)
+            a: 0->0, b: 0->0
             edge map: a0->b, a1->a, a2->b, a3->b, a4->a, a5->a, a6->a
 
         AUTHORS:
@@ -828,8 +866,7 @@ class GraphMap:
                             and self.domain().terminal_vertex(e1) == w[0]:
                         for e2 in other.domain().alphabet().positive_letters():
                             if other.domain().initial_vertex(e2) == v[1] \
-                                    and other.domain().terminal_vertex(e2) == w[
-                                        1]:
+                                    and other.domain().terminal_vertex(e2) == w[1]:
                                 if self.image(e1) == other.image(e2):
                                     e = A.add_new_letter()
                                     G3.add_edge(v, w, e)
@@ -856,14 +893,20 @@ class GraphMap:
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.inverse_graph import GraphWithInverses
+            sage: from sage.groups.free_groups.graph_map import GraphMap
             sage: phi=FreeGroupAutomorphism('a->ab,b->ac,c->a')
-            sage: print GraphMap.rose_map(phi)
+            sage: print(GraphMap.rose_map(phi))
             Graph map:
-            Graph with inverses: a: 0->0, b: 0->0, c: 0->0
-            Graph with inverses: a: 0->0, b: 0->0, c: 0->0
+            a: 0->0, b: 0->0, c: 0->0
+            a: 0->0, b: 0->0, c: 0->0
             edge map: a->ab, b->ac, c->a
         """
 
-        graph = GraphWithInverses.rose_graph(
-            automorphism.domain().alphabet().copy())
-        return GraphMap(graph, graph, automorphism)
+        A = AlphabetWithInverses(automorphism.domain().variable_names())
+        graph = GraphWithInverses.rose_graph(A)
+        return GraphMap(
+            graph, graph,
+            automorphism.to_word_morphism(
+                use_str=True, upper_case_as_inverse=True))
+

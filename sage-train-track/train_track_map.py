@@ -1,12 +1,10 @@
 r"""
-train_track_map.py module
-
-Define a TrainTrackMap Class
+Train Track Maps
 
 AUTHORS:
 
-- Thierry COULBOIS (2013-01-01): initial version
-- Dominique BENIELLI (2016-02_15):
+- Thierry Coulbois (2013-01-01): initial version
+- Dominique Benielli (2016-02_15):
   AMU University <dominique.benielli@univ-amu.fr>, Integration in SageMath
 
 EXAMPLES::
@@ -14,20 +12,23 @@ EXAMPLES::
     sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
     sage: phi = phi.inverse()
     sage: tt = phi.train_track()
-    sage: print tt
+    sage: print(tt)
     Train-track map:
     Marked graph: a: 0->0, b: 1->0, c: 1->0, e: 0->1
     Marking: a->a, b->eb, c->ec
     Edge map: a->ec, b->Ea, c->b, e->C
     Irreducible representative
 """
+
 # *****************************************************************************
 #       Copyright (C) 2013 Thierry Coulbois <thierry.coulbois@univ-amu.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # *****************************************************************************
-from graph_self_map import GraphSelfMap
+
+from __future__ import print_function, absolute_import
+from .graph_self_map import GraphSelfMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.combinat.words.words import FiniteWords
@@ -37,7 +38,7 @@ from sage.matrix.constructor import matrix
 
 
 class TrainTrackMap(GraphSelfMap):
-    """
+    r"""
     A train-track map is a map from a (possibly marked, possibly
     metric) graph to itself which is train track: vertices are mapped
     to vertices, edges are mapped to non-trivial reduced edge paths
@@ -52,36 +53,32 @@ class TrainTrackMap(GraphSelfMap):
 
     EXAMPLES::
 
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: f=phi.rose_representative()
+        sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: f = phi.rose_representative()
         sage: tt=TrainTrackMap(f)
-        sage: print tt
+        sage: print(tt)
         Train-track map:
         Marked graph: a: 0->0, b: 0->0, c: 0->0
         Marking: a->a, b->b, c->c
         Edge map: a->ab, b->ac, c->a
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi.inverse()
-        sage: tt=phi.train_track()
-        sage: print tt
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi = phi.inverse()
+        sage: tt = phi.train_track()
+        sage: print(tt)
         Train-track map:
         Marked graph: a: 0->0, b: 1->0, c: 1->0, e: 0->1
         Marking: a->a, b->eb, c->ec
         Edge map: a->ec, b->Ea, c->b, e->C
         Irreducible representative
-
-    AUTHORS:
-
-    - Thierry Coulbois (2014-07-22): beta.1 version
     """
-
     def __init__(self, *args):
         """
         The following forms are accepted:
-        
+
         - ``TrainTrackMap(f)`` where ``f`` is a
-        GraphSelfMap which is train-track (no check is
-        done)
+          GraphSelfMap which is train-track (no check is
+          done)
         - ``TrainTrackMap(graph,edge_map,vertex_map=None)`` where
           ``graph`` is a ``GraphWithInverses`` and ``edge_map`` is
           anything accepted by ``WordMorphism(edge_map)`` with domain
@@ -89,8 +86,13 @@ class TrainTrackMap(GraphSelfMap):
           (a,inverse_letter(a)) need to have an image by
           ``edge_map``).
 
-        """
+        EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+            sage: print(phi)
+            a->a*b,b->a*c,c->a
+        """
         GraphSelfMap.__init__(self, *args)
 
     def __str__(self):
@@ -102,13 +104,14 @@ class TrainTrackMap(GraphSelfMap):
         A string representation of ``self``.
 
         EXAMPLES:
+
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: f=phi.rose_representative()
             sage: tt=TrainTrackMap(f)
             sage: tt.__str__()
             'Train-track map:\nMarked graph: a: 0->0, b: 0->0, c: 0->0\nMarking: a->a, b->b, c->c\nEdge map: a->ab, b->ac, c->a'
         """
-
         result = "Train-track map:\n"
         result += self._domain.__str__() + "\n"
         result += "Edge map: "
@@ -128,31 +131,31 @@ class TrainTrackMap(GraphSelfMap):
 
     def is_train_track(self, verbose=False):
         """
-        Returns ``True``.
+        Return ``True`` because this is a train track map.
 
         INPUT:
 
-        -``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: ``False``) for verbose option
 
         OUPTUT:
 
-        Returns always ``True``.
+        Returns ``True``.
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
             sage: f=phi.rose_representative()
             sage: tt=TrainTrackMap(f)
             sage: tt.is_train_track()
             True
         """
-
         return True
 
     @staticmethod
     def from_edge_map(edge_map, alphabet=None, path=None):
-        """
-        Builds a train-track map from an edge map.
+        r"""
+        Build a train-track map from an edge map.
 
         The graph is computed to be the biggest possible graph for
         which the edge_map is continuous. Additionnal information can
@@ -180,19 +183,18 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
-            sage: print TrainTrackMap.from_edge_map("a->ec,b->Ea,c->b,e->C")
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
+            sage: print(TrainTrackMap.from_edge_map("a->ec,b->Ea,c->b,e->C"))
             Train-track map:
             Marked graph: a: 0->0, b: 1->0, c: 1->0, e: 0->1
             Marking: a->a, b->Bc, c->eb
             Edge map: a->ec, b->Ea, c->b, e->C
         """
-
-        return TrainTrackMap(
-            GraphSelfMap.from_edge_map(edge_map, alphabet, path))
+        return TrainTrackMap(GraphSelfMap.from_edge_map(edge_map, alphabet, path))
 
     def is_expanding(self):
-        """
-        ``True`` if ``self`` is an expanding train-track map.
+        r"""
+        Return ``True`` if ``self`` is an expanding train-track map.
 
         A train-track is expanding of for each edge e, the iterated
         images of e get infinitely long: lim_{n\to\infty}
@@ -205,11 +207,11 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: f = TrainTrackMap.from_edge_map("a->ab,b->ac,c->c")
             sage: f.is_expanding()
             False
         """
-
         done = True
         edges = self.domain().alphabet().positive_letters()[:]
         i = 0
@@ -235,9 +237,9 @@ class TrainTrackMap(GraphSelfMap):
         return len(edges) == 0  # edges contains all the never expanded edges
 
     def is_perron_frobenius(self):
-        """
-        ``True`` if (the matrix of) ``self`` satisfies the hypothesis of
-        Perron-Frobenius theorem.
+        r"""
+        Return ``True`` if (the matrix of) ``self`` satisfies the
+        hypothesis of Perron-Frobenius theorem.
 
         (The matrix of) ``self`` is Perron-Frobenius if it has a power
         with strictly positive entries.
@@ -245,22 +247,21 @@ class TrainTrackMap(GraphSelfMap):
         Note that if ``self`` is not Perron-Frobenius then it has a
         disconnected local Whitehead graph (the converse is false).
 
-        SEE ALSO::
-
-        TrainTrackMap.has_connected_local_whitehead_graphs()
-
         OUTPUT:
 
-        ``True`` if (the matrix of) ``self`` satisfies the hypothesis of
-        Perron-Frobenius theorem.
+        Boolean
+
+        .. SEEALSO::
+
+            :meth:`has_connected_local_whitehead_graphs()`
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: f = TrainTrackMap.from_edge_map("a->ab,b->a,c->ac")
             sage: f.is_perron_frobenius()
             False
         """
-
         if len(self.stratify()) > 1:
             return False
         # Now, we know that self is irreducible
@@ -299,10 +300,8 @@ class TrainTrackMap(GraphSelfMap):
 
         # we now look for letters from which we can reach a
 
-        good_letters = set(
-            [b for b in A.positive_letters() if a in image[b]])
-        bad_letters = set(
-            [b for b in A.positive_letters() if b not in good_letters])
+        good_letters = set([b for b in A.positive_letters() if a in image[b]])
+        bad_letters = set([b for b in A.positive_letters() if b not in good_letters])
 
         done = False
         while not done:
@@ -311,14 +310,13 @@ class TrainTrackMap(GraphSelfMap):
                 if len(image[b].intersection(good_letters)) > 0:
                     good_letters.add(b)
                     done = False
-            bad_letters = set(
-                [b for b in A.positive_letters() if b not in good_letters])
+            bad_letters = set([b for b in A.positive_letters() if b not in good_letters])
 
-        return len(bad_letters) == 0
+        return not bad_letters
 
     def gates(self, v):
         """
-        List of gates at vertex ``v``.
+        List of gates at vertex ``v`` of ``self``.
 
         A gate is a list of edges starting at vertex ``v`` such each
         to of them form an illegal turn. That is to say after
@@ -326,12 +324,15 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        - ``v`` vertex
+        - ``v`` -- a vertex
 
         OUTPUT:
-        list of list of edges out of the vertex ``v``.
+
+        List of list of edges out of the vertex ``v``.
 
         EXAMPLES::
+
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a').inverse()
             sage: f = phi.rose_conjugacy_representative()
             sage: ff = TrainTrackMap(f)
@@ -344,9 +345,7 @@ class TrainTrackMap(GraphSelfMap):
 
         - Brian Mann
         """
-
         gates = []
-
         illegal_turns = self.illegal_turns(v)
 
         for e in self.domain().alphabet():
@@ -362,10 +361,11 @@ class TrainTrackMap(GraphSelfMap):
 
     def number_of_gates(self, v=0):
         """
-        Number of gates at v.
+        Number of gates at ``v`` of ``self``.
 
         INPUT:
-        - ``v`` vertex
+
+        - ``v`` -- vertex
 
         OUTPUT:
 
@@ -373,6 +373,7 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a').inverse()
             sage: f = phi.rose_conjugacy_representative()
             sage: ff = TrainTrackMap(f)
@@ -381,23 +382,22 @@ class TrainTrackMap(GraphSelfMap):
             sage: ff.number_of_gates(0)
             3
 
-        ...SEE ALSO::
+        .. SEEALSO::
 
-        `TrainTrackMap.gates(self)`
+            :meth:`gates()`
         """
-
         return len(self.gates(v))
 
     def local_whitehead_graph(self, v):
-        """
-        The local whitehead graph at a vertex ``v``. 
+        r"""
+        The local whitehead graph at a vertex ``v``.
 
-        Vertices are directions at v, and two directions are joined by
-        an edge if some iterate of an edge by ``self` crosses that turn.
+        Vertices are directions at ``v``, and two directions are joined by
+        an edge if some iterate of an edge by ``self`` crosses that turn.
 
         INPUT:
 
-        - ``v`` vertex
+        - ``v`` -- vertex
 
         OUTPUT:
 
@@ -405,6 +405,7 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a')
             sage: f = phi.rose_conjugacy_representative()
             sage: ff = TrainTrackMap(f)
@@ -413,23 +414,21 @@ class TrainTrackMap(GraphSelfMap):
 
         AUTHORS:
 
-        - Brian Mann
+            - Brian Mann
         """
-
-        edges = \
-            [(e, f) for (e, f) in self.edge_turns()
-             if self.domain().initial_vertex(e) == v]
+        edges = [(e, f) for (e, f) in self.edge_turns()
+                 if self.domain().initial_vertex(e) == v]
 
         return Graph(edges)
 
     def stable_local_whitehead_graph(self, v):
-        """
+        r"""
         The stable local Whitehead graph at a vertex ``v``.
-        
+
         Vertices are stable directions at ``v`` (stable directions are
         in one-to-one correspondence with gates). Two directions are
-        joined by an edge if some iterate of an edge`by
-        ``self``crosses that turn.
+        joined by an edge if some iterate of an edge by
+        ``self`` crosses that turn.
 
         The stable local Whitehead graph is a subgraph of the local
         Whitehead graph.
@@ -439,7 +438,7 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        - ``v`` vertex
+        - ``v`` -- a vertex
 
         OUTPUT:
 
@@ -447,20 +446,19 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: phi = FreeGroupAutomorphism('a->ab,b->ac,c->a')
             sage: f = phi.rose_conjugacy_representative()
             sage: ff = TrainTrackMap(f)
             sage: ff.stable_local_whitehead_graph(0)
             Subgraph of (): Graph on 4 vertices
         """
-
         lwg = self.local_whitehead_graph(v)
 
         directions = lwg.vertices()
         images = directions
 
         # Looking for a period for the vertex v
-
         reached_vertices = set([v])
         w = v
         done = False
@@ -490,32 +488,32 @@ class TrainTrackMap(GraphSelfMap):
         """
         The list of indivisible Nielsen paths of ``self``.
 
-        WARNING:
+        .. WARNING::
 
-        ``self`` is assumed to be an expanding train-track map.
+            ``self`` is assumed to be an expanding train-track map.
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: ``False``) for verbose option
 
         OUTPUT:
 
-        A list of INPs. Each INP is returned as a pair of word-paths, the fixed
-        points lie inside the extremal edges of the words.
+        A list of INPs. Each INP is returned as a pair of word-paths, the
+        fixed points lie inside the extremal edges of the words.
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: f = TrainTrackMap.from_edge_map("a->caaa,b->caa,c->b")
             sage: f.indivisible_nielsen_paths()
             [(word: a, word: bca)]
 
-        SEE ALSO::
+        .. SEEALSO::
 
-        GraphSelfMap.relative_indivisible_nielsen_paths()
-        TrainTrackMap.periodic_nielsen_paths()
+            :meth:`sage.combinat.words.train_track_map.GraphSelfMap.relative_indivisible_nielsen_paths()`
+            :meth:`periodic_nielsen_paths()`
 
         """
-
         G = self._domain
         A = G._alphabet
 
@@ -523,7 +521,7 @@ class TrainTrackMap(GraphSelfMap):
         image = []
         next = []
 
-        extension = dict((a, []) for a in A)
+        extension = {a: [] for a in A}
 
         edge_turns = self.edge_turns()
         for t in edge_turns:
@@ -545,7 +543,7 @@ class TrainTrackMap(GraphSelfMap):
             tt = image.pop(0)
             ext = next.pop(0)
 
-            for j in xrange(2):
+            for j in range(2):
                 if ext[j] != None:
                     u[j] = t[j] * Word([ext[j]])
                     uu[j] = tt[j] * self.image(ext[j])
@@ -558,15 +556,15 @@ class TrainTrackMap(GraphSelfMap):
             tt = (uu[0][p:], uu[1][p:])
 
             if verbose:
-                print t[0], t[1], " image: ", tt[0], ",", tt[1]
+                print(t[0], t[1], " image: ", tt[0], ",", tt[1])
 
-            if len(tt[0]) == 0:
+            if not tt[0]:
                 for a in extension[t[0][-1]]:
                     result.insert(i, t)
                     image.insert(0, tt)
                     next.insert(0, (a, None))
 
-            elif len(tt[1]) == 0:
+            elif not tt[1]:
                 for a in extension[t[1][-1]]:
                     result.insert(i, t)
                     image.insert(0, tt)
@@ -575,7 +573,7 @@ class TrainTrackMap(GraphSelfMap):
             elif (G.is_prefix(t[0], tt[0]) and G.is_prefix(t[1], tt[1])):
                 result.insert(i, t)
                 if verbose:
-                    print "inp"
+                    print("inp")
                 i += 1
 
             elif G.is_prefix(tt[0], t[0]) and len(tt[0]) < len(t[0]) and \
@@ -595,25 +593,23 @@ class TrainTrackMap(GraphSelfMap):
 
     def periodic_nielsen_paths(self, end_points=False, verbose=False):
         """
-        List of periodic Nielsen paths.
+        List of periodic Nielsen paths of ``self``.
 
+        .. WARNING:
 
-        WARNING:
-
-        ``self`` is assumed to be an expanding train-track map.
+            ``self`` is assumed to be an expanding train-track map.
 
         INPUT:
 
-        -``end_points`` -- (default False) set to ``True`` to compute
-         a description of the end points of each periodic Nielsen
-         path.
-
-        -``verbose`` -- (default False) for verbose option
+        - ``end_points`` -- (default: ``False``) set to ``True`` to compute
+          a description of the end points of each periodic Nielsen
+          path
+        - ``verbose`` -- (default: ``False``) for verbose option
 
         OUTPUT:
 
-        If ``end_points=False``: a list of couples ``((word1,word2),period))``.  The fixed points
-        lie in the last edge of the two words. 
+        If ``end_points=False``: a list of couples ``((word1,word2),period))``.
+        The fixed points lie in the last edge of the two words.
 
         If ```end_points==True``: a list of triples
         ``((word1,word2),period,(first_end_point,second_end_point))``
@@ -624,17 +620,17 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: f = TrainTrackMap.from_edge_map("a->caaa,b->caa,c->b")
             sage: f.periodic_nielsen_paths()
             [((word: a, word: bca), 1), ((word: A, word: B), 2), ((word: A, word: C), 2)]
             sage: f.periodic_nielsen_paths(end_points=True)[0]
             ((word: a, word: bca), 1, (('A',), ('A', 1, 2, 1)))
 
-        SEE ALSO::
-        
-        TrainTrackMap.indivisible_nielsen_paths()
-        """
+        .. SEEALSO::
 
+            :meth:`indivisible_nielsen_paths()`
+        """
         G = self.domain()
         A = G.alphabet()
         N = len(A)
@@ -661,7 +657,7 @@ class TrainTrackMap(GraphSelfMap):
 
         i = 0
         done = False
-        while (not done or i > 0) and len(possible_np) > 0:
+        while (not done or i > 0) and possible_np:
             if i == 0:
                 done = True
             t = possible_np[i]  # will need to compare t with its image
@@ -679,12 +675,12 @@ class TrainTrackMap(GraphSelfMap):
             vv = vv[p:]
 
             if verbose:
-                print "possible Nielsen path:", u, v,
-                print " reduced image:", uu, ",", vv,
+                print("possible Nielsen path:", u, v,)
+                print(" reduced image:", uu, ",", vv,)
 
             if len(uu) == 0:
                 if verbose:
-                    print "extend"
+                    print("extend")
                 done = False
                 possible_np.pop(i)
                 for a in extension[u[-1]]:
@@ -693,7 +689,7 @@ class TrainTrackMap(GraphSelfMap):
                     next.insert(i, (a, Word([])))
             elif len(vv) == 0:
                 if verbose:
-                    print "extend"
+                    print("extend")
                 done = False
                 possible_np.pop(i)
                 for a in extension[v[-1]]:
@@ -703,7 +699,7 @@ class TrainTrackMap(GraphSelfMap):
             else:
                 compatible = False
                 for tt in possible_np:
-                    for j in xrange(2):
+                    for j in range(2):
                         p = G.common_prefix_length(tt[j], uu)
                         q = G.common_prefix_length(tt[1 - j], vv)
                         if (len(uu) == p or len(tt[j]) == p) and \
@@ -714,7 +710,7 @@ class TrainTrackMap(GraphSelfMap):
                             possible_np.pop(i)  # we will add it
                             # back immediatly
                             if verbose:
-                                print "compatible with:", tt[j], tt[1 - j]
+                                print("compatible with:", tt[j], tt[1 - j])
                             if p < len(tt[j]):  # uu is a strict prefix of
                                 #  tt[j]: we have to extend u
                                 done = False
@@ -741,30 +737,30 @@ class TrainTrackMap(GraphSelfMap):
                         break
                 else:
                     if verbose:
-                        print "not compatible with possible Nielsen paths"
+                        print("not compatible with possible Nielsen paths")
                     possible_np.pop(i)
                     done = False
             if i >= len(possible_np):
                 i = 0
 
         if verbose:
-            print "List of possible Nielsen paths:"
-            print possible_np
+            print("List of possible Nielsen paths:")
+            print(possible_np)
 
         # Now we look for periodic points among possible_np
 
         # We build a map on indices
 
         if verbose:
-            print "Building the list of stable possible Nielsen " \
-                  "paths (given by their index):",
+            print("Building the list of stable possible Nielsen "
+                   "paths (given by their index):",)
 
         found = False
         m = dict()
         for i, t in enumerate(images):
             found = False
             for j, tt in enumerate(possible_np):
-                for k in xrange(2):
+                for k in range(2):
                     p = G.common_prefix_length(t[0], tt[k])
                     q = G.common_prefix_length(t[1], tt[1 - k])
                     if p == len(tt[k]) and q == len(tt[1 - k]):  # tt is a
@@ -781,7 +777,7 @@ class TrainTrackMap(GraphSelfMap):
             stable, old_stable = set(m[i][0] for i in stable), len(stable)
 
         if verbose:
-            print stable
+            print(stable)
 
         pnps = []
 
@@ -808,7 +804,7 @@ class TrainTrackMap(GraphSelfMap):
             # (e,period,left,right)
 
             if verbose:
-                print "Looking for endpoints"
+                print("Looking for endpoints")
 
             maxl = 1
             for ((u, v), period) in pnps:
@@ -818,7 +814,7 @@ class TrainTrackMap(GraphSelfMap):
 
             for i, ((u, v), period) in enumerate(pnps):
                 if verbose:
-                    print "Periodic Nielsen path:", ((u, v), period),
+                    print("Periodic Nielsen path:", ((u, v), period),)
                 if period == 1:
                     uu = self(u)
                     vv = self(v)
@@ -832,7 +828,7 @@ class TrainTrackMap(GraphSelfMap):
                     vv = v
                     prefix_ab = matrix(len(A), 1)  # abelianized form
                     # of the prefix
-                    for j in xrange(period):
+                    for j in range(period):
                         uu = self(uu)
                         vv = self(vv)
                         p = G.common_prefix_length(uu, vv)
@@ -841,10 +837,10 @@ class TrainTrackMap(GraphSelfMap):
                             new_prefix_ab[A.rank(a) % N, 0] += 1
                         # new_prefix_ab=uu[:p].abelian_vector()
                         # new_prefix_ab=matrix(len(A),1,[new_prefix_ab[k]+
-                        # new_prefix_ab[k+len(A)] for k in xrange(len(A))])
+                        # new_prefix_ab[k+len(A)] for k in range(len(A))])
                         # new_prefix_ab=uu[:p].parikh_vector(A)
                         # new_prefix_ab=matrix(len(A),1,[new_prefix_ab[k]+
-                        # new_prefix_ab[k+len(A)] for k in xrange(len(A))])
+                        # new_prefix_ab[k+len(A)] for k in range(len(A))])
 
                         prefix_ab = M * prefix_ab + new_prefix_ab
                         uu = uu[p:p + maxl]
@@ -858,12 +854,12 @@ class TrainTrackMap(GraphSelfMap):
                         u_ab[A.rank(a) % N, 0] += 1
                     # u_ab=u.abelian_vector()
                     # u_ab=matrix(len(A),1,[u_ab[k]+u_ab[k+len(A)] for k in
-                    #  xrange(len(A))])
+                    #  range(len(A))])
 
                     # u_ab = u.parikh_vector(A)
                     # u_ab = matrix(
                     #    len(A), 1,
-                    #    [u_ab[k] + u_ab[k + len(A)] for k in xrange(len(A))])
+                    #    [u_ab[k] + u_ab[k + len(A)] for k in range(len(A))])
                     uu_ab = Mperiod * u_ab
                     right1 = sum(uu_ab.column(0)) - prefix_len - len(u)
                     v_ab = matrix(N, 1)
@@ -871,12 +867,12 @@ class TrainTrackMap(GraphSelfMap):
                         v_ab[A.rank(a) % N, 0] += 1
                     # v_ab=v.abelian_vector()
                     # v_ab=matrix(len(A),1,[v_ab[k]+v_ab[k+len(A)] for k in
-                    # xrange(len(A))])
+                    # range(len(A))])
 
                     # v_ab = v.parikh_vector(A)
                     # v_ab = matrix(
                     #    len(A), 1,
-                    #   [v_ab[k] + v_ab[k + len(A)] for k in xrange(len(A))])
+                    #   [v_ab[k] + v_ab[k + len(A)] for k in range(len(A))])
                     vv_ab = Mperiod * v_ab
                     right2 = sum(vv_ab.column(0)) - prefix_len - len(v)
 
@@ -907,7 +903,7 @@ class TrainTrackMap(GraphSelfMap):
                 # build the germ classes of germs ending pnps
 
                 if verbose:
-                    print "Ending germs:", vv1, "and", vv2
+                    print("Ending germs:", vv1, "and", vv2)
 
                 pnps[i] = ((u, v), period, (vv1, vv2))
 
@@ -915,46 +911,44 @@ class TrainTrackMap(GraphSelfMap):
 
     def fold_inp(self, inp, verbose=False):
         """
-        Recursively folds a  non-essential inp until a partial fold
-        occurs and the inp is removed.
+        Recursively folds a non-essential inp until a partial fold
+        occurs and the ``inp`` is removed.
 
         INPUT:
 
-        - ``inp``a couple ``(word1,word2)``, the invariant points being
-        inside the last letters of the two words.
-
-        -``verbose`` -- (default False) for verbose option
+        - ``inp`` -- a pair ``(word1, word2)``, the invariant points being
+          inside the last letters of the two words
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
-        A ``WordMorphism`` that maps old edges to paths in the new
+        A :class:`WordMorphism` that maps old edges to paths in the new
         graph.
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: f = TrainTrackMap.from_edge_map("a->caaa,b->caa,c->b")
             sage: f.fold_inp(('aab','cba'))
             WordMorphism: A->AC, B->B, C->C, a->ca, b->b, c->c
 
-        WARNING:
+        .. WARNING:
 
-        - Calling this method with an essential inp will cause an
-        infinite loop.
-        - Beware this has no effect on the possible strata of self.
+            - Calling this method with an essential inp will cause an
+              infinite loop.
+            - Beware this has no effect on the possible strata of ``self``.
         """
-
         result_morph = False
 
         done = False
         while not done:
             done = True
             if verbose:
-                print "Fold inp: ", inp[0], inp[1]
+                print("Fold inp: ", inp[0], inp[1])
             image = (self.image(inp[0][0]), self.image(inp[1][0]))
             prefix_length = self._domain.common_prefix_length(
                 image[0], image[1])
-            if len(image[0]) == prefix_length or \
-                            len(image[1]) == prefix_length:
+            if len(image[0]) == prefix_length or len(image[1]) == prefix_length:
                 done = False
                 folding_morph = self.fold([inp[0][0], inp[1][0]],
                                           image[0][0:prefix_length],
@@ -964,19 +958,17 @@ class TrainTrackMap(GraphSelfMap):
                 else:
                     result_morph = folding_morph
                 inp = [folding_morph(inp[0]), folding_morph(inp[1])]
-                prefix_length = \
-                    self._domain.common_prefix_length(inp[0], inp[1])
+                prefix_length = self._domain.common_prefix_length(inp[0], inp[1])
                 inp = [inp[0][prefix_length:], inp[1][prefix_length:]]
             else:
                 if verbose:
-                    print "Partial fold"
+                    print("Partial fold")
                 full_edges = []
                 partial_edges = []
                 full_done = False
-                for i in xrange(2):
-                    if not full_done and \
-                                    len(self.image(
-                                        inp[i][0])) == prefix_length + 1:
+                for i in range(2):
+                    if (not full_done and
+                            len(self.image(inp[i][0])) == prefix_length + 1):
                         # TODO there is a problem if both edges satisfies this
                         full_edges.append(inp[i][0])  # Added the done
                         #  condition. Fixed ? TODO: check
@@ -985,8 +977,8 @@ class TrainTrackMap(GraphSelfMap):
                         partial_edges.append(inp[i][0])
 
                 if verbose:
-                    print "Fold: full edges: ", full_edges, \
-                        " partial edges: ", partial_edges
+                    print("Fold: full edges: ", full_edges,
+                           " partial edges: ", partial_edges)
 
                 folding_map = self._domain.fold(full_edges, partial_edges)
                 folding_morph = WordMorphism(folding_map)
@@ -996,12 +988,12 @@ class TrainTrackMap(GraphSelfMap):
                 else:
                     result_morph = folding_morph
 
-                edge_map = dict((folding_map[a][0], folding_morph(
-                    self.image(a))) for a in self._edge_map.domain().alphabet()
-                                if len(folding_map[a]) == 1)
+                edge_map = {folding_map[a][0]: folding_morph(self.image(a))
+                            for a in self._edge_map.domain().alphabet()
+                            if len(folding_map[a]) == 1}
 
-                if len(partial_edges) == 2 and \
-                                len(folding_map[partial_edges[0]]) == 3:
+                if (len(partial_edges) == 2
+                        and len(folding_map[partial_edges[0]]) == 3):
                     a = partial_edges[0]
                     c = folding_map[a][1]
 
@@ -1021,7 +1013,7 @@ class TrainTrackMap(GraphSelfMap):
                 self.set_edge_map(edge_map)
 
                 if verbose:
-                    print "\n", self
+                    print("\n", self)
 
         return result_morph
 
@@ -1033,19 +1025,20 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: ``False``) for verbose option
 
         OUTPUT:
 
-        An irreducible train-track representative
+        A ``WordMorphism`` that maps old edges to paths in the new
+        graph.
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: f = TrainTrackMap.from_edge_map("a->caaa,b->caa,c->b")
             sage: f.stabilize()
             WordMorphism: A->ACBA, B->BA, C->C, a->abca, b->ab, c->c
         """
-
         A = self._domain.alphabet()
         result_morph = False
 
@@ -1055,7 +1048,7 @@ class TrainTrackMap(GraphSelfMap):
             inps = self.indivisible_nielsen_paths(
                 verbose=(verbose and verbose > 1 and verbose - 1))
             if verbose:
-                print "INPs: ", inps
+                print("INPs: ", inps)
             if len(inps) == 0:
                 if result_morph:
                     return result_morph
@@ -1071,7 +1064,7 @@ class TrainTrackMap(GraphSelfMap):
                     pfv = v[0]
                     pf = e
             critic = 0
-            for i in xrange(len(A)):
+            for i in range(len(A)):
                 critic += pfv[i]
             critic = critic * (pf - 1)
             for inp in inps:
@@ -1083,26 +1076,26 @@ class TrainTrackMap(GraphSelfMap):
                 if prefix_length != critic:
                     done = False
                     if verbose:
-                        print "Non essential INP: ", inp
+                        print("Folding non essential INP: ", inp)
                     self._strata = False
-                    folding_morph = self.fold_inp(inp, verbose)
+                    folding_morph = self.fold_inp(inp, verbose = \
+                        verbose and verbose >1 and verbose - 1)
                     if result_morph:
                         result_morph = folding_morph * result_morph
                     else:
                         result_morph = folding_morph
+                    if verbose:
+                        print(self)
                     break
             else:
                 for turn in self._domain.turns():
                     tt = self.image_turn(turn)
-                    if tt[0] == tt[1] and any((
-                                                              turn[0] !=
-                                                              inp[0][0] or
-                                                              turn[1] !=
-                                                              inp[1][0])
-                                              for inp in inps):
+                    if (tt[0] == tt[1] and any((turn[0] != inp[0][0]
+                                                or turn[1] != inp[1][0])
+                                               for inp in inps)):
                         done = False
                         if verbose:
-                            print "Fold illegal turn: ", turn
+                            print("Folding illegal turn: ", turn)
                         prefix = self.image(
                             turn[0])[0:self._domain.common_prefix_length(
                             self.image(turn[0]), self.image(turn[1]))]
@@ -1113,6 +1106,8 @@ class TrainTrackMap(GraphSelfMap):
                             result_morph = folding_morph * result_morph
                         else:
                             result_morph = folding_morph
+                        if verbose:
+                            print(self)
                         break
                 else:
                     for turn in self._domain.turns():
@@ -1121,16 +1116,19 @@ class TrainTrackMap(GraphSelfMap):
                                         tt[1] == inp[1][0]) for inp in inps):
                             done = False
                             if verbose:
-                                print "Fold illegal turn :", tt
+                                print("Folding illegal turn :", tt)
                             prefix = self.image(
                                 tt[0])[0:self._domain.common_prefix_length(
                                 self.image(tt[0]), self.image(tt[1]))]
                             self._strata = False
-                            folding_morph = self.fold(tt, prefix, verbose)
+                            folding_morph = self.fold(tt, prefix, verbose =
+                                                verbose and verbose >1 and verbose - 1)
                             if result_morph:
                                 result_morph = folding_morph * result_morph
                             else:
                                 result_morph = folding_morph
+                            if verbose:
+                                print(self)
                             break
 
             if not done:
@@ -1140,22 +1138,26 @@ class TrainTrackMap(GraphSelfMap):
 
             if verbose:
                 if len(self._strata) > 1:
-                    print "Strata: ", self._strata
+                    print("Strata: ", self._strata)
                 else:
-                    print "Irreducible representative"
+                    print("Irreducible representative")
 
             if len(self._strata) > 1:
                 done = True
 
-        return result_morph
+        if result_morph:
+            return result_morph
+        else:
+            return WordMorphism(dict((a, a) for a in
+                                     self._domain._alphabet))
 
     def has_connected_local_whitehead_graphs(self, verbose=False):
-        """
-        ``True`` if all local Whitehead graphs are connected.
+        r"""
+        Return ``True`` if all local Whitehead graphs are connected.
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: ``False``) for verbose option
 
         OUTPUT:
 
@@ -1163,15 +1165,16 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
             sage: f=TrainTrackMap(phi.rose_representative())
             sage: f.has_connected_local_whitehead_graphs()
             False
 
-        SEE ALSO::
-        
-        TrainTrackMap.local_whitehead_graph()
-        TrainTrackMap.whitehead_connected_components()
+        .. SEEALSO::
+
+            - :meth:`sage.combinat.words.train_track_map.TrainTrackMap.local_whitehead_graph()`
+            - :meth:`sage.combinat.words.train_track_map.TrainTrackMap.whitehead_connected_components()`
         """
 
         return len(
@@ -1180,46 +1183,43 @@ class TrainTrackMap(GraphSelfMap):
 
     def periodic_nielsen_loops(self, pnps=None, verbose=False):
         """
-        List of loops made of periodic Nielsen paths.
+        List of loops made of periodic Nielsen paths of ``self``.
 
         Such a loop is a periodic element of ``self``.
 
         INPUT:
 
-        - ``pnps``: the list of periodic Nielsen paths. Each given as
-        ``((u1,u2),period,(vv1,vv2))``.
-        - ``verbose`` -- (default False) for verbose option
+        - ``pnps`` -- the list of periodic Nielsen paths; each given as
+          ``((u1,u2), period, (vv1,vv2))``.
+        - ``verbose`` -- (default: ``False``) for verbose option
 
         OUTPUT:
 
-        A list of ``(loop,vertex,period)`` where ``loop`` is a
+        A list of ``(loop, vertex, period)`` where ``loop`` is a
         periodic Nielsen loop, ``vertex`` is a periodic point which is
         a based point of the loop.
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
             sage: f=TrainTrackMap(phi.rose_representative())
             sage: f.periodic_nielsen_loops()
             [(word: aBCAbc, (0,), 1)]
 
-        WARNING:
-        
-        If ``pnps`` are not given, computes the periodic Nielsen paths
-        using ``TrainTrackMap.periodic_nielsen_paths(self)``.  Thus
-        assumes that ``self`` is an expanding train-track.
-        """
+        .. WARNING::
 
-        try:
-            from sage.arith.all import lcm  # from sage 7.0
-        except ImportError:
-            from sage.rings.arith import lcm  # before sage 6.10
+            If ``pnps`` are not given, computes the periodic Nielsen paths
+            using ``TrainTrackMap.periodic_nielsen_paths(self)``.  Thus
+            assumes that ``self`` is an expanding train-track.
+        """
+        from sage.arith.all import lcm  # from sage 7.0
 
         G = self.domain()
         A = G.alphabet()
 
         if verbose:
-            print "Looking for periodic Nielsen loops"
+            print("Looking for periodic Nielsen loops")
 
         if pnps is None:
             pnps = self.periodic_nielsen_paths(
@@ -1227,7 +1227,7 @@ class TrainTrackMap(GraphSelfMap):
                 verbose=verbose and verbose > 1 and verbose - 1)
 
         if verbose:
-            print "Periodic Nielsen paths:", pnps
+            print("Periodic Nielsen paths:", pnps)
 
         components_tree = dict([])  # maps a vertex v to (vv,w) where w
         # is Nielsen path from v to vv
@@ -1250,12 +1250,12 @@ class TrainTrackMap(GraphSelfMap):
                 v2 = (G.initial_vertex(v2[0]),)
 
             if verbose:
-                print "periodic Nielsen path (", u1, ",", u2, \
-                    ") linking vertices", v1, "and", v2
+                print("periodic Nielsen path (", u1, ",", u2,
+                       ") linking vertices", v1, "and", v2)
 
             if v1 == v2:  # this pNp is a loop
                 if verbose:
-                    print "Loop at vertex", v1
+                    print("Loop at vertex", v1)
                 if len(v1) == 4:
                     loops.append(
                         (G.reduce_path(G.reverse_path(u1) * u2[:-1]),
@@ -1288,12 +1288,12 @@ class TrainTrackMap(GraphSelfMap):
                             link = link[:-1]
                     if len(link) > 0:
                         if verbose:
-                            print "loop at vertex", vv1, ":", link
+                            print("loop at vertex", vv1, ":", link)
                         loops.append((link, vv1, period))
                     elif verbose:
-                        print "contractable loop at vertex", vv1
+                        print("contractable loop at vertex", vv1)
                 else:  # we fusion the two components
-                    for (v, (vv, w, p)) in components_tree.iteritems():
+                    for (v, (vv, w, p)) in iter(components_tree.items()):
                         if vv == vv2:
                             if len(vv2) == 4 and len(link) > 0 and \
                                             len(w) > 0 and w[0] == link[-1]:
@@ -1333,7 +1333,7 @@ class TrainTrackMap(GraphSelfMap):
         # We order loops to remove multiple occurences of the same loop
 
         if verbose:
-            print "Looking for multiple loops: Ordering the loops..."
+            print("Looking for multiple loops: Ordering the loops...")
 
         for n, loop in enumerate(loops):
             i = 0
@@ -1362,17 +1362,17 @@ class TrainTrackMap(GraphSelfMap):
                     i = j
                 j = j + 1
             if verbose:
-                print "Smallests cyclic conjugate of", loop, ":",
+                print("Smallests cyclic conjugate of", loop, ":",)
             loops[n] = (loop[0][i:] + loop[0][:i], loop[1], loop[2])
             if verbose:
-                print loops[n]
+                print(loops[n])
 
         i = 0
         j = 1
         while j < len(loops):
             if loops[i][0] == loops[j][0]:
                 if verbose:
-                    print loops[i], "occures twice"
+                    print(loops[i], "occures twice")
                 loops.pop(j)
             else:
                 j += 1
@@ -1383,7 +1383,7 @@ class TrainTrackMap(GraphSelfMap):
         return loops
 
     def ideal_whitehead_graph(self, pnps=None, verbose=False):
-        """
+        r"""
         The ideal Whitehead graph of ``self``.
 
         This is defined in [Handel-Mosher], see also [Pfaff] and is an
@@ -1404,12 +1404,12 @@ class TrainTrackMap(GraphSelfMap):
         edges. Of course only connected components with >2 vertices
         are considered.
 
-        The germ of the edge 'a' is designated by 'a'. 
+        The germ of the edge 'a' is designated by 'a'.
 
         For the two germs out of a periodic point inside an edge we
-        use the notation:
+        use the notation::
 
-        ``(e,period,left,right)``
+            (e, period, left, right)
 
         where the source of the germ is the fix point of f^period
         corresponding to the occurence of the edge e in the path
@@ -1421,7 +1421,7 @@ class TrainTrackMap(GraphSelfMap):
 
         - ``pnps``: the list of periodic Nielsen paths. Each given as
           ``((u1,u2),period,(vv1,vv2))``.
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1429,24 +1429,25 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
             sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
             sage: f=TrainTrackMap(phi.rose_representative())
             sage: f.ideal_whitehead_graph()
             Graph on 6 vertices
 
-        WARNING:
+        .. WARNING:
 
-        If pnps is not given computes them by calling
-        ``self.periodic_nielsen_paths()``. Thus it is assumed that
-        ``self`` is an expanding train-track.
+            If pnps is not given computes them by calling
+            ``self.periodic_nielsen_paths()``. Thus it is assumed that
+            ``self`` is an expanding train-track.
 
-        Moreover the computation is not correct if there are periodic
-        (infinite index) subgroups (eg: ``self`` is not irreducible or
-        has closed Nielsen paths).
+            Moreover the computation is not correct if there are periodic
+            (infinite index) subgroups (eg: ``self`` is not irreducible or
+            has closed Nielsen paths).
 
-        SEE ALSO::
+        .. SEEALSO::
 
-        TrainTrackMap.periodic_nielsen_loops()        
+            :meth:`periodic_nielsen_loops()`
         """
 
         G = self.domain()
@@ -1462,8 +1463,8 @@ class TrainTrackMap(GraphSelfMap):
                 verbose=(verbose and verbose > 1 and verbose - 1))
 
         if verbose:
-            print "Periodic Nielsen paths:"
-            print pnps
+            print("Periodic Nielsen paths:")
+            print(pnps)
 
         for ((u1, u2), period, (vv1, vv2)) in pnps:
             if len(vv1) == 4:  # vv1 is a germ in the middle of an edge:
@@ -1478,7 +1479,7 @@ class TrainTrackMap(GraphSelfMap):
             # build the germ classes of germs ending pnps
 
             if verbose:
-                print "germs", vv1, "and", vv2, "are the ends of a pnp."
+                print("germs", vv1, "and", vv2, "are the ends of a pnp.")
 
             for (j, c) in enumerate(germ_classes):
                 if vv1 in c:
@@ -1500,14 +1501,14 @@ class TrainTrackMap(GraphSelfMap):
                 germ_classes[i1].append(vv2)
 
         if verbose:
-            print "Classes of germ at the end of pnps:", germ_classes
+            print("Classes of germ at the end of pnps:", germ_classes)
 
         for v in G.vertices():
             iwg = iwg.union(self.stable_local_whitehead_graph(v))
 
         if verbose:
-            print "Graph before identification of " \
-                  "equivalent germs:", iwg.edges()
+            print("Graph before identification of "
+                   "equivalent germs:", iwg.edges())
 
         # Now mod out the graph by inps
 
@@ -1516,7 +1517,7 @@ class TrainTrackMap(GraphSelfMap):
                 c0 = c[0]
                 if not len(c0) == 4:
                     c0 = c0[0]
-                for i in xrange(1, len(c)):
+                for i in range(1, len(c)):
                     ci = c[i]
                     if not len(ci) == 4:
                         ci = ci[0]
@@ -1562,56 +1563,57 @@ class TrainTrackMap(GraphSelfMap):
     def index(self):
         """
         Stabilized index of ``self`` as defined by Gaboriau, Jaeger,
-        Levitt and Lustig [GJLL].
+        Levitt and Lustig [GJLL]_.
 
         Let Phi be an outer automorphism of the free group of rank
-        N. Let ind(Phi) be the GJLL index of Phi. This ind(Phi) is a
+        N. Let ind(Phi) be the [GJLL]_ index of Phi. This ind(Phi) is a
         positive integer or half a positive integer and it is bounded
         between 1/2 and N-1.
 
         The sequence ind(Phi^(n!)) is non-decreasing and eventually
         constant equal to what we call the stabilized index of Phi.
-        
+
         The index and stabilized index of Phi are invariant of the
         conjugacy class of the outer automorphism Phi.
-        
+
         ``self.index()`` is the stabilized index of the outer
         automorphism represented by Phi.
 
         This is the sum of the index list of ``self``. It can be
         computed using stable Whitehead graphs and Nielsen paths.
 
-        WARNING: 
+        .. WARNING:
 
-        calls ``self.ideal_whitehead_graph()`` and thus
-        ``self.periodic_nielsen_paths()`` and thus assumes that
-        ``self`` is an expanding train-track map.
+            calls ``self.ideal_whitehead_graph()`` and thus
+            ``self.periodic_nielsen_paths()`` and thus assumes that
+            ``self`` is an expanding train-track map.
 
-        Moreover the computation is not correct if there are fixed
-        subgroups (eg: ``self`` is not irreducible or has closed
-        Nielsen loops).
+            Moreover the computation is not correct if there are fixed
+            subgroups (eg: ``self`` is not irreducible or has closed
+            Nielsen loops).
 
-        Some authors (Mosher, Pfaff), use -1/2 our index definition.
+            Some authors (Mosher, Pfaff), use -1/2 our index definition.
 
-        Some authors (Gaboriau, Levitt), use 1/2 out index definition
+            Some authors (Gaboriau, Levitt), use 1/2 out index definition
 
         OUTPUT:
 
         Stabilized index of ``self`` as defined by Gaboriau, Jaeger,
-        Levitt and Lustig [GJLL].
+        Levitt and Lustig [GJLL]_.
 
         EXAMPLES::
 
-            sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
-            sage: f=TrainTrackMap(phi.rose_representative())
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
+            sage: phi = FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+            sage: f = TrainTrackMap(phi.rose_representative())
             sage: f.index()
             2
         """
-
         return sum(self.index_list())
 
     def index_list(self, verbose=False):
-        """Index list of ``self``.
+        """
+        Index list of ``self``.
 
         This index list is defined in [pfaff], this is the list of
         number of vertices of connected components of the ideal
@@ -1623,7 +1625,7 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: False) for verbose option
 
         OUTPUT:
 
@@ -1631,8 +1633,9 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
-            sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
-            sage: f=TrainTrackMap(phi.rose_representative())
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
+            sage: phi = FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+            sage: f = TrainTrackMap(phi.rose_representative())
             sage: f.ideal_whitehead_graph()
             Graph on 6 vertices
             sage: f.periodic_nielsen_paths()
@@ -1640,29 +1643,25 @@ class TrainTrackMap(GraphSelfMap):
             sage: f.index_list()
             [2]
 
-        WARNING: 
+        .. WARNING:
 
-        calls ``self.ideal_whitehead_graph()`` and thus
-        ``self.periodic_nielsen_paths()`` and thus assumes that
-        ``self`` is an expanding train-track map.
+            calls ``self.ideal_whitehead_graph()`` and thus
+            ``self.periodic_nielsen_paths()`` and thus assumes that
+            ``self`` is an expanding train-track map.
 
-        Some authors (Mosher, Pfaff), use -1/2 our index definition.
+            Some authors (Mosher, Pfaff), use -1/2 our index definition.
 
-        Some authors (Gaboriau, Jaeger, Levitt,Lustig), use 1/2
-         our index definition
+            Some authors (Gaboriau, Jaeger, Levitt,Lustig), use 1/2
+            our index definition
 
         REFERENCES:
 
-        [GJLL] D. Gaboriau, A. Jaeger, G. Levitt, M. Lustig, An index
-        for counting fixed points of automorphisms of free
-        groups. Duke Math. J., 93(3):425-452, 1998.
+        .. [GJLL] D. Gaboriau, A. Jaeger, G. Levitt, M. Lustig, An index
+           for counting fixed points of automorphisms of free
+           groups. Duke Math. J., 93(3):425-452, 1998.
 
-        [HM-axes] M. Handel, L. Mosher, Axes in Outer Space, Memoirs
-        AMS 1004, Amer Mathematical Society, 2011.
-
-        [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
+        .. [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
         """
-
         l = [len(c) - 2
              for c in self.ideal_whitehead_graph().connected_components()]
         return [i for i in l if i > 0]
@@ -1677,8 +1676,8 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        - ``germ_components`` a list of classes of germs outgoing from a
-        vertex.
+        - ``germ_components`` -- a list of classes of germs outgoing
+          from a vertex
 
         OUTPUT:
 
@@ -1686,15 +1685,16 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLES::
 
-            sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
-            sage: f=TrainTrackMap(phi.rose_representative())
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
+            sage: phi = FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+            sage: f = TrainTrackMap(phi.rose_representative())
             sage: f.blow_up_vertices([['a', 'b', 'C'], ['A', 'c', 'B']])
             WordMorphism: A->eAD, B->eBD, C->dCE, a->daE, b->dbE, c->ecD
         """
         G = self.domain()
         A = G.alphabet()
 
-        edge_map = dict((a, self.image(a)) for a in A.positive_letters())
+        edge_map = {a: self.image(a) for a in A.positive_letters()}
 
         blow_up_map = G.blow_up_vertices(germ_components)
 
@@ -1731,20 +1731,20 @@ class TrainTrackMap(GraphSelfMap):
 
         EXAMPLE::
 
-            sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
-            sage: f=TrainTrackMap(phi.rose_representative())
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
+            sage: phi = FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+            sage: f = TrainTrackMap(phi.rose_representative())
             sage: f.whitehead_connected_components()
             [['a', 'b', 'C'], ['A', 'c', 'B']]
 
-        SEE ALSO::
+        .. SEEALSO::
 
-        TrainTrackMap.local_whitehead_graph()
+            :meth:`local_whitehead_graph()`
         """
-
         G = self.domain()
         A = G.alphabet()
 
-        component = dict((a, a) for a in A)
+        component = {a: a for a in A}
 
         for t in self.edge_turns():
             k = component[t[0]]
@@ -1756,26 +1756,25 @@ class TrainTrackMap(GraphSelfMap):
 
         components = []
 
-        while len(component) > 0:
+        while component:
             a, b = component.popitem()
             components.append([a])
             for c in component:
                 if component[c] == b:
                     components[-1].append(c)
-            for i in xrange(len(components[-1]) - 1):
+            for i in range(len(components[-1]) - 1):
                 component.pop(components[-1][i + 1])
 
         return components
 
-    def periodic_point_normal_form(
-            self, point, keep_orientation=False, verbose=False):
+    def periodic_point_normal_form(self, point, keep_orientation=False,
+                                   verbose=False):
         """
-        Normal form to denote periodic points of ``self`` inside
-        edges.
+        Normal form to denote periodic points of ``self`` inside edges.
 
         Intended to be used to compute the end points of periodic
         Nielsen paths.
-        
+
         A periodic point of ``self`` inside an edge is denoted by
         ``(e,period,left,right)``. The point ``x`` is the unique point
         such that ``self^period(x)=x`` and ``x`` lies in the occurence
@@ -1791,30 +1790,31 @@ class TrainTrackMap(GraphSelfMap):
 
         INPUT:
 
-        - ``point`` of the form ``(e,period,left,right)`` standing for
-         the periodic point x in the edge ``e`` with the given period.
-        - ``keep_orientation`` -- (default False)
+        - ``point`` -- of the form ``(e,period,left,right)`` standing for
+          the periodic point x in the edge ``e`` with the given period
+        - ``keep_orientation`` -- (default ``False``)
         - ``verbose`` -- (default False) for verbose option
 
         OUTPUT:
 
-        ``(e,period,left,right)`` denoting the same periodic point, but
-        with the smallest period possible.
+        ``(e, period, left, right)`` denoting the same periodic point,
+        but with the smallest period possible.
 
         EXAMPLES::
 
-            sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
-            sage: f=TrainTrackMap(phi.rose_representative())
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
+            sage: phi = FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+            sage: f = TrainTrackMap(phi.rose_representative())
             sage: f.periodic_point_normal_form(('a',2,1,1))
             ('a', 2, 1, 1)
 
-        WARNING:
+        .. WARNING::
 
-        If ``keep_orientation==True``, this is not exactly a normal
-        form as each such periodic point has two normal forms:
+            If ``keep_orientation==True``, this is not exactly a normal
+            form as each such periodic point has two normal forms:
 
-        ``(e,period,left,right)`` and ``(ee,period,right,left)`` where
-        ``ee`` is the inverse letter of ``e``.
+            ``(e, period, left, right)`` and ``(ee, period, right, left)``,
+            where ``ee`` is the inverse letter of ``e``.
         """
 
         A = self.domain().alphabet()
@@ -1822,19 +1822,19 @@ class TrainTrackMap(GraphSelfMap):
         (e, period, left, right) = point
 
         if verbose:
-            print "Normal form of point", point
+            print("Normal form of point", point)
 
         simplified = False
 
         if period > 1:
             M1 = self.matrix()
-            M = [M1 ** (i + 1) for i in xrange(period)]
+            M = [M1 ** (i + 1) for i in range(period)]
             left_ab_i = matrix(len(A), 1)
             left_ab_period = left_ab_i
             left_length_period = 0
             a = e
-            for i in xrange(1, period):
-                u = self(a)
+            for i in range(1, period):
+                u = self([a])
                 left_ab_i = M[0] * left_ab_i
                 for a in u:
                     a_ab_i = M[0].matrix_from_columns(
@@ -1851,19 +1851,19 @@ class TrainTrackMap(GraphSelfMap):
                 if period % i == 0 and a == e:
                     left_periodic_length = \
                         left_length_period + sum(left_ab_i)[0]
-                    for k in xrange(1, period // i):
+                    for k in range(1, period // i):
                         left_periodic_length = \
                             left_periodic_length + sum(M[k * i] * left_ab_i)[0]
                     if left_periodic_length == left:
                         if verbose:
-                            print "simplified to (", e, ",", \
-                                diviseur, ",", i, ")"
+                            print("simplified to (", e, ",",
+                                    diviseur, ",", i, ")")
                         period = i
                         left = sum(left_ab_i)[0]
                         simplified = True
                         break
                 if verbose:
-                    print "no simplification with period=", i
+                    print("no simplification with period=", i)
 
         if simplified:
             right = sum(M[period - 1].column(
@@ -1878,20 +1878,21 @@ class TrainTrackMap(GraphSelfMap):
 
     def is_iwip(self, verbose=False):
         """
-        ``True`` if ``self`` represents an iwip automorphism.
+        Return ``True`` if ``self`` represents an iwip automorphism.
 
         INPUT:
 
-        - ``verbose`` -- (default False) for verbose option
+        - ``verbose`` -- (default: ``False``) for verbose option
 
         OUTPUT:
 
-        ``True`` if ``self`` represents an iwip automorphism.
+        Boolean.
 
         EXAMPLES::
 
-            sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
-            sage: f=TrainTrackMap(phi.rose_representative())
+            sage: from sage.groups.free_groups.train_track_map import TrainTrackMap
+            sage: phi = FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+            sage: f = TrainTrackMap(phi.rose_representative())
             sage: f.is_iwip()
             False
 
@@ -1900,9 +1901,9 @@ class TrainTrackMap(GraphSelfMap):
         1/ Try to reduce ``self`` (removing valence 1 or 2 vertices,
         invariant forests)
 
-        3/ Check that the matrix has a power with strictly positive entries
+        2/ Check that the matrix has a power with strictly positive entries
 
-        4/ Check the connectedness of local Whitehead graphs
+        3/ Check the connectedness of local Whitehead graphs
 
         4/ Look for periodic Nielsen paths and periodic Nielsen loops.
 
@@ -1914,38 +1915,34 @@ class TrainTrackMap(GraphSelfMap):
         7/ If there is one Nielsen loop checks whether it is contained in a
         non-trivial free factor.
 
-        REFERENCES
-
-        [Kapo-algo] I. Kapovich, Algorithmic detectability of iwip
-        automorphisms, 2012, arXiv:1209.3732
         """
 
         self.reduce(verbose and verbose > 1 and verbose - 1)
         if verbose:
-            print "Reduced form:"
-            print self
+            print("Reduced form:")
+            print(self)
         if len(self._strata) > 1:
             if verbose:
-                print "Reducible"
+                print("Reducible")
         if verbose:
-            print "Irreducible train-track map"
+            print("Irreducible train-track map")
         if not self.is_perron_frobenius():
             if verbose:
-                print "Not fully irreducible: the matrix of self does not" \
-                      " have a strictly positive power"
+                print("Not fully irreducible: the matrix of self does not"
+                       " have a strictly positive power")
             return False
         if verbose:
-            print "Fully irreducible: the matrix of self has a strictly " \
-                  "positive power"
+            print("Fully irreducible: the matrix of self has a strictly "
+                   "positive power")
         c = self.whitehead_connected_components(
             verbose and verbose > 1 and verbose - 1)
         if len(c) > len(self.domain().vertices()):
             if verbose:
-                print "The local Whitehead graphs are not " \
-                      "connected. Connected components of germs:", c
+                print("The local Whitehead graphs are not "
+                       "connected. Connected components of germs:", c)
             return False
         if verbose:
-            print "Local Whitehead graphs are connected"
+            print("Local Whitehead graphs are connected")
         pnps = self.periodic_nielsen_paths(
             end_points=True, verbose=verbose and verbose > 1 and verbose - 1)
         nielsen_loops = self.periodic_nielsen_loops(
@@ -1953,24 +1950,25 @@ class TrainTrackMap(GraphSelfMap):
         if len(nielsen_loops) > 0:
             if len(nielsen_loops) > 1:
                 if verbose:
-                    print "There are more than two periodic Nielsen loops:", \
-                        nielsen_loops
+                    print("There are more than two periodic Nielsen loops:",
+                        nielsen_loops)
                 return False
             else:
                 if verbose:
-                    print "One Nielsen loop:", nielsen_loops[0][0]
+                    print("One Nielsen loop:", nielsen_loops[0][0])
                 if self.domain().lies_in_a_free_factor(
                         nielsen_loops[0][0],
                                         verbose and verbose > 1 and verbose - 1):
                     if verbose:
-                        print "The Nielsen loops is primitive"
+                        print("The Nielsen loops is primitive")
                     return False
                 else:
                     if verbose:
-                        print "Geometric iwip"
+                        print("Geometric iwip")
                     return True
         else:
             if verbose:
-                print "No Nielsen loops"
-                print "Atoroidal iwip"
+                print("No Nielsen loops")
+                print("Atoroidal iwip")
             return True
+
