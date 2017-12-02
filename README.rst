@@ -3,15 +3,35 @@ sage-train-track
 
 Free group automorphisms and train-track representative in python/sage. 
 
-To use the package just launch Sage in the repository containg the files and do::
+This is a Sage optional package. It contains code to handle free group
+automorphisms (inversion, composition, etc.) and to compute
+train-track representatives (absolute and relative, stable and
+unstable) as defined by Bestvina and Handel. This includes the
+computation of Nielsen paths and indices of iwip automorphisms and
+much more. Convex cores of pairs of tree as defined by Guirardel also
+appear.
 
-    sage: from all import *
+Installation::
 
-(alternatively or if you do not launch Sage yourself use::
+  sage -pip install train_track
 
-    sage: sys.path.append("/absolute/path/to/sage-train-track")
-    
-to specify a load-path)    
+(warning it seems that Mac OS X 10.13 has a security conflict between
+SIP and SSL and does not succeed in downloading the package from
+https://pypi.python.org. To overcome this difficulty, just download
+the tarball train_track-0.1.0.tar.gz from
+
+  https://pypi.python.org/simple/train_track
+
+and run::
+
+  sage -pip install path/to/train_track-0.1.0.tar.gz
+
+)
+  
+Usage::
+
+    sage: from train_track import *
+
 
 After this command, you can play with free groups and their automorphisms::
 
