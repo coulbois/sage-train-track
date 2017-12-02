@@ -24,7 +24,7 @@ the tarball train_track-0.1.0.tar.gz from
 
 and run::
 
-  sage -pip install /path/to/train_track-0.1.0.tar.gz
+  sage -pip install /path/to/train_track-0.1.1.tar.gz
 
 Warning: if you lack intstallation privilege, you can install only for
 yourself::
