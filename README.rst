@@ -31,9 +31,8 @@ yourself::
 
   sage -pip install --user train_track
   
-On Cocalc.com or any Jupyter server (e.g. sage.math.cnrs.fr),
-installation can be done either from a terminal as above or from a
-cell::
+On Cocalc.com installation can be done either from a terminal as above
+or from a cell::
 
   !sage -pip install train_track
 
