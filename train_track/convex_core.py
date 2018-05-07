@@ -54,7 +54,7 @@ class ConvexCore():
 
     A ConvexCore is a CW-complex of dimension 2. 2-cells are
     squares. 1-cells are edges labeled by edges of G1 or G2. A square
-    is of the form:
+    is of the form::
 
     ......e
     ...------>
@@ -136,8 +136,10 @@ class ConvexCore():
         if len(args) == 2:  # ConvexCore(G,H)
             G0 = args[0]
             G1 = args[1]
-            phi= FreeGroupAutomorphism(G0.difference_of_marking(G1).tighten())
-            f = phi.rose_representative()
+            #  phi= FreeGroupAutomorphism(G0.difference_of_marking(G1).tighten())
+            #  f = phi.rose_representative()
+            f = G0.difference_of_marking(G1)
+            f.tighten()
             g = f.inverse()
         elif len(args) == 1:
             if isinstance(args[0], GraphMap):  # ConvexCore(f)
@@ -210,7 +212,7 @@ class ConvexCore():
 
         twice_light_squares = []  # a twice light square stored as
         # (w,v,a,b) where w is a path in G0
-        # starting at v0 and eding at
+        # starting at v0 and ending at
         # u=G0.initial_vertex(a). a is a letter
         # in A0 (not necessarily positive). b
         # is a positive letter in A1 standing
@@ -242,7 +244,7 @@ class ConvexCore():
             wp = common
             for (w, sign) in signed_ends[b]:
                 start = G0.common_prefix_length(wp, w)
-                if start == len(wp) and start > common_len:
+                if start == len(wp) and start > common_len:  
                     start -= 1
                 wp = w
                 for i in range(start, len(w) - 1):
@@ -266,7 +268,7 @@ class ConvexCore():
                     print("The slice of", b,
                            "is empty, looking for an isolated edge")
                 if len(signed_ends[b]) > 1:
-                    isolated_b = len(common) > 0
+                    isolated_b = len(common) > 0 #TODO: rather len(f(common))>0 ?
                     if not isolated_b:  # we need at least two edges
                         # out of v0 without +
                         v0 = G0.initial_vertex(A0[0])
@@ -280,7 +282,7 @@ class ConvexCore():
                             common, G1.initial_vertex(b), (b, 1)))  # common
                         # stands for its terminal vertex
                         if verbose:
-                            print("Isolated edge", (common, b, 1))
+                            print("Isolated edge", (common, G1.initial_vertex(b), (b, 1)))
                     else:  # len(signed_ends[b])+1==len(outgoing_from_origin)
                         # and len(common)==0
                         positive_outgoing_edges = [e[0][0] for e in

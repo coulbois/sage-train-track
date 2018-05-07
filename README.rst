@@ -1,7 +1,7 @@
 sage-train-track
 ================
 
-Free group automorphisms and train-track representative in python/sage. 
+Free group automorphisms and train-track representatives in python/sage. 
 
 This is a Sage optional package. It contains code to handle free group
 automorphisms (inversion, composition, etc.) and to compute
@@ -18,7 +18,7 @@ Installation::
 Warning: it seems that Mac OS X 10.13 has a security conflict between
 SIP and SSL and does not succeed in downloading the package from
 https://pypi.python.org. To overcome this difficulty, just download
-the tarball train_track-0.1.0.tar.gz from
+the tarball train_track-0.1.1.tar.gz from
 
   https://pypi.python.org/simple/train_track
 
