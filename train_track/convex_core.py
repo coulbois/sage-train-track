@@ -254,20 +254,26 @@ class ConvexCore():
                         existing_edges[(a, 0)] = True
                         heavy_squares.append(
                             (w[:i], G1.initial_vertex(b), a, b))
-                        if verbose:
-                            print("Heavy square", heavy_squares[-1])
                     else:
                         aa = A0.inverse_letter(a)
                         existing_edges[(aa, 0)] = True
                         heavy_squares.append(
                             (w[:i + 1], G1.initial_vertex(b), aa, b))
-                        if verbose:
-                            print("Heavy square", heavy_squares[-1])
+                    if verbose:
+                        print("Heavy square", heavy_squares[-1])
             if empty_slice:  # we need to check wether we add an isolated edge
                 if verbose:
                     print("The slice of", b,
                            "is empty, looking for an isolated edge")
                 if len(signed_ends[b]) > 1:
+                    if signed_ends[b][0][1] == '-': # the signed-ends tree contains one + and various -
+                        v0 =  G0.initial_vertex(signed_ends[b][0][0][-1])
+                    elif signed_ends[b][1][1] == '-':
+                        v0 =  G0.initial_vertex(signed_ends[b][1][0][-1])
+                    elif len(signed_ends[b][0][0]) > 0: # the signed-ends tree only contains +
+                        v0 = G0.initial_vertex(signed_ends[b][0][0][-1])
+                    else:
+                        v0 = G0.initial_vertex(A0[0]) # origin vertex of the spanning tree t0
                     isolated_b = len(common) > 0 #TODO: rather len(f(common))>0 ?
                     if not isolated_b:  # we need at least two edges
                         # out of v0 without +
