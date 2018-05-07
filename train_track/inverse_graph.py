@@ -1179,6 +1179,9 @@ class GraphWithInverses(DiGraph):
         """
         Return a spanning tree of ``self``.
 
+        The origin vertex of the spanning tree is the initial vertex
+        of the edge labeled by ``self._alphabet[0]``.
+
         OUPUT:
 
         a dictionnary that maps each vertex to an edge-path

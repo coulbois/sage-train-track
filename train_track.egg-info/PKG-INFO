@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: train-track
-Version: 0.1.1
+Version: 0.1.2
 Summary: Train-tracks for freegroup automorphisms
 Home-page: https://github.com/coulbois/sage-train-track
 Author: Thierry Coulbois, Dominique Benielli

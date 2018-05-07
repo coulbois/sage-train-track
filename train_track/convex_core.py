@@ -207,8 +207,6 @@ class ConvexCore():
         # initial vertex of b in G1.
 
         existing_edges = dict(((a, 0), False) for a in A0.positive_letters())
-        for b in A1.positive_letters():
-            existing_edges[(b, 1)] = False
 
         twice_light_squares = []  # a twice light square stored as
         # (w,v,a,b) where w is a path in G0
@@ -247,7 +245,7 @@ class ConvexCore():
                 if start == len(wp) and start > common_len:  
                     start -= 1
                 wp = w
-                for i in range(start, len(w) - 1):
+                for i in range(start, len(w) - 1): #TODO: these squares need not be heavy
                     a = w[i]
                     empty_slice = False
                     if A0.is_positive_letter(a):
@@ -266,51 +264,44 @@ class ConvexCore():
                     print("The slice of", b,
                            "is empty, looking for an isolated edge")
                 if len(signed_ends[b]) > 1:
-                    if signed_ends[b][0][1] == '-': # the signed-ends tree contains one + and various -
-                        v0 =  G0.initial_vertex(signed_ends[b][0][0][-1])
-                    elif signed_ends[b][1][1] == '-':
-                        v0 =  G0.initial_vertex(signed_ends[b][1][0][-1])
-                    elif len(signed_ends[b][0][0]) > 0: # the signed-ends tree only contains +
-                        v0 = G0.initial_vertex(signed_ends[b][0][0][-1])
-                    else:
-                        v0 = G0.initial_vertex(A0[0]) # origin vertex of the spanning tree t0
-                    isolated_b = len(common) > 0 #TODO: rather len(f(common))>0 ?
-                    if not isolated_b:  # we need at least two edges
-                        # out of v0 without +
-                        v0 = G0.initial_vertex(A0[0])
-                        outgoing_from_origin = [a for a in A0 if
-                                                G0.initial_vertex(a) == v0]
-                        isolated_b = isolated_b or len(
-                            signed_ends[b]) + 1 < len(outgoing_from_origin)
-                    if isolated_b:
-                        existing_edges[(b, 1)] = True
+                    # The signed-ends are either one + and various - or either all +.
+                    # They all come out from the same vertex.
+                    # The alphabetic order puts the only + in signed_ends[b][0]. 
+                    v0 =  G0.initial_vertex(signed_ends[b][1][0][-1])
+
+                    # we need at least two edges out of v0 without signs
+                    outgoing_from_origin = [a for a in A0 if
+                                            G0.initial_vertex(a) == v0]
+                    if len(signed_ends[b]) + 1 < len(outgoing_from_origin):
                         isolated_edges.append((
                             common, G1.initial_vertex(b), (b, 1)))  # common
                         # stands for its terminal vertex
                         if verbose:
                             print("Isolated edge", (common, G1.initial_vertex(b), (b, 1)))
                     else:  # len(signed_ends[b])+1==len(outgoing_from_origin)
-                        # and len(common)==0
-                        positive_outgoing_edges = [e[0][0] for e in
-                                                   signed_ends[b]]
+                        if signed_ends[b][1][1] == '-': # one + and various -
+                            signed_outgoing_edges = [e[0][-1] for e in
+                                                     signed_ends[b] if e[1] == '-']
+                            signed_outgoing_edges.append(A0.inverse_letter(common[-1]))
+                        else:
+                            signed_outgoing_edges = [e[0][-1] for e in signed_ends[b]]
                         for a in outgoing_from_origin:   # we look for the
-                            #  only edge outgoing from the origin without a +
-                            if a not in positive_outgoing_edges:
+                            #  only edge outgoing from the origin without a sign
+                            if a not in signed_outgoing_edges:
                                 break
 
-                        existing_edges[(b, 1)] = True
-                        if signed_ends[b][0][1] == '+':
-                            twice_light_squares.append((Word([a]),
+                        if signed_ends[b][1][1] == '-':
+                            twice_light_squares.append((common,
                                                         G1.initial_vertex(b),
-                                                        A0.inverse_letter(a),
-                                                        b))  # note that
-                            #  common=Word([])
+                                                        a, b)) 
                             if verbose:
                                 print("Twice-light square (type 1)",
                                        twice_light_squares[-1])
                         else:
+                            aa = A0.inverse_letter(a)
                             twice_light_squares.append(
-                                (common, G1.initial_vertex(b), a, b))
+                                (G0.reduce_path(common*Word([a])),
+                                 G1.initial_vertex(b), aa, b))
                             if verbose:
                                 print("Twice-light square (type 2)",
                                        twice_light_squares[-1])
@@ -321,32 +312,21 @@ class ConvexCore():
                             existing_edges[(aa, 0)] = True
                 else:  # len(signed_ends[b]==1)
                     a = common[-1]
-                    existing_edges[(b, 1)] = True
-                    if signed_ends[b][0][1] == '-':
-                        twice_light_squares.append((common,
-                                                    G1.initial_vertex(b),
-                                                    A0.inverse_letter(a), b))
-                        if verbose:
-                            print("Twice-light square (type 3)",
-                                   twice_light_squares[-1])
-                    else:
-                        twice_light_squares.append(
-                            (common[:-1], G1.initial_vertex(b), a, b))
-                        if verbose:
-                            print("Twice-light square (type 4)",
-                                   twice_light_squares[-1])
+                    twice_light_squares.append(
+                        (common[:-1], G1.initial_vertex(b), a, b))
+                    if verbose:
+                        print("Twice-light square (type 3)",
+                              twice_light_squares[-1])
                     if A0.is_positive_letter(a):
                         existing_edges[(a, 0)] = True
                     else:
                         aa = A0.inverse_letter(a)
                         existing_edges[(aa, 0)] = True
-            else:
-                existing_edges[(b, 1)] = True
 
         # we check for isolated and semi-isolated vertices (vertices
         # without an adjacent edge of the form (b,1)): they are
         # surrounded by twice light squares.
-        semi_isolated_vertices = []
+        semi_isolated_vertices = []  #TODO: remove all these isolated vertices !!!
         adjacent_twice_light_squares = dict([])
         if verbose:
             print("Looking for isolated vertices")
@@ -423,12 +403,11 @@ class ConvexCore():
             (e0, e1, e2, e3) = self.boundary(sq)
             edges.add(e0)
             edges.add(e1)
-            edges.add((e3[0], e2[1], e0[
-                2]))  # we orient the edge for it to be
+            # we orient the next two edges for them to be
             # labeled with a positive letter
-            edges.add((e0[0], e0[1], e1[
-                2]))  # we orient the edge for it to be
-            # labeled with a positive letter
+            edges.add((e3[0], e2[1], e0[2]))  
+            edges.add((e0[0], e0[1], e1[2]))
+            
 
             # we now add the four corners of the square
 
@@ -436,12 +415,19 @@ class ConvexCore():
             vertices.add((e1[0], e1[1]))
             vertices.add((e2[0], e2[1]))
             vertices.add((e3[0], e3[1]))
-
+            
         for e in isolated_edges:
             edges.add(e)
             vi, vt = self.boundary(e)
             vertices.update([vi, vt])
 
+        for sq in twice_light_squares:
+            vertices.add((sq[0],sq[1]))
+            (e0, e1, e2, e3) = self.boundary(sq)
+            vertices.add((e0[0], e0[1]))
+            vertices.add((e2[0], e2[1])) 
+
+            
         for v in isolated_vertices:
             vertices.add(v)
 
@@ -455,7 +441,7 @@ class ConvexCore():
             print("Vertices", vertex_labels)
         # There are still isolated edges of the form (a,0) missing
         for a in A0.positive_letters():
-            if not existing_edges[(a, 0)]:
+            if not existing_edges[(a, 0)]: #TODO: what do we need to close by connexity the edges on side 0 ?
                 if verbose:
                     print("Looking for the isolated edge", (a, 0))
                 vi = G0.initial_vertex(a)
@@ -551,9 +537,9 @@ class ConvexCore():
             b = self.boundary(sq)
             c0 = bisect.bisect(vertex_labels, (b[0][0], b[0][1])) - 1
             c2 = bisect.bisect(vertex_labels, (b[2][0], b[2][1])) - 1
-            c1 = len(
-                vertices) + 2 * i  # These two vertices are not
+            # The two next vertices are not
             #  part of the convex-core
+            c1 = len(vertices) + 2 * i  
             c3 = len(vertices) + 2 * i + 1
             twice_light_squares[i] = [c0, c1, c2, c3, sq[2], sq[3]]
 
