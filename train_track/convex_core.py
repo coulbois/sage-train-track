@@ -264,9 +264,12 @@ class ConvexCore():
                     print("The slice of", b,
                            "is empty, looking for an isolated edge")
                 if len(signed_ends[b]) > 1:
-                    # The signed-ends are either one + and various - or either all +.
-                    # They all come out from the same vertex.
-                    # The alphabetic order puts the only + in signed_ends[b][0]. 
+                    # The signed-ends have all the same sign but at
+                    # most one.  They all come out from the same
+                    # vertex.  If the there exists one sign different
+                    # from all the others, then this signed-end is the
+                    # prefix of all the others and the alphabetic
+                    # order puts it in signed_ends[b][0].
                     v0 =  G0.initial_vertex(signed_ends[b][1][0][-1])
 
                     # we need at least two edges out of v0 without signs
@@ -279,9 +282,9 @@ class ConvexCore():
                         if verbose:
                             print("Isolated edge", (common, G1.initial_vertex(b), (b, 1)))
                     else:  # len(signed_ends[b])+1==len(outgoing_from_origin)
-                        if signed_ends[b][1][1] == '-': # one + and various -
+                        if signed_ends[b][0][1] != signed_ends[b][1][1]: # not all signs equal
                             signed_outgoing_edges = [e[0][-1] for e in
-                                                     signed_ends[b] if e[1] == '-']
+                                                     signed_ends[b] if e[1] == signed_ends[b][1][1]]
                             signed_outgoing_edges.append(A0.inverse_letter(common[-1]))
                         else:
                             signed_outgoing_edges = [e[0][-1] for e in signed_ends[b]]
@@ -290,7 +293,7 @@ class ConvexCore():
                             if a not in signed_outgoing_edges:
                                 break
 
-                        if signed_ends[b][1][1] == '-':
+                        if signed_ends[b][1][1] == '-': #TODO: check this condition
                             twice_light_squares.append((common,
                                                         G1.initial_vertex(b),
                                                         a, b)) 
@@ -371,7 +374,7 @@ class ConvexCore():
                     v):  # v is a semi-isolated vertex
                 w = adjacent_twice_light_squares[(v, 1)][0]
                 if len(w) > 0:
-                    u0 = G0.terminal_vertex(w)
+                    u0 = G0.terminal_vertex(w[-1])
                 else:
                     u0 = G0.initial_vertex(A0[0])
                 if adjacent_twice_light_squares[(u0, 0)] == G0.degree(u0):
@@ -685,7 +688,7 @@ class ConvexCore():
 
         self._isolated_edges = isolated_edges
 
-    def _build_signed_ends(self, verbose=False):
+    def _build_signed_ends(self, consolidate=True, verbose=False):
         """
         For each edge of G1 computes a list of edges in T0 assigned with a
         + or a - sign.
@@ -763,6 +766,46 @@ class ConvexCore():
                     else:
                         signed_ends[pb].append((w0, '+'))
 
+        if consolidate:
+            # In the case where there might be vertices of valence 2
+            # or vertices with only two gates, we need to consolidate
+            # the signed-ends. That-is-to-say if a vertex has only +
+            # ends out of it then these ends have to be pull back
+            # towards the origin
+
+            if verbose:
+                print("Consolidating signed-ends")
+
+            
+                
+            for b in A1.positive_letters():
+                signed_ends[b].sort()
+                if verbose:
+                    print("slice of ",b,":",signed_ends[b])
+                i = 0
+                while i < len(signed_ends[b]) and len(signed_ends[b][i][0]) == 1:
+                    i += 1
+                j = i+1
+
+                while j<len(signed_ends[b]):
+
+                    while i>0 and len(signed_ends[b][i-1][0]) == len(signed_ends[b][i][0]) and G0.common_prefix_length(signed_ends[b][i-1][0],signed_ends[b][i][0]) == len(signed_ends[b][i][0]) - 1:
+                        i -= 1
+                    while j < len(signed_ends[b]) and len(signed_ends[b][i][0]) == len(signed_ends[b][j][0]) and G0.common_prefix_length(signed_ends[b][i][0],signed_ends[b][j][0]) == len(signed_ends[b][i][0]) - 1:
+                        j +=1
+                    if j-i+1 == G0.degree(G0.initial_vertex(signed_ends[b][i][0][-1])):
+                        if verbose:
+                            print("Shifting backward the signed ends of the slice of",b,":",signed_ends[b][i:j]," -> ",(signed_ends[b][i][0][:-1],signed_ends[b][i][1]))
+                        signed_ends[b][i:j] = [(signed_ends[b][i][0][:-1],signed_ends[b][i][1])]
+                    else:
+                        i = j
+
+                    while i < len(signed_ends[b]) and len(signed_ends[b][i][0]) == 1:
+                        i += 1
+
+                    j = i+1
+                    
+            
         self._signed_ends = signed_ends
 
     def boundary(self, cell):
