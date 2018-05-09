@@ -245,7 +245,7 @@ class ConvexCore():
                 if start == len(wp) and start > common_len:  
                     start -= 1
                 wp = w
-                for i in range(start, len(w) - 1): #TODO: these squares need not be heavy
+                for i in range(start, len(w) - 1): 
                     a = w[i]
                     empty_slice = False
                     if A0.is_positive_letter(a):
