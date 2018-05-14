@@ -219,9 +219,6 @@ class ConvexCore():
         # T1 as above. The corners (w,v) and
         # (w.a,v.b) are in the convex core.
 
-        isolated_vertices = []  # An isolated vertex stored as (w,v) where
-        # w is a path in G0 starting at v0 and v
-        # is a vertex in G1 lifted in T1 as above
 
         # close the slices by convexity
         for b in A1.positive_letters():
@@ -293,7 +290,7 @@ class ConvexCore():
                             if a not in signed_outgoing_edges:
                                 break
 
-                        if signed_ends[b][1][1] == '-': #TODO: check this condition
+                        if signed_ends[b][1][1] != signed_ends[b][1][1]: #TODO: check this condition
                             twice_light_squares.append((common,
                                                         G1.initial_vertex(b),
                                                         a, b)) 
@@ -326,64 +323,6 @@ class ConvexCore():
                         aa = A0.inverse_letter(a)
                         existing_edges[(aa, 0)] = True
 
-        # we check for isolated and semi-isolated vertices (vertices
-        # without an adjacent edge of the form (b,1)): they are
-        # surrounded by twice light squares.
-        semi_isolated_vertices = []  #TODO: remove all these isolated vertices !!!
-        adjacent_twice_light_squares = dict([])
-        if verbose:
-            print("Looking for isolated vertices")
-        for (w, v, a, b) in twice_light_squares:
-            if (v, 1) in adjacent_twice_light_squares:
-                adjacent_twice_light_squares[(v, 1)].append(w)
-            else:
-                adjacent_twice_light_squares[(v, 1)] = [w]
-
-            w = w * Word([a])
-            vv = G1.terminal_vertex(b)
-            u = G1.reduce_path(t1[vv] * G1.reverse_path(t1[v] * Word([b])))
-            if len(u) > 0:  # if vv does not stand for v.b
-                w = G0.reduce_path(g(u) * w)
-            if (vv, 1) in adjacent_twice_light_squares:
-                adjacent_twice_light_squares[(vv, 1)].append(w)
-            else:
-                adjacent_twice_light_squares[(vv, 1)] = [w]
-
-            # b=self.boundary((w,v,a,b))
-            # ww,vv=b[1][1]
-            # if (vv,1) in adjacent_twice_light_squares:
-            #     adjacent_twice_light_squares[(vv,1)].append(ww)
-            # else:
-            #     adjacent_twice_light_squares[(vv,1)]=[ww]
-
-            u0 = G0.initial_vertex(a)
-            if (u0, 0) in adjacent_twice_light_squares:
-                adjacent_twice_light_squares[(u0, 0)] += 1
-            else:
-                adjacent_twice_light_squares[(u0, 0)] = 1
-
-            uu0 = G0.terminal_vertex(a)
-            if (uu0, 0) in adjacent_twice_light_squares:
-                adjacent_twice_light_squares[(uu0, 0)] += 1
-            else:
-                adjacent_twice_light_squares[(uu0, 0)] = 1
-
-        for (v, i) in adjacent_twice_light_squares.keys():
-            if i == 1 and len(
-                    adjacent_twice_light_squares[(v, 1)]) == G1.degree(
-                    v):  # v is a semi-isolated vertex
-                w = adjacent_twice_light_squares[(v, 1)][0]
-                if len(w) > 0:
-                    u0 = G0.terminal_vertex(w[-1])
-                else:
-                    u0 = G0.initial_vertex(A0[0])
-                if adjacent_twice_light_squares[(u0, 0)] == G0.degree(u0):
-                    isolated_vertices.append((w, v))
-                    if verbose: print("Isolated vertex", (w, v))
-                else:
-                    for w in adjacent_twice_light_squares[v]:
-                        semi_isolated_vertices.append((w, v))
-                        if verbose: print("Semi-isolated vertex", (w, v))
 
         # create the convex core as a square complex
 
@@ -431,80 +370,47 @@ class ConvexCore():
             vertices.add((e2[0], e2[1])) 
 
             
-        for v in isolated_vertices:
-            vertices.add(v)
-
-        for v in semi_isolated_vertices:
-            vertices.add(v)
 
         vertex_labels = list(vertices)
         vertex_labels.sort()
 
         if verbose:
             print("Vertices", vertex_labels)
+
         # There are still isolated edges of the form (a,0) missing
         for a in A0.positive_letters():
             if not existing_edges[(a, 0)]: #TODO: what do we need to close by connexity the edges on side 0 ?
                 if verbose:
                     print("Looking for the isolated edge", (a, 0))
-                vi = G0.initial_vertex(a)
-                vt = G0.terminal_vertex(a)
-                u = G1.reduce_path(
-                    f(t0[vi] * Word([a]) * G0.reverse_path(t0[vt])))
-                first_start = True
-                first_end = True
-                for (w, v) in vertices:
-                    if len(w) > 0:
-                        vc = G0.terminal_vertex(w[-1])
-                    else:
-                        vc = G0.initial_vertex(A0[0])
-                    if vc == vi:
-                        pfowv = self.path_from_origin((w, v),
-                                                      1)  # path from the
-                        # initial vertex of the edge to (w,v)
-                        if first_start:
-                            start_prefix = pfowv
-                            first_start = False
-                        else:
-                            l = G1.common_prefix_length(start_prefix, pfowv)
-                            if l < len(start_prefix):
-                                start_prefix = start_prefix[:l]
-                    if vc == vt:
-                        pfttowv = G1.reduce_path(
-                            u * self.path_from_origin((w, v),
-                                                      1))  # path from the
-                        # terminal vertex of the edge to (w,v)
-                        if first_end:
-                            end_prefix = pfttowv
-                            first_end = False
-                        else:
-                            l = G1.common_prefix_length(end_prefix, pfttowv)
-                            if l < len(end_prefix):
-                                end_prefix = end_prefix[:l]
-                if verbose:
-                    print("On side 1", (a, 0), "is separated from self by", \
-                        start_prefix, "and", end_prefix)
 
-                if len(start_prefix) > len(end_prefix):
-                    prefix = start_prefix
-                else:
-                    prefix = end_prefix
-                if len(prefix) == 0:
-                    e = (t0[G0.initial_vertex(a)],
-                         G1.initial_vertex(A1[0]), (a, 0))
-                    edges.add(e)
-                    isolated_edges.append(e)
-                    if verbose:
-                        print("Isolated edge:", e)
-                else:
-                    v1 = G1.terminal_vertex(prefix[-1])
-                    u = G0.reduce_path(
-                        g(t1[v1] * G1.reverse_path(prefix)) * t0[
-                            G0.initial_vertex(a)])
-                    edges.add((u, v1, (a, 0)))
-                    isolated_edges.append((u, v1, (a, 0)))
-                    if verbose:
-                        print("Isolated edge:", (u, v1, (a, 0)))
+                aa = A0.inverse_letter(a)
+                occurences = dict()
+
+                done =  False
+                i = 1
+                while not done:
+                    # we first look for the farthest occurence of a or aa in vertices
+                    for (w,v) in vertices:
+                        if len(w)>=i and (w[-i]==a or w[-i]==aa):
+                            if v not in occurences or occurences[v][1] < len(w) - i:
+                                occurences[v] = [(w,v),len(w)-i]
+
+                    # we then check wether this occurence is part of the common prefix
+                    for (w,v) in vertices:
+                        if v in occurences and G0.common_prefix_length(w,occurences[v][0][0]) <= occurences[v][1]:
+                            done = True
+                            if occurences[v][0][0][occurences[v][1]] == a:
+                                e = (occurences[v][0][0][:occurences[v][1]],v,(a,0))
+                            else: # this was an occurence of the inverse letter
+                                e = (occurences[v][0][0][:occurences[v][1]+1],v,(a,0))
+                            edges.add(e)
+                            isolated_edges.append(e)
+                            if verbose:
+                                print("Isolated edge:", e)
+                            vi, vt = self.boundary(e)
+                            vertices.update([vi, vt])
+                            break
+                    i+=1
 
         # We now number the vertices and change edges such that they
         #  are of the form [vi,vt,(a,side)]
