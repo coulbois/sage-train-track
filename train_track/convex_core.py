@@ -92,9 +92,9 @@ class ConvexCore():
 
         sage: from train_track import *
         sage: from train_track.convex_core import ConvexCore
-        sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")
-        sage: phi=phi*phi
-        sage: C=ConvexCore(phi)
+        sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
+        sage: phi = phi*phi
+        sage: C = ConvexCore(phi)
         sage: print(C.slice('c',0))
         Looped multi-digraph on 2 vertices
 
@@ -104,11 +104,16 @@ class ConvexCore():
         sage: C.squares()
         [[3, 0, 2, 1, 'c', 'a']]
 
-
-
         sage: C.twice_light_squares()
         [[1, 4, 0, 5, 'a', 'c']]
 
+        sage: phi=FreeGroupAutomorphism("a->aC,b->c,c->ccB")
+        sage: G0 = MarkedGraph(GraphWithInverses.valence_3(3))
+        sage: G1 = MarkedGraph(GraphWithInverses.valence_3(3))
+        sage: G1.precompose(phi)
+        sage: C = ConvexCore(G0,G1)
+        sage: print(C.isolated_edges())
+        [[7, 9, ('c', 0)]]
 
     AUTHORS:
 
@@ -290,21 +295,19 @@ class ConvexCore():
                             if a not in signed_outgoing_edges:
                                 break
 
-                        if signed_ends[b][1][1] != signed_ends[b][1][1]: #TODO: check this condition
+                        if signed_ends[b][1][1] == '-':
                             twice_light_squares.append((common,
                                                         G1.initial_vertex(b),
-                                                        a, b)) 
-                            if verbose:
-                                print("Twice-light square (type 1)",
-                                       twice_light_squares[-1])
+                                                        a, b))
                         else:
-                            aa = A0.inverse_letter(a)
-                            twice_light_squares.append(
-                                (G0.reduce_path(common*Word([a])),
-                                 G1.initial_vertex(b), aa, b))
-                            if verbose:
-                                print("Twice-light square (type 2)",
-                                       twice_light_squares[-1])
+                            twice_light_squares.append((G0.reduce_path(common*Word([a])),
+                                                            G1.initial_vertex(b),
+                                                            A0.inverse_letter(a), b))
+                                
+                        if verbose:
+                            print("Twice-light square",
+                                  twice_light_squares[-1])
+
                         if A0.is_positive_letter(a):
                             existing_edges[(a, 0)] = True
                         else:
@@ -312,10 +315,14 @@ class ConvexCore():
                             existing_edges[(aa, 0)] = True
                 else:  # len(signed_ends[b]==1)
                     a = common[-1]
-                    twice_light_squares.append(
-                        (common[:-1], G1.initial_vertex(b), a, b))
+                    if signed_ends[b][0][1] == '+':
+                        twice_light_squares.append(
+                            (common[:-1], G1.initial_vertex(b), a, b))
+                    else:
+                        twice_light_squares.append(
+                            (common, G1.initial_vertex(b), A0.inverse_letter(a), b))
                     if verbose:
-                        print("Twice-light square (type 3)",
+                        print("Twice-light square",
                               twice_light_squares[-1])
                     if A0.is_positive_letter(a):
                         existing_edges[(a, 0)] = True
@@ -379,7 +386,7 @@ class ConvexCore():
 
         # There are still isolated edges of the form (a,0) missing
         for a in A0.positive_letters():
-            if not existing_edges[(a, 0)]: #TODO: what do we need to close by connexity the edges on side 0 ?
+            if not existing_edges[(a, 0)]: 
                 if verbose:
                     print("Looking for the isolated edge", (a, 0))
 
@@ -626,8 +633,7 @@ class ConvexCore():
             sage: C = ConvexCore(phi)
             sage: C._build_signed_ends()
             sage: print(C._signed_ends)
-            {'a': [(word: a, '+'), (word: Ca, '+'), (word: b, '+'), (word: Cb, '+'), (word: c, '+')], 'c': [(word: Ba, '+')], 'b': [(word: Bca, '+'), (word: Bcb, '+'), (word: Bcc, '+')]}
-
+            {'a': [(word: Ca, '+'), (word: Cb, '+'), (word: a, '+'), (word: b, '+'), (word: c, '+')], 'c': [(word: Ba, '+')], 'b': [(word: Bca, '+'), (word: Bcb, '+'), (word: Bcc, '+')]}
         """
 
         G0 = self._G0
@@ -689,9 +695,7 @@ class ConvexCore():
                 if verbose:
                     print("slice of ",b,":",signed_ends[b])
                 i = 0
-                while i < len(signed_ends[b]) and len(signed_ends[b][i][0]) == 1:
-                    i += 1
-                j = i+1
+                j = 1
 
                 while j<len(signed_ends[b]):
 
@@ -702,7 +706,19 @@ class ConvexCore():
                     if j-i+1 == G0.degree(G0.initial_vertex(signed_ends[b][i][0][-1])):
                         if verbose:
                             print("Shifting backward the signed ends of the slice of",b,":",signed_ends[b][i:j]," -> ",(signed_ends[b][i][0][:-1],signed_ends[b][i][1]))
-                        signed_ends[b][i:j] = [(signed_ends[b][i][0][:-1],signed_ends[b][i][1])]
+                        if len(signed_ends[b][i][0])>1:
+                            signed_ends[b][i:j] = [(signed_ends[b][i][0][:-1],signed_ends[b][i][1])]
+                        else: # the signed ends are outgoing from the origin
+                            signed_outgoing_edges = [signed_ends[b][k][0][0] for k in range(i,j)]
+                            v0 = G0.initial_vertex(signed_ends[b][i][0][0])
+                            for a in A0:
+                                if G0.initial_vertex(a) == v0 and a not in signed_out_going_edges:
+                                    break
+                            if signed_ends[b][i] == '+':
+                                signed_ends[b][i:j] = [Word([a]),'-']
+                            else:
+                                signed_ends[b][i:j] = [Word([a]),'+']
+                            #TODO alphabetic order.    
                     else:
                         i = j
 
