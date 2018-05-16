@@ -686,10 +686,8 @@ class ConvexCore():
             # towards the origin
 
             if verbose:
-                print("Consolidating signed-ends")
+                print("Consolidating signed-ends: pulling")
 
-            
-                
             for b in A1.positive_letters():
                 signed_ends[b].sort()
                 if verbose:
@@ -697,36 +695,47 @@ class ConvexCore():
                 i = 0
                 j = 1
 
-                while j<len(signed_ends[b]):
+                while i<len(signed_ends[b]):
 
-                    while i>0 and len(signed_ends[b][i-1][0]) == len(signed_ends[b][i][0]) and G0.common_prefix_length(signed_ends[b][i-1][0],signed_ends[b][i][0]) == len(signed_ends[b][i][0]) - 1:
+                    while (i>0 and (len(signed_ends[b][i-1][0])
+                                    == len(signed_ends[b][i][0]))
+                           and (G0.common_prefix_length(signed_ends[b][i-1][0],
+                                                        signed_ends[b][i][0])
+                                == len(signed_ends[b][i][0]) - 1):
                         i -= 1
-                    while j < len(signed_ends[b]) and len(signed_ends[b][i][0]) == len(signed_ends[b][j][0]) and G0.common_prefix_length(signed_ends[b][i][0],signed_ends[b][j][0]) == len(signed_ends[b][i][0]) - 1:
+                    while (j < len(signed_ends[b])
+                           and len(signed_ends[b][i][0]) == len(signed_ends[b][j][0])
+                           and (G0.common_prefix_length(signed_ends[b][i][0],
+                                                        signed_ends[b][j][0])
+                                == len(signed_ends[b][i][0]) - 1)):
                         j +=1
                     if j-i+1 == G0.degree(G0.initial_vertex(signed_ends[b][i][0][-1])):
                         if verbose:
-                            print("Shifting backward the signed ends of the slice of",b,":",signed_ends[b][i:j]," -> ",(signed_ends[b][i][0][:-1],signed_ends[b][i][1]))
+                            print("Shifting backward:",signed_ends[b][i:j]," -> ",end='')
                         if len(signed_ends[b][i][0])>1:
                             signed_ends[b][i:j] = [(signed_ends[b][i][0][:-1],signed_ends[b][i][1])]
                         else: # the signed ends are outgoing from the origin
+                            #TODO: warning what if v0 is a valence 2 vertex?
                             signed_outgoing_edges = [signed_ends[b][k][0][0] for k in range(i,j)]
                             v0 = G0.initial_vertex(signed_ends[b][i][0][0])
                             for a in A0:
-                                if G0.initial_vertex(a) == v0 and a not in signed_out_going_edges:
+                                if G0.initial_vertex(a) == v0 and a not in signed_outgoing_edges:
                                     break
-                            if signed_ends[b][i] == '+':
-                                signed_ends[b][i:j] = [Word([a]),'-']
+                            if signed_ends[b][i][1] == '+':
+                                signed_ends[b][i:j] = [(Word([a]),'-')]
                             else:
-                                signed_ends[b][i:j] = [Word([a]),'+']
-                            #TODO alphabetic order.    
+                                signed_ends[b][i:j] = [(Word([a]),'+')]
+                            
+                        if verbose:
+                            print(signed_ends[b][i])
                     else:
                         i = j
 
-                    while i < len(signed_ends[b]) and len(signed_ends[b][i][0]) == 1:
-                        i += 1
-
                     j = i+1
-                    
+
+            if verbose:
+                print("Consolidating signed-ends: pushing")
+            #TODO
             
         self._signed_ends = signed_ends
 
