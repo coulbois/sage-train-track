@@ -701,7 +701,7 @@ class ConvexCore():
                                     == len(signed_ends[b][i][0]))
                            and (G0.common_prefix_length(signed_ends[b][i-1][0],
                                                         signed_ends[b][i][0])
-                                == len(signed_ends[b][i][0]) - 1):
+                                == len(signed_ends[b][i][0]) - 1)):
                         i -= 1
                     while (j < len(signed_ends[b])
                            and len(signed_ends[b][i][0]) == len(signed_ends[b][j][0])
@@ -710,12 +710,18 @@ class ConvexCore():
                                 == len(signed_ends[b][i][0]) - 1)):
                         j +=1
                     if j-i+1 == G0.degree(G0.initial_vertex(signed_ends[b][i][0][-1])):
-                        if verbose:
-                            print("Shifting backward:",signed_ends[b][i:j]," -> ",end='')
                         if len(signed_ends[b][i][0])>1:
+                            if verbose:
+                                print("Shifting backward:",signed_ends[b][i:j],
+                                      " -> ",end='')
                             signed_ends[b][i:j] = [(signed_ends[b][i][0][:-1],signed_ends[b][i][1])]
-                        else: # the signed ends are outgoing from the origin
-                            #TODO: warning what if v0 is a valence 2 vertex?
+                            if verbose:
+                                print(signed_ends[b][i])
+                        elif j-i>1 or (
+                                len(signed_end[b])>1 and signed_ends[b][i][0][0]!=signed_ends[b][1-i][0][0]):
+                            # the signed ends are outgoing from the origin v0
+                            # if v0 is valence 2 then we put the sign on the
+                            # same direction as the other signs.
                             signed_outgoing_edges = [signed_ends[b][k][0][0] for k in range(i,j)]
                             v0 = G0.initial_vertex(signed_ends[b][i][0][0])
                             for a in A0:
@@ -726,16 +732,58 @@ class ConvexCore():
                             else:
                                 signed_ends[b][i:j] = [(Word([a]),'+')]
                             
-                        if verbose:
-                            print(signed_ends[b][i])
+                            if verbose:
+                                 print(signed_ends[b][i])
+                           
                     else:
                         i = j
 
                     j = i+1
+                           
 
-            if verbose:
-                print("Consolidating signed-ends: pushing")
-            #TODO
+                # The above procedure keeps the alphabetic order. But we
+                # still have to deal with signed ends of length 1 which
+                # might be at the beginning and the end of the list.
+                if len(signed_ends[b])>1:
+                    i=0
+                    j=len(signed_ends[b])-1
+                    print(i,j) #debug
+                    while i<len(signed_ends[b]) and len(signed_ends[b][i][0])==1:
+                        i+=1
+                    while j>i and len(signed_ends[b][j][0])==1:
+                        j-=1
+                    print(i,j) #debug
+                    if i+len(signed_ends[b])-j==G0.degree(G0.initial_vertex(signed_ends[b][0][0][0])):
+                        w = signed_ends[b][i][0][:1] 
+                        if verbose:
+                            print("Shifting backward (through the origin):",signed_ends[b][:i],
+                                  signed_ends[b][j+1:]," -> ", end='')
+                        if signed_ends[b][0][1] == '+':
+                            signed_ends[b][0:1] = [(w,'-')]
+                        else:
+                            signed_ends[b][0:1] = [(w,'+')]
+                        signed_ends[b][j+1:]=[]
+                        if verbose:
+                            print(signed_ends[b][0])
+
+                # We now push the signs away from the origin. As
+                # signed ends are sorted (except possibly for signed
+                # ends of length 1), the shortest one has index 0.
+                
+                if verbose:
+                    print("Consolidating signed-ends: pushing")
+                w = signed_ends[b][0]
+                l = len(w)
+                for i in range(1,len(signed_ends[b])):
+                    p = G0.common_prefix_length(w,signed_ends[i])
+                    if p < l:
+                        done = True
+                        break
+                    elif p == l+1:
+                        outgoing_signed.append(i)
+                if len(outgoing_signed)+2 == G0.degree(G0.terminal_vertex(w[-1])):
+                    pass #TODO
+                    
             
         self._signed_ends = signed_ends
 
