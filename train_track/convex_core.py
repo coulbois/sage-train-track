@@ -88,6 +88,9 @@ class ConvexCore():
         It is assumed that boths graphs G1 and G2 do not have vertices
         of valence 1 or 2.
 
+        It may work with vertices of valence 2 in particular if there
+        are no twice light squares.
+
     EXAMPLES::
 
         sage: from train_track import *
@@ -685,9 +688,6 @@ class ConvexCore():
             # ends out of it then these ends have to be pull back
             # towards the origin
 
-            if verbose:
-                print("Consolidating signed-ends: pulling")
-
             for b in A1.positive_letters():
                 signed_ends[b].sort()
                 if verbose:
@@ -747,13 +747,11 @@ class ConvexCore():
                 if len(signed_ends[b])>1:
                     i=0
                     j=len(signed_ends[b])-1
-                    print(i,j) #debug
                     while i<len(signed_ends[b]) and len(signed_ends[b][i][0])==1:
                         i+=1
                     while j>i and len(signed_ends[b][j][0])==1:
                         j-=1
-                    print(i,j) #debug
-                    if i+len(signed_ends[b])-j==G0.degree(G0.initial_vertex(signed_ends[b][0][0][0])):
+                    if i+len(signed_ends[b])-j==G0.degree(G0.initial_vertex(signed_ends[b][0][0][0])) and signed_ends[b][0][0][0]!=signed_ends[b][i][0][0] and  signed_ends[b][j][0][0]!=signed_ends[b][j+1][0][0]:
                         w = signed_ends[b][i][0][:1] 
                         if verbose:
                             print("Shifting backward (through the origin):",signed_ends[b][:i],
@@ -770,19 +768,34 @@ class ConvexCore():
                 # signed ends are sorted (except possibly for signed
                 # ends of length 1), the shortest one has index 0.
                 
-                if verbose:
-                    print("Consolidating signed-ends: pushing")
-                w = signed_ends[b][0]
-                l = len(w)
-                for i in range(1,len(signed_ends[b])):
-                    p = G0.common_prefix_length(w,signed_ends[i])
-                    if p < l:
-                        done = True
-                        break
-                    elif p == l+1:
-                        outgoing_signed.append(i)
-                if len(outgoing_signed)+2 == G0.degree(G0.terminal_vertex(w[-1])):
-                    pass #TODO
+                done = False
+                while not done:
+                    done = True
+                    w = signed_ends[b][0][0]
+                    l = len(w)
+                    outgoing_indices=[]
+                    outgoing_letters=[A0.inverse_letter(w[-1])]
+                    for i in range(1,len(signed_ends[b])):
+                        if G0.common_prefix_length(w,signed_ends[b][i][0]) < l:
+                            break
+                        elif len(signed_ends[b][i][0]) == l+1:
+                            outgoing_indices.append(i)
+                            outgoing_letters.append(signed_ends[b][i][0][-1])
+                    else:
+                        if len(outgoing_indices)+2 == G0.degree(G0.terminal_vertex(w[-1])):
+                            v0 = G0.initial_vertex(outgoing_letters[0])
+                            for a in A0:
+                                if G0.initial_vertex(a)==v0 and a not in outgoing_letters:
+                                    break
+                            if len(outgoing_indices)>0:
+                                if verbose:
+                                    print("Shifting forward:",signed_ends[b][0],[signed_ends[b][i] for i in outgoing_indices],"->",end='')
+                                signed_ends[b][0]=(G0.reduce_path(w*Word([a])),signed_ends[b][0][1])
+                                for i in reversed(outgoing_indices):
+                                    signed_ends[b].pop(i)
+                                if verbose:
+                                    print(signed_ends[b][0])
+                                done = False
                     
             
         self._signed_ends = signed_ends
