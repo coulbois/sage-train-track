@@ -722,18 +722,22 @@ class ConvexCore():
                             # the signed ends are outgoing from the origin v0
                             # if v0 is valence 2 then we put the sign on the
                             # same direction as the other signs.
+                            if verbose:
+                                print("Shifting backward (through the origin):",signed_ends[b][i:j],
+                                      " -> ",end='')
                             signed_outgoing_edges = [signed_ends[b][k][0][0] for k in range(i,j)]
                             v0 = G0.initial_vertex(signed_ends[b][i][0][0])
                             for a in A0:
                                 if G0.initial_vertex(a) == v0 and a not in signed_outgoing_edges:
                                     break
+                            # we respect the alphabetic order by putting the new letter at the beginning
                             if signed_ends[b][i][1] == '+':
-                                signed_ends[b][i:j] = [(Word([a]),'-')]
+                                signed_ends[b] = [(Word([a]),'-')]+signed_ends[b][:i]+signed_ends[b][j:]
                             else:
-                                signed_ends[b][i:j] = [(Word([a]),'+')]
+                                signed_ends[b] = [(Word([a]),'+')]+signed_ends[b][:i]+signed_ends[b][j:]
                             
                             if verbose:
-                                 print(signed_ends[b][i])
+                                 print(signed_ends[b][0])
                            
                     else:
                         i = j
@@ -757,9 +761,9 @@ class ConvexCore():
                             print("Shifting backward (through the origin):",signed_ends[b][:i],
                                   signed_ends[b][j+1:]," -> ", end='')
                         if signed_ends[b][0][1] == '+':
-                            signed_ends[b][0:1] = [(w,'-')]
+                            signed_ends[b][0:i] = [(w,'-')]
                         else:
-                            signed_ends[b][0:1] = [(w,'+')]
+                            signed_ends[b][0:i] = [(w,'+')]
                         signed_ends[b][j+1:]=[]
                         if verbose:
                             print(signed_ends[b][0])
@@ -783,11 +787,11 @@ class ConvexCore():
                             outgoing_letters.append(signed_ends[b][i][0][-1])
                     else:
                         if len(outgoing_indices)+2 == G0.degree(G0.terminal_vertex(w[-1])):
-                            v0 = G0.initial_vertex(outgoing_letters[0])
+                            v0 = G0.terminal_vertex(w[-1]) 
                             for a in A0:
                                 if G0.initial_vertex(a)==v0 and a not in outgoing_letters:
                                     break
-                            if len(outgoing_indices)>0:
+                            if len(outgoing_indices)>0 or len(signed_ends[b])>1:
                                 if verbose:
                                     print("Shifting forward:",signed_ends[b][0],[signed_ends[b][i] for i in outgoing_indices],"->",end='')
                                 signed_ends[b][0]=(G0.reduce_path(w*Word([a])),signed_ends[b][0][1])
@@ -796,6 +800,7 @@ class ConvexCore():
                                 if verbose:
                                     print(signed_ends[b][0])
                                 done = False
+                                
                     
             
         self._signed_ends = signed_ends
