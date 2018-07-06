@@ -337,6 +337,31 @@ class GraphMap():
                     self._codomain.terminal_vertex(p[-1])
         self._vertex_map = vertex_map
 
+    def vertex_map(self):
+        """
+        The vertex map of ``self``: this is a dictionnary.
+
+        OUTPUT:
+
+        The vertex map of ``self``
+
+        EXAMPLES::
+
+            sage: from train_track import *
+            sage: from train_track.inverse_graph import GraphWithInverses
+            sage: from train_track.graph_map import GraphMap
+            sage: G = GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,1,'c']])
+            sage: A = AlphabetWithInverses(2)
+            sage: H = GraphWithInverses.rose_graph(A)
+            sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
+            sage: f.vertex_map()
+            {0:0, 1:0}
+        """
+        if self._vertex_map is None:
+            self.update_vertex_map()
+        return self._vertex_map
+ 
+        
     def edge_map(self):
         """
         The edge map of ``self``: this is a word morphism.
@@ -519,7 +544,7 @@ class GraphMap():
 
             It is assumed that ``self`` is a homotopy equivalence
 
-        The result may send edges to trivial edge-paths.
+            The result may send edges to trivial edge-paths.
 
         EXAMPLES::
 

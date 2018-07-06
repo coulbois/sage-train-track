@@ -3949,7 +3949,8 @@ class GraphSelfMap(GraphMap):
                                         verbose=verbose and verbose > 1 and
                                         verbose - 1)
                                     s = heritage[s][-1]
-                                    print(self)
+                                    if verbose:
+                                        print(self)
                                 else:
                                     edges = [a for a in self._strata[s]]
                                     edges = edges + [A.inverse_letter(a) for a
