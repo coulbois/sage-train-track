@@ -456,7 +456,7 @@ class FreeGroupMorphism(object):
             (a, self._morph[a]) for a in self.domain().gens()))
         #,domain=self.domain())
 
-    def to_word_morphism(self, use_str=False, upper_case_as_inverse=False):
+    def to_word_morphism(self, use_str=False, upper_case_as_inverse=False, only_images_of_positive_letters=False, compact=False):
         r"""
         Return a word morphism.
 
@@ -466,6 +466,9 @@ class FreeGroupMorphism(object):
         - ``use_str`` -- (default: False) use ``str`` as letters (not FreeGroupElement)
         - ``upper_case_as_inverse`` -- (default: False) inverse of
           generators are translated to upper case ``str``
+        - ``only_images_of_positive_letters`` -- (default: False) only positive letters
+          have an image
+        - ``compact`` -- (default: False) sets to True the three other options
 
         OUTPUT:
 
@@ -493,17 +496,22 @@ class FreeGroupMorphism(object):
         """
         F = self._domain
         A = F.gens()
-        An = F.variable_names()
 
+        if compact:
+            use_str = True
+            upper_case_as_inverse = True
+            only_images_of_positive_letters = True
+        
         if use_str:
-            morph = dict((An[i],self(a).to_word(use_str=True,upper_case_as_inverse=upper_case_as_inverse)) for i,a in enumerate(A))
-            if upper_case_as_inverse:
-                for i,a in enumerate(A):
-                    morph[An[i].upper()] = self(a**-1).to_word(use_str=True,upper_case_as_inverse=upper_case_as_inverse)
+            morph = dict((str(a),self(a).to_word(use_str=True,upper_case_as_inverse=upper_case_as_inverse)) for a in A)
+            if not only_images_of_positive_letters:
+                for a in A:
+                    morph[str(a).upper()] = self(a**-1).to_word(use_str=True,upper_case_as_inverse=upper_case_as_inverse)
         else:
             morph = dict((a, self(a).to_word(use_str=False)) for a in A)
-            for a in A:
-                morph[a**-1] = self(a).inverse().to_word(use_str=False)
+            if not only_images_of_positive_letters:
+                for a in A:
+                    morph[a**-1] = self(a).inverse().to_word(use_str=False)
 
         return WordMorphism(morph)
 
