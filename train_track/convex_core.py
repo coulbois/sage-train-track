@@ -46,8 +46,7 @@ import bisect
 
 
 class ConvexCore():
-    """
-    Guirardel's convex core of two simplicial
+    """Guirardel's convex core of two simplicial
     trees with an action of a free group.
 
     Let T1 and T2 be trees with actions of the free group FN. G1=T1/FN
@@ -75,11 +74,14 @@ class ConvexCore():
       free group ``F``. The convex core of the Cayley tree ``TA`` of
       the free group ``F`` with respect to its alphabet ``A``, and of
       the tree ``TA.Phi``, where ``Phi`` is the outer class of
-      ``phi``.  - ``ConvexCore(G1,G2)``: where ``G1`` and ``G2`` are
-      two marked graphs (or two marked metric graphs): The convex core
-      of the universal covers ``T1`` and ``T2`` of ``G1`` and ``G2``
-      respectively. Edges of length 0 are quotient out.  -
-      ``ConvexCore(f)``: where ``f`` is a homotopy equivalence between
+      ``phi``.
+
+    - ``ConvexCore(G1,G2)``: where ``G1`` and ``G2`` are two marked
+      graphs (or two marked metric graphs): The convex core of the
+      universal covers ``T1`` and ``T2`` of ``G1`` and ``G2``
+      respectively. Edges of length 0 are quotient out.
+
+    - ``ConvexCore(f)``: where ``f`` is a homotopy equivalence between
       graphs ``G1`` and ``G2``: The convex core of the universal
       covers ``T1`` and ``T2`` of ``G1`` and ``G2``, with the
       fundamental group ``F`` of ``G1`` acting on ``G2`` through
