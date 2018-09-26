@@ -541,7 +541,7 @@ class TrainTrackMap(GraphSelfMap):
         fold_turns = self.fold_turns()
         for t in fold_turns:
             result.append((Word(), Word()))
-            image.append((Word(), Word()))  # tigthen image of result
+            image.append((Word(), Word()))  # tighten image of result
             next.append((t[0], t[1]))  # letters to add to result
 
         u = [None, None]

@@ -523,26 +523,28 @@ class GraphMap():
 
         return GraphMap(G2, G1, edge_map)
 
-    def tighten(self):
+    def tighten(self,verbose=False):
         """
-        Tighten ``self`` such that there are at least two gates at
-        each vertex of the domain.
+        Tighten ``self`` such that there are at least three gates at each
+        vertex of the domain.
 
-        A map is tight if for each vertex ``v`` of the domain, there
-        exist reduced edge paths ``u`` and ``v`` in the domain with
-        ``self(u)`` and ``self(v)`` non-trivial reduced paths starting
-        with different edges.
+        A vertex has at least three gates if there exists outgoing
+        reduced paths ``u``, ``v``, ``w`` with the reduced paths ``f(u)``,
+        ``f(v)`` and ``f(w)`` starting with different edges.
+
+        A map is tight if the tuple ``(f(e1),f(e2),...)`` is minimal
+        first for the sum of the length, then in lexicographic order.
 
         ``self`` and ``self.tighten()`` are homotopic.
 
         OUTPUT:
 
-        Tighten ``self`` such that there are at least two gates at
-        each vertex of the domain.
+        Edge map of tighten ``self`` such that there are at least two
+        gates at each vertex of the domain.
 
         .. WARNING::
 
-            It is assumed that ``self`` is a homotopy equivalence
+            It is assumed that ``self`` is injective in homotopy.
 
             The result may send edges to trivial edge-paths.
 
@@ -562,6 +564,7 @@ class GraphMap():
             a: 0->0, b: 0->0
             a: 0->0, b: 0->0
             edge map: a->ab, b->b
+
         """
         G1 = self.domain()
         A1 = G1.alphabet()
@@ -569,65 +572,74 @@ class GraphMap():
 
         edge_map = dict((a, self.image(a)) for a in A1)
 
+        adjacent_vertex = dict((v,v) for v in G1.vertices())  # a
+        # class of vertices linked by a tree which is contracted by
+        # self to a point
+
         done = False
         while not done:
             done = True
-            prefix = dict()  # the common prefix of all edges outgoing from
-            # the class of a vertex
-            adjacent_vertex = dict()  # a class of vertices linked by a tree
-            # which is contracted by self to a point
+            gates = dict((v,[]) for v in G1.vertices())  # the gates
+            # outgoing from a contracted tree
+            minimal_edge = dict() # The minimal edge (in lexicographic
+            # order) outgoing from a contracted forest.
+            
             for a in A1:
                 u = edge_map[a]
                 v = G1.initial_vertex(a)
+                vv = adjacent_vertex[v]
                 if len(u) > 0:
-                    if v not in adjacent_vertex:
-                        adjacent_vertex[v] = set([v])
-                    for w in adjacent_vertex[v]:
-                        if w in prefix:
-                            if len(prefix[w]) > 0:
-                                p = G2.common_prefix_length(u, prefix[w])
-                                prefix[w] = prefix[w][:p]
-                        else:
-                            prefix[w] = u
+                    gates[vv].append(u)
+                    if vv not in minimal_edge or a < minimal_edge[vv]:      
+                        minimal_edge[vv]=a
+                    
                 else:  # we need to increase the adjacent_vertex
-                    vv = G1.terminal_vertex(a)
-                    # note that v!=vv because else the loop a is contracted
-                    # contrary to homotopy equivalence
-                    if v in adjacent_vertex and vv in adjacent_vertex:
-                        adjacent_vertex[v].update(adjacent_vertex[vv])
-                    elif v in adjacent_vertex:
-                        adjacent_vertex[v].add(vv)
-                    elif vv in adjacent_vertex:
-                        adjacent_vertex[v] = adjacent_vertex[vv]
-                        adjacent_vertex[v].add(v)
-                    else:
-                        adjacent_vertex[v] = set([v, vv])
-                    if v in prefix:
-                        prefixv = prefix[v]
-                    else:
-                        prefixv = False
-                    for w in adjacent_vertex[v]:
-                        if v != w:
-                            adjacent_vertex[w] = adjacent_vertex[v]
-                            if w in prefix:
-                                if prefixv:
-                                    p = G2.common_prefix_length(prefixv,
-                                                                prefix[w])
-                                    prefixv = prefixv[:p]
-                                else:
-                                    prefixv = prefix[w]
-                    if prefixv:
-                        for w in adjacent_vertex[v]:
-                            prefix[w] = prefixv
+                    w = G1.terminal_vertex(a)
+                    ww = adjacent_vertex[w]
+                    if vv != ww: # we need to fusion the two contracted forests
+                        gates[vv] = gates[vv] + gates[ww]
+                        if ww in minimal_edge:
+                            if vv not in minimal_edge:
+                                minimal_edge[vv] = minimal_edge[ww]
+                            elif minimal_edge[ww] < minimal_edge[vv]:
+                                minimal_edge[vv] = minimal_edge[ww]                                
 
-            for a in A1:
-                v = G1.initial_vertex(a)
-                if v in prefix and len(prefix[v]) > 0:
-                    done = False
-                    aa = A1.inverse_letter(a)
-                    if len(edge_map[a]) > 0:
-                        edge_map[a] = edge_map[a][len(prefix[v]):]
-                        edge_map[aa] = edge_map[aa][:-len(prefix[v])]
+                        for t in G1.vertices():
+                            if adjacent_vertex[t] ==  ww:
+                                adjacent_vertex[t] = vv
+
+            for v in G1.vertices():
+                if v == adjacent_vertex[v]:
+                    gates[v].sort()
+                    i = 0
+
+                    while i < len(gates[v]):
+                        prefix = gates[v][i]
+                        j = i+1
+                        while j < len(gates[v]) and gates[v][j][0] == prefix[0]:
+                            prefix = prefix[:G2.common_prefix_length(gates[v][j],prefix)]
+                            j += 1
+                        if 2 * (j - i) > len(gates[v]) or (2 * (j - i) == len(gates[v]) and edge_map[minimal_edge[v]][0] == prefix[0]):
+                            if verbose:
+                                print("Moving vertex",v,"towards",prefix)
+                            for a in A1:
+                                if v == adjacent_vertex[G1.initial_vertex(a)]:
+                                    aa = A1.inverse_letter(a)
+                                    edge_map[a] = G2.reduce_path(G2.reverse_path(prefix) * edge_map[a])
+                                    edge_map[aa] = G2.reduce_path(edge_map[aa] * prefix)
+                            if verbose:
+                                out = ""
+                                for a in A1.positive_letters():
+                                    out += a+"->"+str(edge_map[a])+","
+                                print(out[:-1])
+                            done = False
+                            break
+                        
+                        i = j
+
+                if not done:
+                    break
+                    
 
         self.set_edge_map(edge_map)
 

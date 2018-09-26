@@ -46,7 +46,8 @@ import bisect
 
 
 class ConvexCore():
-    """Guirardel's convex core of two simplicial
+    """
+    Guirardel's convex core of two simplicial
     trees with an action of a free group.
 
     Let T1 and T2 be trees with actions of the free group FN. G1=T1/FN
@@ -70,22 +71,23 @@ class ConvexCore():
     MetricGraph with edges of length 0 can be used for trees with a
     non-free action of FN.
 
-    - ``ConvexCore(phi)``: where ``phi`` is an automorphism of the free
-      group F. The convex core of the Cayley tree TA of the free group F
-      with respect to its alphabet A, and of the tree TA.Phi, where Phi
-      is the outer class of ``phi``.
-    - ``ConvexCore(G1,G2)``: where ``G1`` and ``G2`` are two marked
-      graphs (or two marked metric graphs): The convex core of the
-      universal covers T1 and T2 of ``G1`` and ``G2``
-      respectively. Edges of length 0 are quotient out.
-    - ``ConvexCore(f)``: where ``f`` is a homotopy equivalence between
-      graphs G1 and G2: The convex core of the universal covers T1 and
-      T2 of G1 and G2, with the fundamental group F of G1 acting on G2
-      through ``f``. Edges of length 0 are quotient out.
+    - ``ConvexCore(phi)``: where ``phi`` is an automorphism of the
+      free group ``F``. The convex core of the Cayley tree ``TA`` of
+      the free group ``F`` with respect to its alphabet ``A``, and of
+      the tree ``TA.Phi``, where ``Phi`` is the outer class of
+      ``phi``.  - ``ConvexCore(G1,G2)``: where ``G1`` and ``G2`` are
+      two marked graphs (or two marked metric graphs): The convex core
+      of the universal covers ``T1`` and ``T2`` of ``G1`` and ``G2``
+      respectively. Edges of length 0 are quotient out.  -
+      ``ConvexCore(f)``: where ``f`` is a homotopy equivalence between
+      graphs ``G1`` and ``G2``: The convex core of the universal
+      covers ``T1`` and ``T2`` of ``G1`` and ``G2``, with the
+      fundamental group ``F`` of ``G1`` acting on ``G2`` through
+      ``f``. Edges of length 0 are quotient out.
 
     .. WARNING::
 
-        It is assumed that boths graphs G1 and G2 do not have vertices
+        It is assumed that boths graphs ``G1`` and ``G2`` do not have vertices
         of valence 1 or 2.
 
         It may work with vertices of valence 2 in particular if there
