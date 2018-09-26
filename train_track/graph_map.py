@@ -355,7 +355,7 @@ class GraphMap():
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->ab,b->b,c->B")
             sage: f.vertex_map()
-            {0:0, 1:0}
+            {0: 0, 1: 0}
         """
         if self._vertex_map is None:
             self.update_vertex_map()
@@ -558,12 +558,12 @@ class GraphMap():
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->baabAB,b->babAB")
             sage: f.tighten()
-            WordMorphism: A->BA, B->B, a->ab, b->b
+            WordMorphism: A->AB, B->B, a->ba, b->b
             sage: print(f)
             Graph map:
             a: 0->0, b: 0->0
             a: 0->0, b: 0->0
-            edge map: a->ab, b->b
+            edge map: a->ba, b->b
 
         """
         G1 = self.domain()

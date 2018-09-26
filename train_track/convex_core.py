@@ -98,6 +98,8 @@ class ConvexCore():
     EXAMPLES::
 
         sage: from train_track import *
+        sage: from train_track.inverse_graph import GraphWithInverses 
+        sage: from train_track.marked_graph import MarkedGraph
         sage: from train_track.convex_core import ConvexCore
         sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
         sage: phi = phi*phi
