@@ -120,9 +120,11 @@ class ConvexCore():
         sage: G0 = MarkedGraph(GraphWithInverses.valence_3(3))
         sage: G1 = MarkedGraph(GraphWithInverses.valence_3(3))
         sage: G1.precompose(phi)
+        Graph with inverses: a: 1->3, b: 1->2, c: 0->2, d: 2->3, e: 0->3, f: 0->1
+
         sage: C = ConvexCore(G0,G1)
         sage: print(C.isolated_edges())
-        [[7, 9, ('c', 0)]]
+        []
 
     AUTHORS:
 

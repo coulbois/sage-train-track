@@ -319,10 +319,10 @@ class FreeGroupMorphism(object):
 
         """
         if n > 0:
-            from sage.structure.element import generic_power
+            from sage.arith.power import generic_power
             return generic_power(self, n)
         elif n < 0:
-            from sage.structure.element import generic_power
+            from sage.arith.power import generic_power
 
             return generic_power(self.inverse(), -n)
         else:
