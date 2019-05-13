@@ -543,7 +543,7 @@ class GraphSelfMap(GraphMap):
             else:  # the image of e can only be subdivided after subdivisions
                 v = subdivide_morph(u)
                 for i, a in enumerate(subdivide_dict[e]):
-                    result[a] = v[i]
+                    result[a] = [v[i]]
                 result[subdivide_dict[e][-1]] = v[i:]
 
         self.set_edge_map(result)
