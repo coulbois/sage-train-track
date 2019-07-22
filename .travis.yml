@@ -1,7 +1,13 @@
-image: sagemath/sagemath-dev:latest
+#image: sagemath/sagemath-dev:latest
 
-install:
-  - sage -pip install .
+services:
+  - docker
+
+before-install:
+  - docker pull sagemath/sagemath-dev:latest
+
+#install:
+#  - sage -pip install .
 
 script:
-  - sage -t --force-lib train_track
+   - docker run -v$(pwd):/train_track sagemath/sagemath-dev:latest "sage -pip install /train_track; sage -t --force-lib /train_track/train_track"
