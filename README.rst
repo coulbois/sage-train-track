@@ -15,16 +15,16 @@ Installation::
 
   sage -pip install train_track
 
-Warning: it seems that Mac OS X 10.13 has a security conflict between
-SIP and SSL and does not succeed in downloading the package from
-https://pypi.python.org. To overcome this difficulty, just download
-the tarball train_track-0.1.1.tar.gz from
+Warning: it seems that Mac OS X 10.13 and later has a security
+conflict between SIP and SSL and does not succeed in downloading the
+package from https://pypi.python.org. To overcome this difficulty,
+just download the tarball train_track-0.1.2.tar.gz from
 
   https://pypi.python.org/simple/train_track
 
 and run::
 
-  sage -pip install /path/to/train_track-0.1.1.tar.gz
+  sage -pip install /path/to/train_track-0.1.2.tar.gz
 
 Warning: if you lack intstallation privilege, you can install only for
 yourself::
