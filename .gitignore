@@ -10,3 +10,5 @@
 *.blg
 *.ilg
 *.ind
+train_track.egg-info
+dist
