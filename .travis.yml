@@ -1,0 +1,7 @@
+image: sagemath/sagemath-dev:latest
+
+install:
+  - sage -pip install .
+
+script:
+  - sage -t --force-lib train_track
