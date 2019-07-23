@@ -12,3 +12,4 @@
 *.ind
 train_track.egg-info
 dist
+*.yml~

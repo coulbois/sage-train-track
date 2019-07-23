@@ -183,10 +183,8 @@ class AlphabetWithInverses(Parent):
             The iterator is on all the letters of the alphabet (both
             positive and negative). This is NOT consistent with ```len()``.
         """
-        A = AlphabetWithInverses(['a','b','c'], ['A','B','C'])
-
         return iter(self._positive + self._negative)
-        #return iter(self._positive)
+
 
     def copy(self):
         """

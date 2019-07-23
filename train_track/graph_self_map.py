@@ -38,8 +38,6 @@ from sage.rings.qqbar import AA
 from .inverse_alphabet import AlphabetWithInverses
 from .free_group import FreeGroup
 from .free_group_automorphism import FreeGroupAutomorphism
-from sage.graphs.graph import DiGraph
-from sage.graphs.graph import Graph
 from .inverse_graph import GraphWithInverses
 from .marked_graph import MarkedGraph
 
@@ -914,7 +912,6 @@ class GraphSelfMap(GraphMap):
             :meth:`train_track.inverse_graph.GraphWithInverses.fold()`
 
         """
-        A = self._domain.alphabet()
 
         if verbose:
             print("Fold: ", turn, " common prefix ", common_prefix)
@@ -2603,7 +2600,6 @@ class GraphSelfMap(GraphMap):
 
         heritage = {}
 
-        result_strata = []
         shift = 0
         for s in range(len(self._strata)):
             n = self.filtre_stratum(s + shift,
@@ -3645,7 +3641,6 @@ class GraphSelfMap(GraphMap):
             Edge map: a->acb, b->a, c->cdE, d->d, e->dE
             Strata: [set(['d']), set(['e']), set(['c']), set(['a', 'b'])]
         """
-        A = self._domain.alphabet()
 
         if verbose:
             print("Reduction")
@@ -3664,7 +3659,6 @@ class GraphSelfMap(GraphMap):
             s = len(self._strata) - 1
             while s >= 0:
                 if self.is_exponential_stratum(s):
-                    need_reduction = False
                     if s > 0:
 
                         # Core subdivision

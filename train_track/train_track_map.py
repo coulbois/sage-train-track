@@ -32,7 +32,6 @@ from __future__ import print_function, absolute_import
 from .graph_self_map import GraphSelfMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
-from sage.combinat.words.words import FiniteWords
 from sage.graphs.graph import Graph
 from sage.rings.qqbar import AA
 from sage.matrix.constructor import matrix
@@ -1862,7 +1861,7 @@ class TrainTrackMap(GraphSelfMap):
                         left_length_period + sum(a_ab_period)[0]
                     if left_length_period > left:
                         break
-                    left_lenght_period = \
+                    left_length_period = \
                         left_length_period + sum(a_ab_period)[0]
                     left_ab_period = left_ab_period + a_ab_period
                     left_ab_i = left_ab_i + a_ab_i

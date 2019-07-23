@@ -696,7 +696,6 @@ class GraphMap():
         for i, a in enumerate(new_edges):
             v = new_vertices[i]
             if i == 0:
-                vi = G.initial_vertex(e)
                 vt = G.terminal_vertex(e)
                 f = new_edges[i][0]
                 ee = A.inverse_letter(e)
@@ -707,7 +706,6 @@ class GraphMap():
                 result_map[ee] = Word([ff]) * result_map[ee]
                 d[a[0]] = w[i + 1]
             else:
-                vi = self._domain.initial_vertex(new_edges[i - 1][0])
                 vt = self._domain.terminal_vertex(new_edges[i - 1][0])
                 f = new_edges[i][0]
                 # ee=A.inverse_letter(e) #already done
