@@ -709,7 +709,6 @@ class GraphWithInverses(DiGraph):
 
         A = self._alphabet
         core = []
-        tree = []
         outgoing = {}
         for e in edge_list:
             v = self.initial_vertex(e)
