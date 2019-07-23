@@ -65,7 +65,6 @@ from __future__ import print_function
 import six
 from sage.groups.group import Group
 from sage.groups.libgap_wrapper import ParentLibGAP, ElementLibGAP
-from sage.structure.unique_representation import UniqueRepresentation
 from sage.libs.gap.libgap import libgap
 from sage.libs.gap.element import GapElement
 from sage.rings.integer import Integer
@@ -310,10 +309,10 @@ class FreeGroupElement(ElementLibGAP):
         """
         import re
         s = self._repr_()
-        s = re.sub('([a-z]|[A-Z])([0-9]+)', '\g<1>_{\g<2>}', s)
-        s = re.sub('(\^)(-)([0-9]+)', '\g<1>{\g<2>\g<3>}', s)
-        s = re.sub('(\^)([0-9]+)', '\g<1>{\g<2>}', s)
-        s = s.replace('*', '\cdot ')
+        s = re.sub('([a-z]|[A-Z])([0-9]+)', r'\g<1>_{\g<2>}', s)
+        s = re.sub(r'(\^)(-)([0-9]+)', r'\g<1>{\g<2>\g<3>}', s)
+        s = re.sub(r'(\^)([0-9]+)', r'\g<1>{\g<2>}', s)
+        s = s.replace('*', r'\cdot ')
         return s
 
     def __reduce__(self):
@@ -618,7 +617,7 @@ class FreeGroupElement(ElementLibGAP):
 
         - ``*values`` -- a sequence of values, or a
           list/tuple/iterable of the same length as the number of
-          generators of the free group
+          generators of the free group.
 
         OUTPUT:
 
@@ -645,6 +644,35 @@ class FreeGroupElement(ElementLibGAP):
             1/2
             sage: w(i+1 for i in range(2))
             1/2
+
+        Check that :trac:`25017` is fixed::
+
+            sage: F = FreeGroup(2)
+            sage: x0, x1 = F.gens()
+            sage: u = F(1)
+            sage: parent(u.subs({x1:x0})) is F
+            True
+
+            sage: F = FreeGroup(2)
+            sage: x0, x1 = F.gens()
+            sage: u = x0*x1
+            sage: u.subs({x0:3, x1:2})
+            6
+            sage: u.subs({x0:1r, x1:2r})
+            2
+            sage: M0 = matrix(ZZ,2,[1,1,0,1])
+            sage: M1 = matrix(ZZ,2,[1,0,1,1])
+            sage: u.subs({x0: M0, x1: M1})
+            [2 1]
+            [1 1]
+
+        TESTS::
+
+            sage: F.<x,y> = FreeGroup()
+            sage: F.one().subs(x=x, y=1)
+            Traceback (most recent call last):
+            ...
+            TypeError: no common canonical parent for objects with parents: 'Free Group on generators {x, y}' and 'Integer Ring'
         """
         if len(values) == 1:
             try:
@@ -726,7 +754,7 @@ def FreeGroup(n=None, names='x', index_set=None, abelian=False, **kwds):
 
     INPUT:
 
-    - ``n`` -- integer or ``None`` (default). The nnumber of
+    - ``n`` -- integer or ``None`` (default). The number of
       generators. If not specified the ``names`` are counted.
     - ``names`` -- string or list/tuple/iterable of strings (default:
       ``'x'``). The generator names or name prefix.
@@ -891,7 +919,6 @@ class FreeGroup_class(FreeGroup_class_sage):
             sage: G.variable_names()
             ('a', 'b')
         """
-        n = len(generator_names)
         self._assign_names(generator_names)
         if libgap_free_group is None:
             libgap_free_group = libgap.FreeGroup(generator_names)
