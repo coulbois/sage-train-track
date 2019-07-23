@@ -1872,9 +1872,6 @@ class TrainTrackMap(GraphSelfMap):
                         left_periodic_length = \
                             left_periodic_length + sum(M[k * i] * left_ab_i)[0]
                     if left_periodic_length == left:
-                        if verbose:
-                            print("simplified to (", e, ",",
-                                    diviseur, ",", i, ")")
                         period = i
                         left = sum(left_ab_i)[0]
                         simplified = True
@@ -1885,11 +1882,17 @@ class TrainTrackMap(GraphSelfMap):
         if simplified:
             right = sum(M[period - 1].column(
                 A.rank(A.to_positive_letter(e)))) - left - 1
+            if verbose:
+                print("simplified to (", e, ",",
+                      period, ",", left, ",",right,")")
 
         A = self.domain().alphabet()
         if not keep_orientation and not A.is_positive_letter(e):
             e = A.inverse_letter(e)
             left, right = right, left
+            if verbose:
+                print("simplified to (", e, ",",
+                      period, ",", left, ",",right,")")
 
         return (e, period, left, right)
 

@@ -37,8 +37,6 @@ EXAMPLES::
 from __future__ import print_function, absolute_import
 from sage.combinat.words.word import Word
 from sage.graphs.graph import DiGraph
-from .inverse_graph import GraphWithInverses
-from .inverse_alphabet import AlphabetWithInverses
 from .inverse_graph import MetricGraph
 from .graph_map import GraphMap
 from .free_group_automorphism import FreeGroupAutomorphism
@@ -286,8 +284,8 @@ class ConvexCore():
                     v0 =  G0.initial_vertex(signed_ends[b][1][0][-1])
 
                     # we need at least two edges out of v0 without signs
-                    outgoing_from_origin = [a for a in A0 if
-                                            G0.initial_vertex(a) == v0]
+                    outgoing_from_origin = [ao for ao in A0 if
+                                            G0.initial_vertex(ao) == v0]
                     if len(signed_ends[b]) + 1 < len(outgoing_from_origin):
                         isolated_edges.append((
                             common, G1.initial_vertex(b), (b, 1)))  # common
@@ -570,7 +568,7 @@ class ConvexCore():
                     i += 1
 
             i = 0
-            while i < len(isolated_eges):
+            while i < len(isolated_edges):
                 e = isolated_edges[i]
                 if e[2][1] == 1 and G1.length(e[2][0]) == 0:
                     isolated_edges.pop(i)
@@ -668,7 +666,6 @@ class ConvexCore():
         signed_ends = dict((b, []) for b in A1.positive_letters())
 
         for a in A0.positive_letters():
-            aa = A0.inverse_letter(a)
             image_a = f.image(a)
             w = t0[G0.initial_vertex(a)]
             w = G0.reduce_path(g(f(G0.reverse_path(w))) * w)
@@ -726,7 +723,7 @@ class ConvexCore():
                             if verbose:
                                 print(signed_ends[b][i])
                         elif j-i>1 or (
-                                len(signed_end[b])>1 and signed_ends[b][i][0][0]!=signed_ends[b][1-i][0][0]):
+                                len(signed_ends[b])>1 and signed_ends[b][i][0][0]!=signed_ends[b][1-i][0][0]):
                             # the signed ends are outgoing from the origin v0
                             # if v0 is valence 2 then we put the sign on the
                             # same direction as the other signs.
@@ -1604,9 +1601,8 @@ class ConvexCore():
             Graphics object consisting of 28 graphics primitives
         """
         from sage.plot.graphics import Graphics
-        from sage.plot.line import Line, line
+        from sage.plot.line import line
         from sage.plot.text import text
-        from sage.plot.arrow import Arrow
         from sage.rings.real_mpfr import RR
         from numpy import cos
         from numpy import sin
@@ -1796,7 +1792,6 @@ class ConvexCore():
                 if len(tmp_cyclic_0) < 2 * len(A0):
                     while i < len(tmp_cyclic_0):
                         j = i
-                        done = False
                         while True:
                             aa = A0.inverse_letter(tmp_cyclic_0[j])
                             j = 0
@@ -1826,7 +1821,6 @@ class ConvexCore():
                 if len(tmp_cyclic_1) < 2 * len(A1):
                     while i < len(tmp_cyclic_1):
                         j = i
-                        done = False
                         while True:
                             aa = A1.inverse_letter(tmp_cyclic_1[j])
                             j = 0
@@ -1886,10 +1880,10 @@ class ConvexCore():
                    "and cyclic_order_1.")
             print("Possible choices:")
             for cyclic_order in eulerian_circuits:
-                print("side 0:", [e[2][0] for e in cyclic_order if
-                                  e[2][1] == 0])
-                print("side 1:", [e[2][0] for e in cyclic_order if
-                                  e[2][1] == 1])
+                print("side 0:", [eo[2][0] for eo in cyclic_order if
+                                  eo[2][1] == 0])
+                print("side 1:", [eo[2][0] for eo in cyclic_order if
+                                  eo[2][1] == 1])
             print("The first one is chosen")
         elif len(eulerian_circuits) == 0:
             print("There are no eulerian circuit in the boundary "
@@ -2240,8 +2234,8 @@ class ConvexCore():
 
         """
         from sage.plot.graphics import Graphics
-        from sage.plot.line import Line
-        from sage.plot.arrow import Arrow
+        from sage.plot.line import line
+
 
         T0 = self.tree(0)
         T1 = self.tree(1)
