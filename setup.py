@@ -5,7 +5,6 @@ from setuptools import setup
 from codecs import open # To open the README file with proper encoding
 from setuptools.command.test import test as TestCommand # for tests
 
-
 # Get information from separate files (README, VERSION)
 def readfile(filename):
     with open(filename,  encoding='utf-8') as f:
@@ -17,6 +16,8 @@ class SageTest(TestCommand):
         errno = os.system("sage -t --force-lib train_track")
         if errno != 0:
             sys.exit(1)
+
+
 
 setup(
     name = "train_track",
