@@ -29,6 +29,9 @@ EXAMPLES::
 from __future__ import print_function, absolute_import
 from sage.combinat.words.morphism import WordMorphism
 from .free_group import FreeGroup, FreeGroupElement
+from sage.structure.element import Element
+from sage.groups.group import Group
+from sage.structure.unique_representation import UniqueRepresentation
 
 
 class FreeGroupMorphism(object):
@@ -712,8 +715,9 @@ class FreeGroupMorphism(object):
                     other = other * na
                     self = self * na
 
-
-class FreeGroupAutomorphism(FreeGroupMorphism):
+    
+    
+class FreeGroupAutomorphism(Element,FreeGroupMorphism):
     """
     Free group automorphism.
 
@@ -758,7 +762,8 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
             Automorphism of the Free Group on generators {a, b, c}: a->a*b,b->a*c,c->a
 
         """
-        super(FreeGroupAutomorphism, self).__init__(data, domain=domain, codomain=domain)
+        FreeGroupMorphism.__init__(self,data, domain=domain, codomain=domain)
+        Element.__init__(self,AutFN(self.domain()))
 
     def is_invertible(self):
         """
@@ -798,7 +803,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         result = result + "%s" % str(self)
         return result
 
-    def __mul__(self, other):
+    def _mul_(self, other):
 
         """
          Returns the composition self*other.
@@ -838,6 +843,12 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         return FreeGroupMorphism.__mul__(self, other)
 
+    def __invert__(self):
+        """
+        Inverse of ``self``.
+        """
+        return self.inverse()
+        
 
     def simple_outer_representative(self):
         """
@@ -2185,4 +2196,53 @@ class free_group_automorphisms:
         .. [BK] M. Boshernitzan and M. Kornfeld, TODO
         """
         return FreeGroupAutomorphism("a->b,b->caaa,c->caa")
+
+class AutFN(Group,UniqueRepresentation):
+    """
+    A Group of automorphisms of a free group.
+    """
+                    
+
+    def __init__(self,F):
+        """
+        Initialize ``self``.
+        """
+
+        self._F = F
+        Group.__init__(self)
+
+    def _repr_(self):
+        """
+        Return a string representation of ``self``.
+        """
+        return "Group of automorphisms of "+str(self._F)
+
+    def _element_constructor(self, phi):
+        """
+        """
+        return self.element_class(self,phi)
+
+    def one(self):
+        """
+        Neutral element of ``self``.
+
+        This is the identity automorphism of the free group ``self._F``.
+
+        OUTPUT:
+
+        EXAMPLES::
+
+            sage: from train_track import *
+            sage: from train_track.free_group_automorphism import AutFN
+            sage: F = FreeGroup('a,b,c')
+            sage: G = AutFN(F)
+            sage: G.one()
+            Automorphism of the Free Group on generators {a, b, c}: a->a,b->b,c->c
+
+        """
+        morph = dict((a, a) for a in self._F.gens())
+
+        return self.element_class(morph, domain=self._F)
+
+    Element = FreeGroupAutomorphism
 
