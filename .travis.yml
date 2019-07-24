@@ -1,5 +1,9 @@
 #image: sagemath/sagemath-dev:latest
 
+branches:
+  only:
+    - master
+
 services:
   - docker
 
