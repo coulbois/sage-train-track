@@ -10,4 +10,4 @@ before-install:
 #  - sage -pip install .
 
 script:
-   - docker run -v$(pwd):/train_track sagemath/sagemath-dev:latest "sage -pip install /train_track; sage -t --force-lib /train_track/train_track"
+   - docker run -v$(pwd):/train_track sagemath/sagemath-dev:latest /bin/sh -c "sage -pip install /train_track; sage -t --force-lib /train_track/train_track"
