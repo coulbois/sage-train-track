@@ -645,34 +645,6 @@ class FreeGroupElement(ElementLibGAP):
             sage: w(i+1 for i in range(2))
             1/2
 
-        Check that :trac:`25017` is fixed::
-
-            sage: F = FreeGroup(2)
-            sage: x0, x1 = F.gens()
-            sage: u = F(1)
-            sage: parent(u.subs({x1:x0})) is F
-            True
-
-            sage: F = FreeGroup(2)
-            sage: x0, x1 = F.gens()
-            sage: u = x0*x1
-            sage: u.subs({x0:3, x1:2})
-            6
-            sage: u.subs({x0:1r, x1:2r})
-            2
-            sage: M0 = matrix(ZZ,2,[1,1,0,1])
-            sage: M1 = matrix(ZZ,2,[1,0,1,1])
-            sage: u.subs({x0: M0, x1: M1})
-            [2 1]
-            [1 1]
-
-        TESTS::
-
-            sage: F.<x,y> = FreeGroup()
-            sage: F.one().subs(x=x, y=1)
-            Traceback (most recent call last):
-            ...
-            TypeError: no common canonical parent for objects with parents: 'Free Group on generators {x, y}' and 'Integer Ring'
         """
         if len(values) == 1:
             try:
