@@ -21,7 +21,6 @@ AUTHORS:
 #*****************************************************************************
 
 from __future__ import print_function, absolute_import
-from .free_group import FreeGroup
 from .free_group_automorphism import FreeGroupAutomorphism
 from sage.misc.misc import cputime
 
