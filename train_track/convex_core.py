@@ -1009,8 +1009,8 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
             sage: print(C.tree(0))
             Marked graph: a: 0->0, b: 0->0, c: 0->0
             Marking: a->a, b->b, c->c
@@ -1034,8 +1034,8 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
             sage: C.squares()
             [[3, 0, 2, 1, 'c', 'a']]
 
@@ -1055,8 +1055,8 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
             sage: C.twice_light_squares()
             [[1, 4, 0, 5, 'a', 'c']]
         """
@@ -1078,8 +1078,8 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
             sage: C.edges()
              [[3, 1, ('a', 1)],
               [1, 0, ('b', 0)],
@@ -1109,8 +1109,8 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
             sage: C.vertices()
             [0, 1, 2, 3]
 
@@ -1129,8 +1129,8 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
             sage: C.isolated_edges()
             [[2, 3, ('b', 1)], [1, 0, ('b', 0)]]
 
@@ -1163,8 +1163,8 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
             sage: print(C.slice('c',0))
             Looped multi-digraph on 2 vertices
         """
@@ -1202,8 +1202,8 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
             sage: C.one_squeleton(0)
             Looped multi-digraph on 4 vertices
 
@@ -1251,8 +1251,8 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
             sage: C.volume()
             1
         """
@@ -2226,9 +2226,9 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: F=FreeGroup('a,b,c,d')
-            sage: phi=mul([FreeGroupAutomorphism.surface_dehn_twist(F,i) for i in [2,1,1,4]])
-            sage: C=ConvexCore(phi)
+            sage: F = FreeGroup('a,b,c,d')
+            sage: phi = mul([FreeGroupAutomorphism.surface_dehn_twist(F,i) for i in [2,1,1,4]])
+            sage: C = ConvexCore(phi)
             sage: C.plot_punctured_disc_ideal_curves()  # todo: not implemented
 
 

@@ -35,6 +35,7 @@ from .graph_map import GraphMap
 from sage.combinat.words.morphism import WordMorphism
 from sage.combinat.words.word import Word
 from sage.rings.qqbar import AA
+from sage.groups.free_group import FreeGroup
 from .inverse_alphabet import AlphabetWithInverses
 from .free_group_automorphism import FreeGroupAutomorphism
 from .inverse_graph import GraphWithInverses

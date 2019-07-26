@@ -28,7 +28,7 @@ EXAMPLES::
 
 from __future__ import print_function, absolute_import
 from sage.combinat.words.morphism import WordMorphism
-from sage.groups.free_group import FreeGroupElement
+from sage.groups.free_group import FreeGroup, FreeGroupElement
 
 class FreeGroupMorphism(object):
     def __init__(self, data, domain=None, codomain=None):

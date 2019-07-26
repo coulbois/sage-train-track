@@ -461,6 +461,7 @@ class GraphMap():
             edge map: a->abcB, b->bCB
         """
 
+        from sage.groups.free_group import FreeGroup
         from .free_group_automorphism import FreeGroupAutomorphism
 
         G1 = self.domain()
