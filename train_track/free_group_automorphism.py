@@ -339,7 +339,7 @@ class FreeGroupMorphism(object):
         EXAMPLES::
 
             sage: from train_track import *
-            sage: phi = FreeGroupAutomorphism('a->ab,b->A')
+            sage: phi = FreeGroupMorphism('a->ab,b->A')
             sage: phi.__str__()
             'a->a*b,b->a^-1'
             sage: print(phi)
@@ -759,6 +759,13 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         """
         super(FreeGroupAutomorphism, self).__init__(data, domain=domain, codomain=domain)
+        
+        if domain is not None:
+            for g in domain.gens():
+                if g not in self._morph:
+                    self._morph[g] = g
+                    self._morph[g.inverse()] = g.inverse()
+                    
 
     def is_invertible(self):
         """
@@ -777,6 +784,30 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
         """
         return True
 
+    def __str__(self):
+        """
+        String representation.
+
+        OUTPUT:
+
+        a string representation
+
+        EXAMPLES::
+
+            sage: from train_track import *
+            sage: phi = FreeGroupAutomorphism('a->ab,b->A')
+            sage: phi.__str__()
+            'a->a*b,b->a^-1'
+            sage: print(phi)
+            a->a*b,b->a^-1
+
+        """
+        result = ""
+        for letter in self.domain().gens():
+            if letter != self(letter):
+                result += str(letter) + "->" + str(self(letter)) + ","
+        return result[:-1]
+    
     def __repr__(self):
         """
         String representation.
