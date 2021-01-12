@@ -1511,8 +1511,8 @@ class MetricGraph(GraphWithInverses):
         if lengths is None:
             lengths = dict((a, 1) for a in self.alphabet())
         else:
-            for a in lengths.keys():
-                lengths[self.alphabet().inverse_letter(a)] = lengths[a]
+            invert = self.alphabet().inverse_letter
+            lengths.update([(invert(a), l) for a,l in lengths.items()])
 
         self._length = lengths
 

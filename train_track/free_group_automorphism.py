@@ -27,10 +27,13 @@ EXAMPLES::
 # *****************************************************************************
 
 from __future__ import print_function, absolute_import
+
+import functools
+
 from sage.combinat.words.morphism import WordMorphism
 from .free_group import FreeGroup, FreeGroupElement
 
-
+@functools.total_ordering
 class FreeGroupMorphism(object):
     def __init__(self, data, domain=None, codomain=None):
         r"""
@@ -372,31 +375,39 @@ class FreeGroupMorphism(object):
         """
         return "Morphism from {} to {}: {}".format(self._domain, self._codomain, str(self))
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+
+        return self.domain() == other.domain() and \
+               self.codomain() == other.codomain() and \
+               all(self(a) == other(a) for a in self.domain().gens())
+
+    def __lt__(self, other):
         """
         EXAMPLES::
 
             sage: from train_track import *
             sage: phi1 = FreeGroupMorphism('a->ab,b->A')
             sage: phi2 = FreeGroupMorphism('a->aba,b->Ab')
-            sage: phi1==phi2
+            sage: phi1 == phi2
             False
-            sage: phi1<=phi2
+            sage: phi1 <= phi2
             True
-
         """
-        if not isinstance(other, FreeGroupMorphism):
-            return ((self.__class__ > other.__class__) -(self.__class__ < other.__class__))
+        if type(self) is not type(other):
+            return NotImplemented
+
         if self.domain() != other.domain():
-            return ((self.domain() > other.domain()) - (self.domain() < other.domain()))
+            return self.domain() < other.domain()
         if self.codomain() != other.codomain():
-            return ((self.codomain() > other.codomain()) -(self.codomain() < other.codomain()))
+            return self.codomain() < other.codomain()
 
         for a in self.domain().gens():
-            test = ((self(a) > other(a)) - (self(a) < other(a)))
-            if test:
-                return test
-        return 0
+            if self(a) != other(a):
+                return self(a) < other(a)
+
+        return False
 
     def domain(self):
         """

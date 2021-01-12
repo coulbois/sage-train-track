@@ -1442,10 +1442,13 @@ class TrainTrackMap(GraphSelfMap):
 
             sage: from train_track import *
             sage: from train_track.train_track_map import TrainTrackMap
-            sage: phi=FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
-            sage: f=TrainTrackMap(phi.rose_representative())
-            sage: f.ideal_whitehead_graph()
+            sage: phi = FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
+            sage: f = TrainTrackMap(phi.rose_representative())
+            sage: G = f.ideal_whitehead_graph()
+            sage: G
             Graph on 6 vertices
+            sage: G.vertices(sort=False)
+            ['B', 'C', 'b', 'c', 'loop', word: aBCAbc]
 
         .. WARNING:
 
@@ -1676,8 +1679,11 @@ class TrainTrackMap(GraphSelfMap):
 
         .. [Pfaff] C. Pfaff, Out(F_3) Index realization, arXiv:1311.4490.
         """
+        # NOTE: the vertices of the ideal Whitehead graph are a mix of strings and
+        # FiniteWord. These can not be compared and many graph algorithms just fail
+        # because of that.
         l = [len(c) - 2
-             for c in self.ideal_whitehead_graph().connected_components()]
+            for c in self.ideal_whitehead_graph().connected_components(sort=False)]
         return [i for i in l if i > 0]
 
     def blow_up_vertices(self, germ_components):
