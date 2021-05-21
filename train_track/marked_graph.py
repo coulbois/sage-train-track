@@ -495,8 +495,8 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
         if length is None:
             length = dict((a, 1) for a in self.alphabet())
         else:
-            for a in length.keys():
-                length[self.alphabet().inverse_letter(a)] = length[a]
+            invert = self.alphabet().inverse_letter
+            length.update([(invert(a), l) for a, l in length.items()])
 
         self._length = length
 

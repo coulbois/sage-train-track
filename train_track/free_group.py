@@ -259,7 +259,7 @@ class FreeGroupElement(ElementLibGAP):
                 else:
                     i = i+1
             AbstractWordTietzeWord = libgap.eval('AbstractWordTietzeWord')
-            x = AbstractWordTietzeWord(l, parent._gap_gens())
+            x = AbstractWordTietzeWord(l, parent.gap().GeneratorsOfGroup())
         ElementLibGAP.__init__(self, parent, x)
 
     def __hash__(self):
@@ -963,7 +963,7 @@ class FreeGroup_class(FreeGroup_class_sage):
             sage: G([1, 2, -2, 1, 1, -2]) # indirect doctest
             a^3*b^-1
 
-            sage: G( G._gap_gens()[0] )
+            sage: G( G.gap().GeneratorsOfGroup()[0] )
             a
             sage: type(_)
             <class 'train_track.free_group.FreeGroup_class_with_category.element_class'>
