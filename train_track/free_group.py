@@ -268,9 +268,8 @@ class FreeGroupElement(ElementLibGAP):
 
             sage: from train_track import *
             sage: G.<a,b> = FreeGroup()
-            sage: hash(a*b*b*~a)
-            -485698212495963022 # 64-bit
-            -1876767630         # 32-bit
+            sage: hash(a*b*b*~a) # random
+            -1876767630
         """
         return hash(self.Tietze())
 
@@ -409,9 +408,9 @@ class FreeGroupElement(ElementLibGAP):
         TESTS::
 
             sage: type(a.Tietze())
-            <... 'tuple'>
+            <class 'tuple'>
             sage: type(a.Tietze()[0])
-            <type 'sage.rings.integer.Integer'>
+            <class 'sage.rings.integer.Integer'>
         """
         tl = self.gap().TietzeWordAbstractWord()
         return tuple(tl.sage())
@@ -830,7 +829,7 @@ def wrap_FreeGroup(libgap_free_group):
 
         sage: F = libgap.FreeGroup(['a', 'b'])
         sage: type(F)
-        <type 'sage.libs.gap.element.GapElement'>
+        <class 'sage.libs.gap.element.GapElement'>
 
     Now wrap it::
 

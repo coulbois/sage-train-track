@@ -19,13 +19,13 @@ EXAMPLES::
     sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")
     sage: C = ConvexCore(phi)
     sage: C.vertices()
-    [0, 1]
+    range(0, 2)
     sage: A = AlphabetWithInverses(2)
     sage: G1 = MarkedGraph(GraphWithInverses.rose_graph(A))
     sage: G2 = MarkedGraph(GraphWithInverses.rose_graph(A))
     sage: C = ConvexCore(G1, G2)
     sage: C.vertices()
-    [0]
+    range(0, 1)
 """
 # *****************************************************************************
 #       Copyright (C) 2013 Matt Clay and Thierry Coulbois
@@ -106,7 +106,7 @@ class ConvexCore():
         Looped multi-digraph on 2 vertices
 
         sage: C.vertices()
-        [0, 1, 2, 3]
+        range(0, 4)
 
         sage: C.squares()
         [[3, 0, 2, 1, 'c', 'a']]
@@ -642,7 +642,9 @@ class ConvexCore():
             sage: C = ConvexCore(phi)
             sage: C._build_signed_ends()
             sage: print(C._signed_ends)
-            {'a': [(word: Ca, '+'), (word: Cb, '+'), (word: a, '+'), (word: b, '+'), (word: c, '+')], 'c': [(word: Ba, '+')], 'b': [(word: Bca, '+'), (word: Bcb, '+'), (word: Bcc, '+')]}
+            {'a': [(word: Ca, '+'), (word: Cb, '+'), (word: a, '+'), (word: b, '+'), (word: c, '+')],
+             'b': [(word: Bca, '+'), (word: Bcb, '+'), (word: Bcc, '+')],
+             'c': [(word: Ba, '+')]}
         """
 
         G0 = self._G0
@@ -1078,18 +1080,16 @@ class ConvexCore():
 
             sage: from train_track import *
             sage: from train_track.convex_core import ConvexCore
-            sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
-            sage: C=ConvexCore(phi)
-            sage: C.edges()
-             [[3, 1, ('a', 1)],
+            sage: phi = FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
+            sage: C = ConvexCore(phi)
+            sage: sorted(C.edges())
+             [[0, 2, ('a', 1)],
               [1, 0, ('b', 0)],
-              [2, 3, ('b', 1)],
               [1, 2, ('c', 0)],
-              [0, 2, ('a', 1)],
-              [3, 0, ('c', 0)]]
-
+              [2, 3, ('b', 1)],
+              [3, 0, ('c', 0)],
+              [3, 1, ('a', 1)]]
         """
-
         return self._edges
 
     def vertices(self):
@@ -1112,8 +1112,7 @@ class ConvexCore():
             sage: phi=FreeGroupAutomorphism("a->ab,b->ac,c->a")**2
             sage: C=ConvexCore(phi)
             sage: C.vertices()
-            [0, 1, 2, 3]
-
+            range(0, 4)
         """
         return self._vertices
 
@@ -1301,11 +1300,8 @@ class ConvexCore():
             sage: from train_track.convex_core import ConvexCore
             sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
             sage: C = ConvexCore(phi)
-            sage: C.squares_of_the_boundary()
-            [(2, 0), (4, 2), (8, 1), (1, 1), (5, 3), (6, 3), (0, 0), (3, 2)]
-            sage: C.squares_of_the_boundary(verbose=True)
-            [(2, 0), (4, 2), (8, 1), (1, 1), (5, 3), (6, 3), (0, 0), (3, 2)]
-
+            sage: sorted(C.squares_of_the_boundary())
+            [(0, 0), (1, 1), (2, 0), (3, 2), (4, 2), (5, 3), (6, 3), (8, 1)]
         """
 
         valence = dict(((e[0], e[1], e[2]), True) for e in self.edges())
@@ -1461,41 +1457,23 @@ class ConvexCore():
             sage: from train_track.convex_core import ConvexCore
             sage: phi = FreeGroupAutomorphism("a->abaababa,b->abaab")
             sage: C = ConvexCore(phi)
-            sage: C.surface_boundary()
-            [(8, 0, ('b', 0, -1)),
+            sage: sorted(C.surface_boundary())
+            [(0, 1, ('A', 0, -1)),
              (0, 8, ('B', 0, 1)),
-             (3, 2, ('a', 0, -1)),
-             (2, 3, ('A', 0, 1)),
-             (7, 8, ('b', 1, -1)),
-             (8, 7, ('B', 1, 1)),
-             (2, 7, ('a', 1, -1)),
-             (7, 2, ('A', 1, 1)),
-             (11, 1, ('a', 1, 1)),
-             (1, 11, ('A', 1, -1)),
-             (4, 11, ('b', 1, 1)),
-             (11, 4, ('B', 1, -1)),
              (1, 0, ('a', 0, 1)),
-             (0, 1, ('A', 0, -1)),
+             (1, 11, ('A', 1, -1)),
+             (2, 3, ('A', 0, 1)),
+             (2, 7, ('a', 1, -1)),
+             (3, 2, ('a', 0, -1)),
              (3, 4, ('b', 0, 1)),
-             (4, 3, ('B', 0, -1))]
-             sage: C.surface_boundary(verbose=True)
-             [(8, 0, ('b', 0, -1)),
-              (0, 8, ('B', 0, 1)),
-              (3, 2, ('a', 0, -1)),
-              (2, 3, ('A', 0, 1)),
-              (7, 8, ('b', 1, -1)),
-              (8, 7, ('B', 1, 1)),
-              (2, 7, ('a', 1, -1)),
-              (7, 2, ('A', 1, 1)),
-              (11, 1, ('a', 1, 1)),
-              (1, 11, ('A', 1, -1)),
-              (4, 11, ('b', 1, 1)),
-              (11, 4, ('B', 1, -1)),
-              (1, 0, ('a', 0, 1)),
-              (0, 1, ('A', 0, -1)),
-              (3, 4, ('b', 0, 1)),
-              (4, 3, ('B', 0, -1))]
-
+             (4, 3, ('B', 0, -1)),
+             (4, 11, ('b', 1, 1)),
+             (7, 2, ('A', 1, 1)),
+             (7, 8, ('b', 1, -1)),
+             (8, 0, ('b', 0, -1)),
+             (8, 7, ('B', 1, 1)),
+             (11, 1, ('a', 1, 1)),
+             (11, 4, ('B', 1, -1))]
         """
 
         if orientation is None:

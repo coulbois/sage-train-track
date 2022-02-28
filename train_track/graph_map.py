@@ -19,9 +19,9 @@ EXAMPLES::
     sage: H = GraphWithInverses.rose_graph(A)
     sage: print(GraphMap(G,H,"a->ab,b->b,c->B"))
     Graph map:
-    a: 0->0, c: 1->0, b: 0->1
+    a: 0->0, b: 0->1, c: 1->0
     a: 0->0, b: 0->0
-    edge map: a->ab, c->B, b->b
+    edge map: a->ab, b->b, c->B
 """
 #
 # *****************************************************************************
