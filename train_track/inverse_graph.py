@@ -13,7 +13,7 @@ EXAMPLES::
 
     sage: from train_track.inverse_graph import GraphWithInverses
     sage: print(GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)}))
-    a: 0->0, c: 1->0, b: 0->1
+    a: 0->0, b: 0->1, c: 1->0
 
     sage: from train_track.inverse_graph import MetricGraph
     sage: print(MetricGraph([[0,0,'a'],[0,1,'b'],[1,1,'c']]))
@@ -56,7 +56,7 @@ class GraphWithInverses(DiGraph):
         sage: print(GraphWithInverses())
 
         sage: print(GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)}))
-        a: 0->0, c: 1->0, b: 0->1
+        a: 0->0, b: 0->1, c: 1->0
 
         sage: print(GraphWithInverses([[0,0,'a'],[0,1,'b'],[1,0,'c']]))
         a: 0->0, b: 0->1, c: 1->0
@@ -80,7 +80,7 @@ class GraphWithInverses(DiGraph):
 
             sage: from train_track.inverse_graph import GraphWithInverses
             sage: print(GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)}))
-            a: 0->0, c: 1->0, b: 0->1
+            a: 0->0, b: 0->1, c: 1->0
         """
         self._initial = {}
         self._terminal = {}
@@ -147,7 +147,7 @@ class GraphWithInverses(DiGraph):
             sage: from train_track.inverse_graph import GraphWithInverses
             sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
             sage: print (G.copy())
-            a: 0->0, c: 1->0, b: 0->1
+            a: 0->0, b: 0->1, c: 1->0
         """
         return self.__class__(self, alphabet=self._alphabet)
 
@@ -160,7 +160,7 @@ class GraphWithInverses(DiGraph):
             sage: from train_track.inverse_graph import GraphWithInverses
             sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
             sage: G.__repr__()
-            'Graph with inverses: a: 0->0, c: 1->0, b: 0->1'
+            'Graph with inverses: a: 0->0, b: 0->1, c: 1->0'
         """
         result = "Graph with inverses: "
         for a in self._alphabet.positive_letters():
@@ -178,9 +178,9 @@ class GraphWithInverses(DiGraph):
             sage: from train_track.inverse_graph import GraphWithInverses
             sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
             sage: str(G)
-            'a: 0->0, c: 1->0, b: 0->1'
+            'a: 0->0, b: 0->1, c: 1->0'
             sage: G.__str__()
-            'a: 0->0, c: 1->0, b: 0->1'
+            'a: 0->0, b: 0->1, c: 1->0'
         """
         result = ""
         for a in self._alphabet.positive_letters():
@@ -201,9 +201,9 @@ class GraphWithInverses(DiGraph):
             Alphabet with inverses on ['a', 'b', 'c']
             sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
             sage: print(G)
-            a: 0->0, c: 1->0, b: 0->1
+            a: 0->0, b: 0->1, c: 1->0
             sage: G.alphabet()
-            Alphabet with inverses on ['a', 'c', 'b']
+            Alphabet with inverses on ['a', 'b', 'c']
         """
 
         return self._alphabet

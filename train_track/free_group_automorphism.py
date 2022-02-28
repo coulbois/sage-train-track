@@ -498,12 +498,12 @@ class FreeGroupMorphism(object):
             sage: f.to_word_morphism()
             WordMorphism: a->a^-1,d^-1, a^-1->da, b->a^-1,d,a,c, b^-1->c^-1,a^-1,d^-1,a, c->bd, c^-1->d^-1,b^-1, d->c, d^-1->c^-1
             sage: f.to_word_morphism().periodic_points()
-                [[word: a^-1,d,a,c,c,c,a^-1,d^-1,d^-1,b^-1,d,a,c,a^-1,d^-1,b,d,b,d,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,b,d,d,a,c^-1,a^-1,d,a,...,
-                  word: d,a,c,a^-1,d^-1,b,d,b,d,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,b,d,d,a,c^-1,a^-1,d,a,c,c,a^-1,d,a,c,c,a^-1,d,a,...,
-                  word: c,a^-1,d^-1,b,d,d,a,c^-1,a^-1,d,a,c,c,a^-1,d,a,c,c,a^-1,d,a,c,c,c,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,b,d,d,...,
-                  word: b,d,d,a,c^-1,a^-1,d,a,c,c,c,a^-1,d^-1,d^-1,b^-1,d,a,c,a^-1,d^-1,b,d,b,d,d,a,c,a^-1,d^-1,b,d,b,d,d,a,c,a^-1,d^-1,b,d,...],
-                 [word: d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,...,
-                   word: c^-1,c^-1,a^-1,d^-1,a,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d,a,c^-1,a^-1,d,a,c,...]]
+               [[word: a^-1,d,a,c,c,c,a^-1,d^-1,d^-1,b^-1,d,a,c,a^-1,d^-1,b,d,b,d,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,b,d,d,a,c^-1,a^-1,d,a,...,
+                 word: d,a,c,a^-1,d^-1,b,d,b,d,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,b,d,d,a,c^-1,a^-1,d,a,c,c,a^-1,d,a,c,c,a^-1,d,a,...,
+                 word: c,a^-1,d^-1,b,d,d,a,c^-1,a^-1,d,a,c,c,a^-1,d,a,c,c,a^-1,d,a,c,c,c,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,b,d,d,...,
+                 word: b,d,d,a,c^-1,a^-1,d,a,c,c,c,a^-1,d^-1,d^-1,b^-1,d,a,c,a^-1,d^-1,b,d,b,d,d,a,c,a^-1,d^-1,b,d,b,d,d,a,c,a^-1,d^-1,b,d,...],
+                [word: c^-1,c^-1,a^-1,d^-1,a,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d,a,c^-1,a^-1,d,a,c,...,
+                 word: d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,a^-1,d^-1,b,d,d,a,c^-1,c^-1,c^-1,a^-1,d^-1,a,c,a^-1,d^-1,d^-1,b^-1,d^-1,b^-1,d^-1,b^-1,d,a,c^-1,...]]
         """
         F = self._domain
         A = F.gens()

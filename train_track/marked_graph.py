@@ -15,7 +15,7 @@ EXAMPLES::
     sage: from train_track.marked_graph import MarkedGraph
     sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
     sage: print(MarkedGraph(G))
-    Marked graph: a: 0->0, c: 1->0, b: 0->1
+    Marked graph: a: 0->0, b: 0->1, c: 1->0
     Marking: a->a, b->bc
 """
 
@@ -50,7 +50,7 @@ class MarkedGraph(GraphWithInverses):
         sage: from train_track.marked_graph import MarkedGraph
         sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
         sage: print(MarkedGraph(G))
-        Marked graph: a: 0->0, c: 1->0, b: 0->1
+        Marked graph: a: 0->0, b: 0->1, c: 1->0
         Marking: a->a, b->bc
 
     AUTHORS:
@@ -82,7 +82,7 @@ class MarkedGraph(GraphWithInverses):
             sage: G = GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
             sage: M = MarkedGraph(graph=G)
             sage: print(M)
-            Marked graph: a: 0->0, c: 1->0, b: 0->1
+            Marked graph: a: 0->0, b: 0->1, c: 1->0
             Marking: a->a, b->bc
             sage: A = AlphabetWithInverses(2)
             sage: G = GraphWithInverses.rose_graph(A)
@@ -157,10 +157,10 @@ class MarkedGraph(GraphWithInverses):
             sage: from train_track.marked_graph import MarkedGraph
             sage: G=GraphWithInverses({'a':(0,0),'b':(0,1),'c':(1,0)})
             sage: print(MarkedGraph(G))
-            Marked graph: a: 0->0, c: 1->0, b: 0->1
+            Marked graph: a: 0->0, b: 0->1, c: 1->0
             Marking: a->a, b->bc
             sage: MarkedGraph(G).__str__()
-            'Marked graph: a: 0->0, c: 1->0, b: 0->1\nMarking: a->a, b->bc'
+            'Marked graph: a: 0->0, b: 0->1, c: 1->0\nMarking: a->a, b->bc'
         """
         result = "Marked graph: "
         for a in self._alphabet.positive_letters():
@@ -191,7 +191,7 @@ class MarkedGraph(GraphWithInverses):
             sage: print(G.marking())
             Graph map:
             a: 0->0, b: 0->0
-            a: 0->0, c: 1->0, b: 0->1
+            a: 0->0, b: 0->1, c: 1->0
             edge map: a->a, b->bc
         """
         return self._marking
@@ -214,7 +214,7 @@ class MarkedGraph(GraphWithInverses):
             sage: G=MarkedGraph(G)
             sage: phi=FreeGroupAutomorphism("a->aba,b->ab")
             sage: print(G.precompose(phi))
-            Marked graph: a: 0->0, c: 1->0, b: 0->1
+            Marked graph: a: 0->0, b: 0->1, c: 1->0
             Marking: a->abca, b->abc
         """
         edge_map = dict()
@@ -248,9 +248,9 @@ class MarkedGraph(GraphWithInverses):
             sage: H=MarkedGraph(H)
             sage: print(G.difference_of_marking(H))
             Graph map:
-            a: 0->0, c: 1->0, b: 0->1
+            a: 0->0, b: 0->1, c: 1->0
             a: 0->0, b: 0->1, c: 1->1
-            edge map: a->a, c->, b->bcB
+            edge map: a->a, b->, c->bcB
         """
 
         return other.marking() * self.marking().inverse()
@@ -463,9 +463,10 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
         sage: G = MarkedGraph(G)
         sage: G = MarkedMetricGraph(G)
         sage: print(G)
-        Marked graph: a: 0->0, c: 1->0, b: 0->1
+        Marked graph: a: 0->0, b: 0->1, c: 1->0
         Marking: a->a, b->bc
-        Length: a:1, c:1, b:1
+        Length: a:1, b:1, c:1
+
     """
 
     def __init__(self, graph=None, marking=None, length=None, alphabet=None,
@@ -481,9 +482,9 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
             sage: G = MarkedGraph(G)
             sage: G = MarkedMetricGraph(G)
             sage: print(G)
-            Marked graph: a: 0->1, c: 1->0, b: 1->1
-            Marking: a->ac, b->abA
-            Length: a:1, c:1, b:1
+            Marked graph: a: 0->1, b: 1->1, c: 1->0
+            Marking: a->abA, b->ac
+            Length: a:1, b:1, c:1
 
         """
 
@@ -516,7 +517,7 @@ class MarkedMetricGraph(MarkedGraph, MetricGraph):
             sage: G = MarkedGraph(G)
             sage: G = MarkedMetricGraph(G)
             sage: G.__str__()
-            'Marked graph: a: 0->0, c: 1->0, b: 0->1\nMarking: a->a, b->bc\nLength: a:1, c:1, b:1'
+            'Marked graph: a: 0->0, b: 0->1, c: 1->0\nMarking: a->a, b->bc\nLength: a:1, b:1, c:1'
         """
         result = MarkedGraph.__str__(self) + "\n"
         result += "Length: "
