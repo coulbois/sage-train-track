@@ -2218,7 +2218,7 @@ class GraphSelfMap(GraphMap):
             Marking: a->eadeadebdea, b->eadeadeb, c->c, d->d
             Edge map: a->adebdea, b->bdeadcdeadeadebdeadeadeadeb,
             c->eadeadebdeadeadeadebdeadeadebdeadc, d->d, e->eade
-            Strata: [set(['d']), set(['a', 'c', 'b', 'e'])]
+            Strata: [{'d'}, {'a', 'c', 'b', 'e'}]
 
         .. WARNING::
 
@@ -2540,7 +2540,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->0
             Marking: a->a, b->b
             Edge map: a->ab, b->b
-            Strata: [set(['b']), set(['a'])]
+            Strata: [{'b'}, {'a'}]
 
         .. SEEALSO::
 
@@ -2729,7 +2729,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->1, c: 0->0, d: 1->0
             Marking: a->a, b->bd, c->c
             Edge map: a->abd, b->c, c->c, d->a
-            Strata: [set(['c']), set(['b']), set(['a', 'd'])]
+            Strata: [{'c'}, {'b'}, {'a', 'd'}]
         """
         A = self._domain.alphabet()
         Dfinverse = dict((e, []) for e in self._strata[s])
@@ -3476,7 +3476,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->0, c: 0->2, e: 2->3, f: 3->0
             Marking: a->a, b->cefb, c->Bcefb
             Edge map: a->acefb, b->a, c->cef, e->cef, f->FEC
-            Strata: [set(['c', 'e', 'f']), set(['a', 'b'])]
+            Strata: [{'c', 'e', 'f'}, {'a', 'b'}]
         """
         G = self._domain
         A = G.alphabet()
@@ -3639,7 +3639,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0, e: 0->0
             Marking: a->a, b->b, c->c, d->dE, e->e
             Edge map: a->acb, b->a, c->cdE, d->d, e->dE
-            Strata: [set(['d']), set(['e']), set(['c']), set(['a', 'b'])]
+            Strata: [{'d'}, {'e'}, {'c'}, {'a', 'b'}]
         """
 
         if verbose:
@@ -3797,7 +3797,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0, e: 0->0
             Marking: a->a, b->b, c->c, d->dE, e->e
             Edge map: a->acb, b->a, c->cdE, d->d, e->dE
-            Strata: [set(['d']), set(['e']), set(['c']), set(['a', 'b'])]
+            Strata: [{'d'}, {'e'}, {'c'}, {'a', 'b'}]
         """
 
         G = self._domain
