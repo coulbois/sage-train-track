@@ -2130,7 +2130,7 @@ class GraphSelfMap(GraphMap):
             [{'d'}, {'a', 'b', 'c', 'd'}]
             sage: inps = f.relative_indivisible_nielsen_paths(stratum=1)
             sage: f.relative_inessential_inp(inps=inps, stratum=1)
-            [word: adb, word: bda]
+            [word: bda, word: cda]
 
         .. WARNING::
 
