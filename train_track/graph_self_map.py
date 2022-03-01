@@ -17,7 +17,7 @@ EXAMPLES::
     sage: f = GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae", A)
     sage: print(f)
     Graph self map:
-    Marked graph: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
+    Marked graph: a: 0->0, b: 1->1, c: 2->2, d: 0->1, e: 0->2
     Marking: a->a, b->dbD, c->ecE
     Edge map: a->a, b->b, c->c, d->eCEAd, e->eCEAdbDaecEae
 
@@ -75,7 +75,7 @@ class GraphSelfMap(GraphMap):
         sage: f = GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->eCEAdbDaecEae",A)
         sage: print(f)
         Graph self map:
-        Marked graph: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
+        Marked graph: a: 0->0, b: 1->1, c: 2->2, d: 0->1, e: 0->2
         Marking: a->a, b->dbD, c->ecE
         Edge map: a->a, b->b, c->c, d->eCEAd, e->eCEAdbDaecEae
 
@@ -184,7 +184,7 @@ class GraphSelfMap(GraphMap):
             sage: from train_track.graph_self_map import GraphSelfMap
             sage: print(GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae"))
             Graph self map:
-            Marked graph: a: 0->0, b: 2->2, c: 1->1, d: 0->2, e: 0->1
+            Marked graph: a: 0->0, b: 1->1, c: 2->2, d: 0->1, e: 0->2
             Marking: a->a, b->dbD, c->ecE
             Edge map: a->a, b->b, c->c, d->eCEAd, e->dbDae
             sage: print(GraphSelfMap.from_edge_map("a->a,b->b,c->c,d->eCEAd,e->dbDae",path="ab"))

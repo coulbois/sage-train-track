@@ -770,7 +770,7 @@ class GraphMap():
 
         The domain of ``self`` is fold until we get an
         immersion. Intended to be used to compute the pullback of two
-        graph maps and the intersection of subgroupes of a free group.
+        graph maps and the intersection of subgroups of a free group.
 
         ALGORITHM:
 
