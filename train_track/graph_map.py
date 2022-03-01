@@ -794,9 +794,9 @@ class GraphMap():
             sage: f.stallings_folding()
             sage: print(f)
             Graph map:
-            a: 1->1, c: 1->1
+            a: 3->3, c: 3->3
             a: 0->0, b: 0->0
-            edge map: a->a, c->b
+            edge map: b->a, c->b
 
         REFERENCES:
 
