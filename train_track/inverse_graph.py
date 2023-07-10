@@ -128,7 +128,7 @@ class GraphWithInverses(DiGraph):
         #                        boundary=[], weighted=None,
         #                 implementation='c_graph', sparse=True)
 
-        for e in self.edges():
+        for e in self.edges(sort=False):
             self._initial[e[2]] = e[0]
             self._terminal[e[2]] = e[1]
             self._initial[alphabet.inverse_letter(e[2])] = e[1]
@@ -411,7 +411,7 @@ class GraphWithInverses(DiGraph):
         i = 0
         done = False
         while not done:
-            if i not in self.vertices():
+            if i not in self.vertices(sort=False):
                 done = True
             i = i + 1
         return i - 1
@@ -436,7 +436,7 @@ class GraphWithInverses(DiGraph):
         i = 0
         result = []
         while n > 0:
-            if i not in self.vertices():
+            if i not in self.vertices(sort=False):
                 result.append(i)
                 n = n - 1
             i = i + 1
@@ -466,7 +466,7 @@ class GraphWithInverses(DiGraph):
             sage: print (G)
             a: 0->0, b: 0->1, c: 1->0
 
-            sage: print (G.vertices())
+            sage: print (G.vertices(sort=True))
             [0, 1, 2]
         """
         if i is None:
@@ -1046,7 +1046,7 @@ class GraphWithInverses(DiGraph):
             [['b', 'c']]
         """
         outgoing = {}
-        outgoing.update((v, []) for v in self.vertices())
+        outgoing.update((v, []) for v in self.vertices(sort=False))
         A = self._alphabet
         for a in A.positive_letters():
             outgoing[self.initial_vertex(a)].append(a)
@@ -1057,7 +1057,7 @@ class GraphWithInverses(DiGraph):
         done = False
         while not done:
             done = True
-            for v in self.vertices():
+            for v in self.vertices(sort=False):
                 if len(outgoing[v]) == 1:
                     done = False
                     valence_1.append(v)
@@ -1090,7 +1090,7 @@ class GraphWithInverses(DiGraph):
             [['C', 'B']]
         """
         outgoing = {}
-        outgoing.update((v, []) for v in self.vertices())
+        outgoing.update((v, []) for v in self.vertices(sort=False))
         A = self._alphabet
         for a in A:
             outgoing[self.initial_vertex(a)].append(a)

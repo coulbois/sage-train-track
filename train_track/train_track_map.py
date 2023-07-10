@@ -128,7 +128,7 @@ class TrainTrackMap(GraphSelfMap):
             if len(self._strata) == 1:
                 result += "\nIrreducible representative"
             else:
-                result += "\nStrata: " + self._strata.__str__()
+                result += "\nStrata: "+ str(list(map(sorted, self._strata)))
 
         return result
 
@@ -464,7 +464,7 @@ class TrainTrackMap(GraphSelfMap):
         """
         lwg = self.local_whitehead_graph(v)
 
-        directions = lwg.vertices()
+        directions = lwg.vertices(sort=False)
         images = directions
 
         # Looking for a period for the vertex v
@@ -1189,7 +1189,7 @@ class TrainTrackMap(GraphSelfMap):
 
         return len(
             self.whitehead_connected_components(verbose)) == len(
-            self.domain().vertices())
+            self.domain().vertices(sort=False))
 
     def periodic_nielsen_loops(self, pnps=None, verbose=False):
         """
@@ -1518,7 +1518,7 @@ class TrainTrackMap(GraphSelfMap):
         if verbose:
             print("Classes of germ at the end of pnps:", germ_classes)
 
-        for v in G.vertices():
+        for v in G.vertices(sort=False):
             iwg = iwg.union(self.stable_local_whitehead_graph(v))
 
         if verbose:
@@ -1963,7 +1963,7 @@ class TrainTrackMap(GraphSelfMap):
                    "positive power")
         c = self.whitehead_connected_components(
             verbose and verbose > 1 and verbose - 1)
-        if len(c) > len(self.domain().vertices()):
+        if len(c) > self.domain().num_verts():
             if verbose:
                 print("The local Whitehead graphs are not "
                        "connected. Connected components of germs:", c)

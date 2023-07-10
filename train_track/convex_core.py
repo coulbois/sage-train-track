@@ -1597,9 +1597,9 @@ class ConvexCore():
         # embedded inside the surface. In this case the edges outgoing
         # from the sole vertex are cyclically ordered.
 
-        if len(T0.vertices()) != 1:
+        if T0.num_verts() != 1:
             raise ValueError('The tree on side 0 must be a rose')
-        if len(T1.vertices()) != 1:
+        if T1.num_verts() != 1:
             raise ValueError('The tree on side 1 must be a rose')
 
         if cyclic_order_0 is None:

@@ -472,7 +472,7 @@ class GraphMap():
         A2 = G2.alphabet()
         T2 = G2.spanning_tree()
 
-        A = AlphabetWithInverses(len(A1) - len(G1.vertices()) + 1)
+        A = AlphabetWithInverses(len(A1) - G1.num_verts() + 1)
         F = FreeGroup(A.positive_letters())
 
         map = dict()
@@ -572,14 +572,14 @@ class GraphMap():
 
         edge_map = dict((a, self.image(a)) for a in A1)
 
-        adjacent_vertex = dict((v,v) for v in G1.vertices())  # a
+        adjacent_vertex = dict((v,v) for v in G1.vertices(sort=False))  # a
         # class of vertices linked by a tree which is contracted by
         # self to a point
 
         done = False
         while not done:
             done = True
-            gates = dict((v,[]) for v in G1.vertices())  # the gates
+            gates = dict((v,[]) for v in G1.vertices(sort=False))  # the gates
             # outgoing from a contracted tree
             minimal_edge = dict() # The minimal edge (in lexicographic
             # order) outgoing from a contracted forest.
@@ -604,11 +604,11 @@ class GraphMap():
                             elif minimal_edge[ww] < minimal_edge[vv]:
                                 minimal_edge[vv] = minimal_edge[ww]                                
 
-                        for t in G1.vertices():
+                        for t in G1.vertices(sort=False):
                             if adjacent_vertex[t] ==  ww:
                                 adjacent_vertex[t] = vv
 
-            for v in G1.vertices():
+            for v in G1.vertices(sort=False):
                 if v == adjacent_vertex[v]:
                     gates[v].sort()
                     i = 0
@@ -907,8 +907,8 @@ class GraphMap():
         d = {}
         # get set of vertices
         V = []
-        for i in itertools.product(self.domain().vertices(),
-                                   other.domain().vertices()):
+        for i in itertools.product(self.domain().vertices(sort=False),
+                                   other.domain().vertices(sort=False)):
             V.append(i)
 
         # add edges
