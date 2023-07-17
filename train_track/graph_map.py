@@ -770,7 +770,7 @@ class GraphMap():
 
         The domain of ``self`` is fold until we get an
         immersion. Intended to be used to compute the pullback of two
-        graph maps and the intersection of subgroupes of a free group.
+        graph maps and the intersection of subgroups of a free group.
 
         ALGORITHM:
 
@@ -794,9 +794,9 @@ class GraphMap():
             sage: f.stallings_folding()
             sage: print(f)
             Graph map:
-            a: 1->1, c: 1->1
+            a: 3->3, c: 3->3
             a: 0->0, b: 0->0
-            edge map: a->a, c->b
+            edge map: b->a, c->b
 
         REFERENCES:
 
