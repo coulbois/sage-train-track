@@ -149,7 +149,7 @@ class GraphSelfMap(GraphMap):
             if len(self._strata) == 1:
                 result += "\nIrreducible representative"
             else:
-                result += "\nStrata: " + self._strata.__str__()
+                result += "\nStrata: " + str(list(map(sorted,self._strata)))
         return result
 
     @staticmethod
@@ -1865,13 +1865,13 @@ class GraphSelfMap(GraphMap):
             sage: f.relative_indivisible_nielsen_paths(stratum=1)
             [[word: acb, word: ba]]
         """
-
+        
         G = self._domain
         A = G._alphabet
 
-        result = []
-        image = []
-        next = []
+        result = [] #result contains the germs of inps. Index i+k matches with index k of image and next.
+        image = [] #the germs of the images of the above candidate inps after removing common prefixes. 
+        next = [] #the letters which we can add to the candidate inp.
         places = []  # To prevent infinite matching pseudo-paths
 
         extension = dict((a, []) for a in self._strata[stratum])
@@ -1883,13 +1883,16 @@ class GraphSelfMap(GraphMap):
             extension[A.inverse_letter(t[0])].append(t[1])
             extension[A.inverse_letter(t[1])].append(t[0])
 
+        if verbose:
+            print("Extensions outgoing from edges:",extension)
+
         fold_turns = self.fold_turns(stratum)
         for t in fold_turns:
             result.append((Word(), Word()))
             image.append((Word(), Word()))  # tigthen image of result
             next.append((t[0], t[1]))  # letters to add to result
             x = G.initial_vertex(t[0])
-            places.append(set([(x, -1, x - 1)]))
+            places.append(set([(x, -1, x, -1)])) 
 
         u = [None, None]
         uu = [None, None]
@@ -1928,13 +1931,13 @@ class GraphSelfMap(GraphMap):
                             v1 = G.initial_vertex(b)
                             laceab = (v0, -1, v1, -1)
                             if laceab not in laces:
-                                laces = laces.copy()
-                                laces.add(lace)
-                                laces.add(laceab)
+                                lacess = laces.copy()
+                                lacess.add(lace)
+                                lacess.add(laceab)
                                 result.insert(i, t)
                                 image.insert(0, tt)
                                 next.insert(0, (a, b))
-                                places.insert(0, laces)
+                                places.insert(0, lacess)
 
             elif len(tt[0]) == 0:
 
@@ -1942,7 +1945,7 @@ class GraphSelfMap(GraphMap):
                 lace = (v0, 0, t[1][-1], len(tt[1]))
 
                 j = 0
-                while tt[1][j] not in extension:
+                while tt[1][j] not in extension: #remove letters of lower strata
                     j = j + 1
                 tt = (tt[0], tt[1][j:])
 
@@ -1954,10 +1957,10 @@ class GraphSelfMap(GraphMap):
                             result.insert(i, t)
                             image.insert(0, tt)
                             next.insert(0, (a, None))
-                            laces = laces.copy()
-                            laces.add(lace)
-                            laces.add(lacea)
-                            places.insert(0, laces)
+                            lacess = laces.copy()
+                            lacess.add(lace)
+                            lacess.add(lacea)
+                            places.insert(0, lacess)
 
             elif len(tt[1]) == 0:
 
@@ -1976,7 +1979,10 @@ class GraphSelfMap(GraphMap):
                         result.insert(i, t)
                         image.insert(0, tt)
                         next.insert(0, (None, a))
-                        places.insert(0, laces)
+                        lacess = laces.copy()
+                        lacess.add(lace)
+                        lacess.add(lacea)
+                        places.insert(0, lacess)
 
             elif tt[0][0] in extension and tt[1][0] in extension:
                 for j in range(2):
@@ -2130,7 +2136,7 @@ class GraphSelfMap(GraphMap):
             [{'d'}, {'a', 'b', 'c', 'd'}]
             sage: inps = f.relative_indivisible_nielsen_paths(stratum=1)
             sage: f.relative_inessential_inp(inps=inps, stratum=1)
-            [word: bda, word: cda]
+            [word: adb, word: bda] 
 
         .. WARNING::
 
@@ -2156,10 +2162,12 @@ class GraphSelfMap(GraphMap):
         critic = 0  # the length of the common prefix of an issential inp
         i = 0
         pfvl = dict()
-        for a in self._strata[stratum]:
-            critic += pfv[i]
-            pfvl[a] = pfv[i]
-            i += 1
+        #WARNING: the indices in the matrix and eigen-vectors are given by the order in the alphabet not the order in the stratum.
+        for a in self.domain().alphabet().positive_letters():
+            if a in self._strata[stratum]:
+                critic += pfv[i]
+                pfvl[a] = pfv[i]
+                i += 1
 
         critic = critic * (pf - 1)
 
@@ -2216,9 +2224,8 @@ class GraphSelfMap(GraphMap):
             Graph self map:
             Marked graph: a: 1->0, b: 1->0, c: 0->0, d: 0->0, e: 0->1
             Marking: a->eadeadebdea, b->eadeadeb, c->c, d->d
-            Edge map: a->adebdea, b->bdeadcdeadeadebdeadeadeadeb,
-            c->eadeadebdeadeadeadebdeadeadebdeadc, d->d, e->eade
-            Strata: [{'d'}, {'a', 'c', 'b', 'e'}]
+            Edge map: a->adebdea, b->bdeadcdeadeadebdeadeadeadeb, c->eadeadebdeadeadeadebdeadeadebdeadc, d->d, e->eade
+            Strata: [['d'], ['a', 'b', 'c', 'e']]
 
         .. WARNING::
 
@@ -2416,7 +2423,7 @@ class GraphSelfMap(GraphMap):
         The incidence matrix of the stratum ``s`` of ``self``.
 
         Note that edges are counted positively disrespectly of their
-        orientation.
+        orientation. The indices in the matrix are given by the order in the alphabet.
 
         INPUT:
 
@@ -2431,19 +2438,26 @@ class GraphSelfMap(GraphMap):
             [{'d'}, {'a', 'b', 'c', 'd'}]
             sage: f.relative_matrix(1)
             [1 1 1]
-            [0 0 1]
             [1 0 0]
+            [0 1 0]
         """
 
         from sage.matrix.constructor import matrix
 
         M = matrix(len(self._strata[stratum]))
-        index = dict((a, j) for j, a in enumerate(self._strata[stratum]))
-        for j, a in enumerate(self._strata[stratum]):
+
+        A = self.domain().alphabet()
+        index = dict()
+        j = 0
+        for a in A.positive_letters():
+            if a in self._strata[stratum]:
+                index[a] = j
+                j += 1
+        for a in self._strata[stratum]:
             for b in self.image(a):
                 b = self._domain._alphabet.to_positive_letter(b)
                 if b in self._strata[stratum]:
-                    M[index[b], j] += 1
+                    M[index[b], index[a]] += 1
         return M
 
     def filtre_stratum(self, s, verbose=False):
@@ -2540,7 +2554,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->0
             Marking: a->a, b->b
             Edge map: a->ab, b->b
-            Strata: [{'b'}, {'a'}]
+            Strata: [['b'], ['a']]
 
         .. SEEALSO::
 
@@ -2729,7 +2743,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->1, c: 0->0, d: 1->0
             Marking: a->a, b->bd, c->c
             Edge map: a->abd, b->c, c->c, d->a
-            Strata: [{'c'}, {'b'}, {'a', 'd'}]
+            Strata: [['c'], ['b'], ['a', 'd']]
         """
         A = self._domain.alphabet()
         Dfinverse = dict((e, []) for e in self._strata[s])
@@ -3476,7 +3490,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->0, c: 0->2, e: 2->3, f: 3->0
             Marking: a->a, b->cefb, c->Bcefb
             Edge map: a->acefb, b->a, c->cef, e->cef, f->FEC
-            Strata: [{'c', 'e', 'f'}, {'a', 'b'}]
+            Strata: [['c', 'e', 'f'], ['a', 'b']]
         """
         G = self._domain
         A = G.alphabet()
@@ -3639,7 +3653,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0, e: 0->0
             Marking: a->a, b->b, c->c, d->dE, e->e
             Edge map: a->acb, b->a, c->cdE, d->d, e->dE
-            Strata: [{'d'}, {'e'}, {'c'}, {'a', 'b'}]
+            Strata: [['d'], ['e'], ['c'], ['a', 'b']]
         """
 
         if verbose:
@@ -3797,7 +3811,7 @@ class GraphSelfMap(GraphMap):
             Marked graph: a: 0->0, b: 0->0, c: 0->0, d: 0->0, e: 0->0
             Marking: a->a, b->b, c->c, d->dE, e->e
             Edge map: a->acb, b->a, c->cdE, d->d, e->dE
-            Strata: [{'d'}, {'e'}, {'c'}, {'a', 'b'}]
+            Strata: [['d'], ['e'], ['c'], ['a', 'b']]
         """
 
         G = self._domain

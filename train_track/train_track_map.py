@@ -1447,8 +1447,10 @@ class TrainTrackMap(GraphSelfMap):
             sage: G = f.ideal_whitehead_graph()
             sage: G
             Graph on 6 vertices
-            sage: G.vertices(sort=False)
-            ['B', 'C', 'b', 'c', 'loop', word: aBCAbc]
+            sage: sorted(map(str,G.vertices(sort=False)))
+            ['B', 'C', 'aBCAbc', 'b', 'c', 'loop']
+
+            
 
         .. WARNING:
 
@@ -1757,7 +1759,8 @@ class TrainTrackMap(GraphSelfMap):
             sage: phi = FreeGroupAutomorphism("a->bca,b->bcacacb,c->cac")
             sage: f = TrainTrackMap(phi.rose_representative())
             sage: f.whitehead_connected_components()
-            [['a', 'b', 'C'], ['A', 'c', 'B']]
+            [['C', 'a', 'b'], ['B', 'c', 'A']]
+
 
         .. SEEALSO::
 

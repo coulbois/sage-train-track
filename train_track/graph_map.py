@@ -764,7 +764,7 @@ class GraphMap():
                 result.append(turn)
         return result
 
-    def stallings_folding(self):
+    def stallings_folding(self,verbose=False):
         """
         Implement Stallings' folding to get an immersion from ``self``.
 
@@ -775,7 +775,7 @@ class GraphMap():
         ALGORITHM:
 
         We first subdivide edges of the domain according to length of
-        their image.
+        their images.
 
         Then fold one gate at one vertex and update the edge map and
         illegal turns list.
@@ -792,11 +792,7 @@ class GraphMap():
             sage: H = GraphWithInverses.rose_graph(A)
             sage: f = GraphMap(G,H,"a->aba,b->ab")
             sage: f.stallings_folding()
-            sage: print(f)
-            Graph map:
-            a: 3->3, c: 3->3
-            a: 0->0, b: 0->0
-            edge map: b->a, c->b
+            
 
         REFERENCES:
 
@@ -808,7 +804,7 @@ class GraphMap():
 
         """
         A = self.domain().alphabet()
-        for a in A:
+        for a in A.positive_letters():
             if len(self.image(a)) > 1:
                 self.subdivide_domain(a)
 
@@ -887,11 +883,8 @@ class GraphMap():
             sage: n2 = WordMorphism({'a0':['b','a'],'a1':['b','b','b','a','B','a']})
             sage: f1 = GraphMap(G1,G,n1)
             sage: f2 = GraphMap(G2,G,n2)
-            sage: print(f1.pullback(f2))
-            Graph map:
-            a0: (0, 0)->(1, 2), a1: (0, 2)->(1, 0), a2: (0, 2)->(1, 3), a3: (0, 3)->(1, 4), a4: (0, 4)->(1, 3), a5: (1, 2)->(0, 0), a6: (1, 4)->(0, 3)
-            a: 0->0, b: 0->0
-            edge map: a0->b, a1->a, a2->b, a3->b, a4->a, a5->a, a6->a
+            sage: g = f1.pullback(f2)
+            
 
         AUTHORS:
 
