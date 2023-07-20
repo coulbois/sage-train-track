@@ -1053,7 +1053,7 @@ class FreeGroupAutomorphism(FreeGroupMorphism):
 
         6/ If there are two or more Nielsen loops then it is not iwip
 
-        7/ If there is one iwip check whether it is contained in a
+        7/ If there is one Nielsen loop check whether it is contained in a
         non-trivial free factor.
 
         .. SEEALSO::

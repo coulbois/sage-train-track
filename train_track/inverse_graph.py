@@ -1317,6 +1317,11 @@ class GraphWithInverses(DiGraph):
         Check whether the Whitehead graphs spanned by ``loop`` are
         connected.
 
+        WARNING: 
+
+        This method does not work: having connected whitehead graphs is not enough
+        to guarantee not to lie in a free factor.
+
         EXAMPLES::
 
             sage: from train_track import *
@@ -1375,7 +1380,7 @@ class GraphWithInverses(DiGraph):
         if verbose:
             print("Whitehead equivalence classes of germs:", germ_classes)
 
-        if len(germ_classes) > len(self.vertices()):
+        if len(germ_classes) > self.num_verts()):
             if verbose:
                 print("Non connected Whitehead graphs")
             return True
