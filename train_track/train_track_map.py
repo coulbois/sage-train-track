@@ -830,8 +830,8 @@ class TrainTrackMap(GraphSelfMap):
                     p = G.common_prefix_length(uu, vv)
                     right1 = len(uu) - len(u) - p
                     right2 = len(vv) - len(v) - p
-                    left1 = len(self(u[-1])) - right1 - 1
-                    left2 = len(self(v[-1])) - right2 - 1
+                    left1 = len(self.image(u[-1])) - right1 - 1
+                    left2 = len(self.image(v[-1])) - right2 - 1
                 else:
                     uu = u
                     vv = v

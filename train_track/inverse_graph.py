@@ -1380,7 +1380,7 @@ class GraphWithInverses(DiGraph):
         if verbose:
             print("Whitehead equivalence classes of germs:", germ_classes)
 
-        if len(germ_classes) > self.num_verts()):
+        if len(germ_classes) > self.num_verts():
             if verbose:
                 print("Non connected Whitehead graphs")
             return True
