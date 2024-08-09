@@ -645,6 +645,8 @@ class GraphWithInverses(DiGraph):
 
         - ``edge_list``  -- (default: ``None``) list of edge
 
+        - ``sort`` -- (default: ``False``) whether to sort the output
+
         OUTPUT:
 
         List of Connected components (each as a list of
@@ -658,7 +660,7 @@ class GraphWithInverses(DiGraph):
             [[0], [1]]
         """
         if edge_list is None:
-            return DiGraph.connected_components(self)
+            return DiGraph.connected_components(self, sort=False)
         components = []
         vertices = []
         for e in edge_list:
