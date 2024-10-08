@@ -1412,7 +1412,7 @@ class GraphWithInverses(DiGraph):
 
         A = self.alphabet()
         
-        v = {'a':0 for a in A.positive_letters()}
+        v = {a:0 for a in A.positive_letters()}
         
         for a in loop:
             if A.is_positive_letter(a):
