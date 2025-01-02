@@ -1224,7 +1224,7 @@ class TrainTrackMap(GraphSelfMap):
             using ``TrainTrackMap.periodic_nielsen_paths(self)``.  Thus
             assumes that ``self`` is an expanding train-track.
         """
-        from sage.arith.all import lcm  # from sage 7.0
+        from sage.arith.functions import lcm as lcm  # from sage 7.0
 
         G = self.domain()
         A = G.alphabet()

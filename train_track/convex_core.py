@@ -36,7 +36,7 @@ EXAMPLES::
 # *****************************************************************************
 from __future__ import print_function, absolute_import
 from sage.combinat.words.word import Word
-from sage.graphs.graph import DiGraph
+from sage.graphs.digraph import DiGraph
 from .inverse_graph import MetricGraph
 from .graph_map import GraphMap
 from .free_group_automorphism import FreeGroupAutomorphism

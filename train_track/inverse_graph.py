@@ -29,7 +29,7 @@ EXAMPLES::
 # *****************************************************************************
 
 from __future__ import print_function, absolute_import
-from sage.graphs.graph import DiGraph
+from sage.graphs.digraph import DiGraph
 from sage.combinat.words.word import Word
 from .inverse_alphabet import AlphabetWithInverses
 
