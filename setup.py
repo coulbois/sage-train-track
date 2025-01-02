@@ -42,5 +42,17 @@ setup(
     ], # classifiers list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
     keywords = "SageMath Freegroup Automorphism Train-track",
     packages = ['train_track'],
+    extras_require={
+        'passagemath': [
+            'passagemath-combinat',
+            'passagemath-flint',
+            'passagemath-graphs',
+            'passagemath-groups',
+            'passagemath-modules',
+            'passagemath-pari',
+            'passagemath-plot',
+            'passagemath-repl',
+        ],
+    },
     cmdclass = {'test': SageTest} # adding a special setup command for tests
 )
