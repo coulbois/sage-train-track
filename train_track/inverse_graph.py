@@ -588,8 +588,8 @@ class GraphWithInverses(DiGraph):
 
             sage: from train_track import *
             sage: from train_track.inverse_graph import GraphWithInverses
-            sage: GraphWithInverses.rose_graph( \
-            AlphabetWithInverses(3)).common_prefix_length("aBaa","aBcb")
+            sage: GraphWithInverses.rose_graph(
+            ....:     AlphabetWithInverses(3)).common_prefix_length("aBaa","aBcb")
             2
         """
         k = 0
