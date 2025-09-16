@@ -5,20 +5,23 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         include:
-          - sagelib: "9.1"
           - sagelib: "9.2"
           - sagelib: "9.3"
           - sagelib: "9.4"
           - sagelib: "9.5"
+          - sagelib: "10.0"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with: { submodules: recursive }
-      - uses: conda-incubator/setup-miniconda@v2
-        with: { mamba-version: "*", channels: "conda-forge", channel-priority: true }
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-variant: Mambaforge
+          miniforge-version: 23.3.1-0
+          python-version: "3.10"   
       - name: Install dependencies
         shell: bash -l {0}
         run: |
