@@ -655,7 +655,7 @@ class FreeGroupElement(ElementLibGAP):
             raise ValueError('number of values has to match the number of '
                              'generators')
         replace = dict(zip(G.gens(), values))
-        from sage.misc.all import prod
+        from sage.misc.misc_c import prod
         return prod(replace[gen] ** power for gen, power in self.syllables())
 
     def to_word(self, use_str=True, upper_case_as_inverse=True):

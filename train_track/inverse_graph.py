@@ -29,7 +29,7 @@ EXAMPLES::
 # *****************************************************************************
 
 from __future__ import print_function, absolute_import
-from sage.graphs.graph import DiGraph
+from sage.graphs.digraph import DiGraph
 from sage.combinat.words.word import Word
 from .inverse_alphabet import AlphabetWithInverses
 
@@ -588,8 +588,8 @@ class GraphWithInverses(DiGraph):
 
             sage: from train_track import *
             sage: from train_track.inverse_graph import GraphWithInverses
-            sage: GraphWithInverses.rose_graph( \
-            AlphabetWithInverses(3)).common_prefix_length("aBaa","aBcb")
+            sage: GraphWithInverses.rose_graph(
+            ....:     AlphabetWithInverses(3)).common_prefix_length("aBaa","aBcb")
             2
         """
         k = 0
