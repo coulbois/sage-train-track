@@ -658,7 +658,7 @@ class GraphWithInverses(DiGraph):
             [[0], [1]]
         """
         if edge_list is None:
-            return DiGraph.connected_components(self)
+            return DiGraph.connected_components(self, sort=False)
         components = []
         vertices = []
         for e in edge_list:
