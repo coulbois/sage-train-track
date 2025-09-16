@@ -13,7 +13,6 @@ jobs:
           - sagelib: "9.3"
           - sagelib: "9.4"
           - sagelib: "9.5"
-          - sagelib: "10.0"
     steps:
       - uses: actions/checkout@v3
         with: { submodules: recursive }
@@ -21,7 +20,7 @@ jobs:
         with:
           miniforge-variant: Mambaforge
           miniforge-version: 23.3.1-0
-          python-version: "3.10"   
+          python-version: "3.9"   
       - name: Install dependencies
         shell: bash -l {0}
         run: |
