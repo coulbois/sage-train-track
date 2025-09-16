@@ -1986,11 +1986,11 @@ class TrainTrackMap(GraphSelfMap):
             else:
                 if verbose:
                     print("One Nielsen loop:", nielsen_loops[0][0])
-                if self.domain().lies_in_a_free_factor(
+                if not self.domain().is_trivial_mod_2(
                         nielsen_loops[0][0],
                                         verbose and verbose > 1 and verbose - 1):
                     if verbose:
-                        print("The Nielsen loops is primitive")
+                        print("The Nielsen loop has non-trivial homology modulo 2")
                     return False
                 else:
                     if verbose:

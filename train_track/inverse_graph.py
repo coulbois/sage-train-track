@@ -645,6 +645,8 @@ class GraphWithInverses(DiGraph):
 
         - ``edge_list``  -- (default: ``None``) list of edge
 
+        - ``sort`` -- (default: ``False``) whether to sort the output
+
         OUTPUT:
 
         List of Connected components (each as a list of
@@ -1390,6 +1392,38 @@ class GraphWithInverses(DiGraph):
 
         return False
 
+    def is_trivial_mod_2(self,loop,verbose=False):
+        """
+        ``True`` if ``loop`` has trivial homology modulo 2.
+
+        Intended to be used to detect whether a Nielsen loop of a
+        train-track map generates a free factor and thus the
+        represented automorphism is reducible.
+
+        INPUT:
+
+        - ``loop`` -- a word
+        - ``verbose`` -- (default: ``False``) for verbose option
+
+        OUTPUT:
+
+        ``True`` if ``loop`` has trivial homology modulo 2.
+        """
+
+        A = self.alphabet()
+        
+        v = {a:0 for a in A.positive_letters()}
+        
+        for a in loop:
+            if A.is_positive_letter(a):
+                v[a] += 1
+            else:
+                v[A.inverse_letter(a)] += 1
+                
+        return all((x%2)==0 for x in v.values())
+        
+        
+    
     @staticmethod
     def valence_3(rank):
         """
