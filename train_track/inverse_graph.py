@@ -1099,7 +1099,9 @@ class GraphWithInverses(DiGraph):
         lines = []
 
         while len(valence_2) > 0:
-            vi = valence_2.pop()
+            # vi = valence_2.pop()
+            vi = sorted(valence_2, key=str)[0]
+            valence_2.remove(vi)
             vt = vi
             e = outgoing[vi][0]
             f = outgoing[vt][1]
