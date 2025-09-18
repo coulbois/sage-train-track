@@ -3040,7 +3040,7 @@ class GraphSelfMap(GraphMap):
             vertex_components = []
             done = False
             while i < len(self._strata) - 1 and not done:
-                for a in self._strata[i]:
+                for a in sorted(self._strata[i], key=str):
                     v = self._domain.initial_vertex(a)
                     vv = self._domain.terminal_vertex(a)
                     if v == vv:
@@ -3069,7 +3069,7 @@ class GraphSelfMap(GraphMap):
                     i = i + 1
             if i > 0:
                 trees = self._domain.connected_components(
-                    [a for j in range(i) for a in self._strata[j]])
+                    [a for j in range(i) for a in sorted(self._strata[j])])
                 if verbose:
                     print("Strata under", i, "are contractible... "
                            "Contracting "
@@ -3135,7 +3135,7 @@ class GraphSelfMap(GraphMap):
                     least_index = highest_edges[i][0]
                     index = dict((a, k)
                                  for k, a in enumerate(
-                        self._strata[highest_stratum[i]]))
+                                   sorted(self._strata[highest_stratum[i]], key=str)))
                     least_vector = pfv[index[
                         self._domain._alphabet.to_positive_letter(
                             line[highest_edges[i][0]])]]
