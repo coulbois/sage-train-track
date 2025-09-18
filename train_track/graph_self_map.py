@@ -3511,9 +3511,9 @@ class GraphSelfMap(GraphMap):
             # self(a)==self(b).
 
             # used_edges = set(A.to_positive_letter(a) for a in p)
-            used_edges = sorted(
-              {A.to_positive_letter(a) for a in p}, key=lambda x: str(x)
-            )
+            used_edges = set(sorted(
+              [A.to_positive_letter(a) for a in p], key=lambda x: str(x)
+            ))
             
             subdivide_edges = \
                 [a for a in used_edges for i in range(len(self.image(a)) - 1)]
