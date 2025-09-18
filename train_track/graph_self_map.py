@@ -3487,11 +3487,17 @@ class GraphSelfMap(GraphMap):
             {0: [0], 1: [1]}
             sage: print(f)
             Graph self map:
-            Marked graph: a: 0->0, b: 0->0, c: 0->2, e: 2->3, f: 3->0
-            Marking: a->a, b->cefb, c->Bcefb
-            Edge map: a->acefb, b->a, c->cef, e->cef, f->FEC
-            Strata: [['c', 'e', 'f'], ['a', 'b']]
+            Marked graph: a: 0->0, b: 0->0, c: 0->4, g: 4->5, h: 5->0
+            Marking: a->a, b->cghb, c->Bcghb
+            Edge map: a->acghb, b->a, c->cgh, g->cgh, h->HGC
+            Strata: [['c', 'g', 'h'], ['a', 'b']]
         """
+        # Graph self map:
+        # Marked graph: a: 0->0, b: 0->0, c: 0->2, e: 2->3, f: 3->0
+        # Marking: a->a, b->cefb, c->Bcefb
+        # Edge map: a->acefb, b->a, c->cef, e->cef, f->FEC
+        # Strata: [['c', 'e', 'f'], ['a', 'b']]
+
         G = self._domain
         A = G.alphabet()
         result_morph = None
